@@ -1,0 +1,81 @@
+/* Blog.css */
+.modal-lg {
+    max-width: 50%; /* Adjust the width as needed */
+  }
+  
+  .CInputGroup {
+    display:flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem; /* Add spacing between input groups */
+  }
+  
+  .CFormLabel {
+    margin-right: 1rem; /* Add space between label and input */
+  }
+
+  .blog-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-evenly;
+  }
+  
+  .blog-card .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  @media (max-width: 768px) {
+    .blog-card {
+      flex: 0 0 calc(50% - 20px);
+      max-width: calc(50% - 20px);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .blog-card {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+
+  .chat-box {
+    background-color: #f9f9f9;
+  }
+  
+  .chat-message {
+    margin-bottom: 10px;
+  }
+  
+  .chat-bubble {
+    max-width: 35%;
+    padding: 10px;
+    border-radius: 15px;
+    position: relative;
+  }
+  
+  .chat-bubble.sent {
+    background-color: #d1e7dd;
+    margin-left: auto;
+    text-align: right;
+  }
+  
+  .chat-bubble.received {
+    background-color: #112455;
+    text-align: left;
+  }
+  
+  .chat-bubble p {
+    margin: 5px 0;
+  }
+  
+  .chat-bubble small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: #666;
+  }
+  
+  
+  
