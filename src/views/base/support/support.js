@@ -27,7 +27,7 @@ const Support = () => {
   const [selectedChat, setSelectedChat] = useState([]);
   const [selectedTicketId, setSelectedTicketId] = useState('');
   const [newMessage, setNewMessage] = useState('');
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const Support = () => {
 
   return (
     <>
-      <div className="mt-4">
+      <div className="container-fluid mt-4">
         <CTable hover>
           <CTableHead>
             <CTableRow>

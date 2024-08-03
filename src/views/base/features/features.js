@@ -25,7 +25,7 @@ const Features = () => {
   const [visible, setVisible] = useState(false);
   const [features, setFeatures] = useState([]);
   const [selectedFeatureName, setSelectedFeatureName] = useState('');
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
   useEffect(() => {

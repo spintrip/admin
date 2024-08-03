@@ -18,7 +18,7 @@ const Hosts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 20;
   const visiblePages = 3;
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
   useEffect(() => {

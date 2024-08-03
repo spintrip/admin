@@ -31,7 +31,7 @@ const Login = () => {
       localStorage.setItem('adminToken', token);
       setError(null);
       console.log('Login successful:', token);
-      navigate('/dashboard'); // Navigate to the dashboard page
+      navigate('/dashboard'); 
     } catch (err) {
       setError('Wrong credentials. Please check your phone number and password.');
     }
@@ -90,7 +90,7 @@ const Login = () => {
               <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
                 <CCardBody className="text-center">
                   <div>
-                    <h2>Sign up</h2>
+                    <h2>Spintrip Admin</h2>
                     <p>
                       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
                       tempor incididunt ut labore et dolore magna aliqua.

@@ -68,26 +68,36 @@ const Cars = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {displayedCars.map((car, index) => (
-              <CTableRow key={car.carid}>
-                <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell>{car.carmodel}</CTableDataCell>
-                <CTableDataCell>{car.type}</CTableDataCell>
-                <CTableDataCell>{car.brand}</CTableDataCell>
-                <CTableDataCell>{car.chassisno.length > 10 ? `${car.chassisno.slice(0, 10)}...` : car.chassisno}</CTableDataCell>
-                <CTableDataCell>{car.Rcnumber}</CTableDataCell>
-                <CTableDataCell>{car.Enginenumber.length > 10 ? `${car.Enginenumber.slice(0, 10)}...` : car.Enginenumber}</CTableDataCell>
-                <CTableDataCell>{car.Registrationyear}</CTableDataCell>
-                <CTableDataCell>{car.bodytype}</CTableDataCell>
-                <CTableDataCell>{car.carid.length > 10 ? `${car.carid.slice(0, 10)}...` : car.carid}</CTableDataCell>
-                <CTableDataCell>{car.rating !== null && car.rating !== undefined ? car.rating.toFixed(2) : 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.hostId ? (car.hostId.length > 10 ? `${car.hostId.slice(0, 10)}...` : car.hostId) : 'N/A'}</CTableDataCell>
-                <CTableDataCell>{new Date(car.createdAt).toLocaleString()}</CTableDataCell>
-                <CTableDataCell>{new Date(car.updatedAt).toLocaleString()}</CTableDataCell>
-              </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
+          {displayedCars.map((car, index) => (
+            <CTableRow key={car.carid}>
+              <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
+              <CTableDataCell>{car.carmodel}</CTableDataCell>
+              <CTableDataCell>{car.type}</CTableDataCell>
+              <CTableDataCell>{car.brand}</CTableDataCell>
+              <CTableDataCell>
+                {car.chassisno && car.chassisno.length > 10 ? `${car.chassisno.slice(0, 10)}...` : car.chassisno}
+              </CTableDataCell>
+              <CTableDataCell>{car.Rcnumber}</CTableDataCell>
+              <CTableDataCell>
+                {car.Enginenumber && car.Enginenumber.length > 10 ? `${car.Enginenumber.slice(0, 10)}...` : car.Enginenumber}
+              </CTableDataCell>
+              <CTableDataCell>{car.Registrationyear}</CTableDataCell>
+              <CTableDataCell>{car.bodytype}</CTableDataCell>
+              <CTableDataCell>
+                {car.carid && car.carid.length > 10 ? `${car.carid.slice(0, 10)}...` : car.carid}
+              </CTableDataCell>
+              <CTableDataCell>
+                {car.rating !== null && car.rating !== undefined ? car.rating.toFixed(2) : 'N/A'}
+              </CTableDataCell>
+              <CTableDataCell>
+                {car.hostId ? (car.hostId.length > 10 ? `${car.hostId.slice(0, 10)}...` : car.hostId) : 'N/A'}
+              </CTableDataCell>
+              <CTableDataCell>{new Date(car.createdAt).toLocaleString()}</CTableDataCell>
+              <CTableDataCell>{new Date(car.updatedAt).toLocaleString()}</CTableDataCell>
+            </CTableRow>
+          ))}
+        </CTableBody>
+      </CTable>
       </DocsExample>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <CPagination aria-label="Page navigation example">

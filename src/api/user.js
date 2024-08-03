@@ -16,3 +16,29 @@ export const fetchUsers = async () => {
     throw error;
   }
 };
+
+export const fetchUserVerification = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}admin/pending-profile`, {
+      headers: {
+        token: token,
+      },
+    });
+    return response.data.updatedProfiles; 
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const approveUserVerification = async(userId) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/approve-profile` , { userId } , {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch(error){
+    throw error;
+  }
+}

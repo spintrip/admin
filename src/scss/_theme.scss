@@ -38,7 +38,9 @@ body {
 .sidebar-toggler {
   @include ltr-rtl("margin-left", auto);
 }
-
+.svg-size{
+  width: 1.5rem;
+}
 .sidebar-narrow,
 .sidebar-narrow-unfoldable:not(:hover) {
   .sidebar-toggler {

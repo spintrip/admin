@@ -29,3 +29,18 @@ export const getCarVerififcation = async () => {
       throw error;
     }
   };
+
+export const approveCarVerification = async(carId) => {
+
+  try{
+    const response = await axios.put(`${apiUrl}admin/approve-carprofile` , { carId } , {
+      headers : {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+
+}

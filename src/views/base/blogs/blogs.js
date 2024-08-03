@@ -10,6 +10,7 @@ import {
   CModalTitle,
   CButton,
   CForm,
+  CFormTextarea,
   CFormLabel,
   CCard,
   CCardBody,
@@ -46,7 +47,7 @@ const Blog = () => {
   });
   const [blogData, setBlogData] = useState([]);
   const [updateSuccess, setUpdateSuccess] = useState(false);
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -85,7 +86,7 @@ const Blog = () => {
   const handleSubmit = async (e) => {
     if (!token) {
       console.log('No token Found');
-      navigate('/login');
+      navigate('/pages/login');
     }
     e.preventDefault();
     const formData = new FormData();
@@ -180,7 +181,7 @@ const Blog = () => {
         {blogData.map((blog, index) => (
           <div key={blog.blogId} className="blog-card" onClick={() => handleCardClick(blog)}>
             <CCard>
-              <CCardImage orientation="top" src={blog.blogImage1} style={{ height: '200px', objectFit: 'cover' }} />
+              <CCardImage orientation="top" src={blog.blogImage_1} style={{ height: '200px', objectFit: 'cover' }} />
               <CCardBody>
                 <CCardTitle>{blog.blogName}</CCardTitle>
                 <CCardText><strong>Author:</strong> {blog.blogAuthor}</CCardText>
@@ -188,7 +189,7 @@ const Blog = () => {
                 <CCardText><strong>Keywords:</strong> {blog.keywords}</CCardText>
                 <CCardText><strong>Created At:</strong> {new Date(blog.createdAt).toLocaleString()}</CCardText>
                 <CCardText><strong>Updated At:</strong> {new Date(blog.updatedAt).toLocaleString()}</CCardText>
-                <CCardImage orientation="bottom" src={blog.blogImage2} style={{ height: '200px', objectFit: 'cover', marginTop: '10px' }} />
+                <CCardImage orientation="bottom" src={blog.blogImage_2} style={{ height: '200px', objectFit: 'cover', marginTop: '10px' }} />
               </CCardBody>
             </CCard>
           </div>
@@ -201,8 +202,8 @@ const Blog = () => {
             <CModalTitle>{selectedBlog.blogName}</CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <CCardImage orientation="top" src={selectedBlog.blogImage1} style={{ height: '200px', width:'200px', objectFit: 'cover' }} />
-            <CCardImage orientation="bottom" src={selectedBlog.blogImage2} style={{ height: '200px', width:'200px', objectFit: 'cover', marginLeft: '10px' }} />
+            <CCardImage orientation="top" src={selectedBlog.blogImage_1} style={{ height: '200px', width:'200px', objectFit: 'cover' }} />
+            <CCardImage orientation="bottom" src={selectedBlog.blogImage_2} style={{ height: '200px', width:'200px', objectFit: 'cover', marginLeft: '10px' }} />
             <p><strong>Author:</strong> {selectedBlog.blogAuthor}</p>
             <p><strong>Description:</strong> {selectedBlog.description}</p>
             <p><strong>Keywords:</strong> {selectedBlog.keywords}</p>
@@ -242,7 +243,7 @@ const Blog = () => {
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Description</CFormLabel>
-              <CFormInput type="text" name="description" value={updateFormValues.description} onChange={handleUpdateInputChange} required />
+              <CFormTextarea type="text" name="description" rows={10} value={updateFormValues.description} onChange={handleUpdateInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Keywords</CFormLabel>
@@ -274,27 +275,27 @@ const Blog = () => {
           <CForm onSubmit={handleSubmit}>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Blog Name</CFormLabel>
-              <CFormInput type="text" name="blogName" value={formValues.blogName} onChange={handleInputChange} required />
+              <CFormInput className='border rounded' placeholder='Enter Blog name' type="text" name="blogName" value={formValues.blogName} onChange={handleInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Blog Author</CFormLabel>
-              <CFormInput type="text" name="blogAuthor" value={formValues.blogAuthor} onChange={handleInputChange} required />
+              <CFormInput className='border rounded' placeholder='Enter Blog author' type="text" name="blogAuthor" value={formValues.blogAuthor} onChange={handleInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Description</CFormLabel>
-              <CFormInput type="text" name="description" value={formValues.description} onChange={handleInputChange} required />
+              <CFormTextarea className='border rounded' placeholder='Enter Blog description' type="text" name="description" rows={10} value={formValues.description} onChange={handleInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Keywords</CFormLabel>
-              <CFormInput type="text" name="keywords" value={formValues.keywords} onChange={handleInputChange} required />
+              <CFormInput className='border rounded' placeholder='keyword1, keyword2' type="text" name="keywords" value={formValues.keywords} onChange={handleInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
-              <CFormLabel className='me-3'>Car Image 1</CFormLabel>
-              <CFormInput type="file" name="carImage1" onChange={handleInputChange} required />
+              <CFormLabel className='me-3'>Blog Image 1</CFormLabel>
+              <CFormInput className='border rounded' type="file" name="carImage1" onChange={handleInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
-              <CFormLabel className='me-3'>Car Image 2</CFormLabel>
-              <CFormInput type="file" name="carImage2" onChange={handleInputChange} required />
+              <CFormLabel className='me-3'>Blog Image 2</CFormLabel>
+              <CFormInput className='border rounded' type="file" name="carImage2" onChange={handleInputChange} required />
             </CInputGroup>
             <CModalFooter>
               <CButton color="secondary" onClick={() => setVisible(false)}>Close</CButton>

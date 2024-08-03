@@ -1,14 +1,11 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilBell,
-  cilCalculator,
-  cilChartPie,
-  cilCursor,
   cilDescription,
   cilPuzzle,
   cilSpeedometer,
   cilStar,
+  cibJira,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -59,11 +56,6 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Car Verification',
-        to: '/base/car-verification'
-      },
-      {
-        component: CNavItem,
         name: 'Features',
         to: '/base/features'
       },
@@ -71,6 +63,11 @@ const _nav = [
         component: CNavItem,
         name: 'Tax',
         to: '/base/tax_data'
+      },
+      {
+        component: CNavItem,
+        name: 'Brands',
+        to: '/base/brands'
       }
     ],
   },
@@ -116,6 +113,16 @@ const _nav = [
     name: 'Support',
     to:'/base/support',
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Car Verification',
+    to: '/verification/car-verif'
+  },
+  {
+    component: CNavItem,
+    name: 'User Verification',
+    to: '/verification/user-verif'
   },
 ]
 
