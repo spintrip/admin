@@ -177,7 +177,7 @@ const Dashboard = () => {
   ]
 
   return (
-    <>
+    <div className='container-fluid'>
       <WidgetsDropdown className="mb-4" />
       <CCard className="mb-4">
         <CCardBody>
@@ -380,7 +380,7 @@ const Dashboard = () => {
           </CCard>
         </CCol>
       </CRow>
-    </>
+    </div>
   )
 }
 

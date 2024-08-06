@@ -28,6 +28,9 @@ const Blogs = React.lazy(() => import('./views/base/blogs/blogs'))
 //Support
 const Support = React.lazy(() => import('./views/base/support/support'))
 
+//Device
+const Device = React.lazy(() => import('./views/device/device'))
+
 
 
 
@@ -58,6 +61,7 @@ const routes = [
   { path: '/base/cars', name: 'Cars', element: Cars },
   { path: '/base/pricings', name: 'Pricings', element: Pricings },
   { path: '/base/bookings', name: 'Bookings', element: Bookings },
+  { path: '/device', name: 'Device', element: Device },
   { path: '/verification/car-verif', name: 'CarVerification', element: CarVerification },
   { path: '/verification/user-verif', name: 'UserVerification', element: UserVerification },
   { path: '/base/blogs', name: 'Blogs', element: Blogs },

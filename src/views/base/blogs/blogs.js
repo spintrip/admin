@@ -173,23 +173,26 @@ const Blog = () => {
 
   return (
     <>
-      <div className='container-fluid px-4 d-flex align-items-center '>
-        <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setVisible(true)}>Create</CButton>
+      <div className='container-fluid d-flex align-items-center '>
+        <CButton className="fw-bolder bg-light text-black " onClick={() => setVisible(true)}>Create Blog</CButton>
       </div>
 
-      <div className="blog-container mt-4">
+      <div className="container-fluid my-4 d-flex flex-wrap align-items-center justify-content-start">
         {blogData.map((blog, index) => (
           <div key={blog.blogId} className="blog-card" onClick={() => handleCardClick(blog)}>
             <CCard>
-              <CCardImage orientation="top" src={blog.blogImage_1} style={{ height: '200px', objectFit: 'cover' }} />
+              <CCardImage orientation="top" src={blog.blogImage1} style={{ height: '200px', objectFit: 'cover' }} />
+              <CCardImage orientation="bottom" src={blog.blogImage2} style={{ height: '200px', objectFit: 'cover'}} />
               <CCardBody>
-                <CCardTitle>{blog.blogName}</CCardTitle>
+                <CCardTitle className='fw-bold h2'>{blog.blogName}</CCardTitle>
                 <CCardText><strong>Author:</strong> {blog.blogAuthor}</CCardText>
-                <CCardText><strong>Description:</strong> {blog.description}</CCardText>
+                <CCardText>
+                  <strong className="text-decoration-underline">Description</strong><br />
+                  {blog.description.split(' ').slice(0, 50).join(' ')}
+                </CCardText>
                 <CCardText><strong>Keywords:</strong> {blog.keywords}</CCardText>
-                <CCardText><strong>Created At:</strong> {new Date(blog.createdAt).toLocaleString()}</CCardText>
-                <CCardText><strong>Updated At:</strong> {new Date(blog.updatedAt).toLocaleString()}</CCardText>
-                <CCardImage orientation="bottom" src={blog.blogImage_2} style={{ height: '200px', objectFit: 'cover', marginTop: '10px' }} />
+                <CCardText className='text-secondary'><strong>Created At:</strong> {new Date(blog.createdAt).toLocaleString()}</CCardText>
+                <CCardText className='text-secondary'><strong>Updated At:</strong> {new Date(blog.updatedAt).toLocaleString()}</CCardText>
               </CCardBody>
             </CCard>
           </div>
@@ -202,8 +205,8 @@ const Blog = () => {
             <CModalTitle>{selectedBlog.blogName}</CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <CCardImage orientation="top" src={selectedBlog.blogImage_1} style={{ height: '200px', width:'200px', objectFit: 'cover' }} />
-            <CCardImage orientation="bottom" src={selectedBlog.blogImage_2} style={{ height: '200px', width:'200px', objectFit: 'cover', marginLeft: '10px' }} />
+            <CCardImage orientation="top" src={selectedBlog.blogImage1} style={{ height: '200px', width:'200px', objectFit: 'cover' }} />
+            <CCardImage orientation="bottom" src={selectedBlog.blogImage2} style={{ height: '200px', width:'200px', objectFit: 'cover', marginLeft: '10px' }} />
             <p><strong>Author:</strong> {selectedBlog.blogAuthor}</p>
             <p><strong>Description:</strong> {selectedBlog.description}</p>
             <p><strong>Keywords:</strong> {selectedBlog.keywords}</p>

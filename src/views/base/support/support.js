@@ -99,7 +99,7 @@ const Support = () => {
                 </CTableDataCell>
                 <CTableDataCell>{ticket.subject}</CTableDataCell>
                 <CTableDataCell>{ticket.message}</CTableDataCell>
-                <CTableDataCell>{ticket.status}</CTableDataCell>
+                <CTableDataCell className='fw-bold text-uppercase'>{ticket.status ? <span className='p-1 rounded text-white bg-success'>{ticket.status}</span>: ticket.status}</CTableDataCell>
                 <CTableDataCell>{new Date(ticket.createdAt).toLocaleString()}</CTableDataCell>
                 <CTableDataCell>{new Date(ticket.updatedAt).toLocaleString()}</CTableDataCell>
               </CTableRow>
@@ -109,17 +109,20 @@ const Support = () => {
       </div>
 
       {/* Chat Modal */}
-      <CModal visible={chatModalVisible} onClose={() => setChatModalVisible(false)} alignment="center" size="xl">
+      <CModal visible={chatModalVisible} onClose={() => setChatModalVisible(false)} alignment="center" size="xl" >
         <CModalHeader>
-          <CModalTitle>Support Chat - Ticket {selectedTicketId}</CModalTitle>
+          <CModalTitle className='d-flex align-items-center justify-content-between w-100'>
+            <h3>Support Chat - Ticket </h3>
+            <span className='p-1 rounded bg-light text-dark font-sm mx-2'>{selectedTicketId}</span>
+          </CModalTitle>
         </CModalHeader>
         <CModalBody>
-            <div className="chat-box" style={{ maxHeight: '400px', overflowY: 'auto', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
+            <div className="chat-box bg-black" style={{minHeight: '60vh' ,maxHeight: '90vh', overflowY: 'auto', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
             {selectedChat.map((chat) => (
                 <div key={chat.id} className={`chat-message ${chat.senderId === token ? 'right' : 'left'}`}>
                     <div className={`chat-bubble ${chat.senderId === token ? 'sent' : 'received'}`}>
                     <strong>{chat.senderId}</strong>
-                    <p>{chat.message}</p>
+                    <p className='support-chat-message'>{chat.message}</p>
                     <small>{new Date(chat.createdAt).toLocaleString()}</small>
                     </div>
                 </div>
@@ -135,11 +138,12 @@ const Support = () => {
                 value={newMessage} 
                 onChange={(e) => setNewMessage(e.target.value)} 
                 required 
+                className='text-2xl'
               />
               <CButton type="submit" color="primary">Send</CButton>
             </CInputGroup>
           </CForm>
-          <CButton color="secondary" onClick={() => setChatModalVisible(false)}>Close</CButton>
+         
         </CModalFooter>
       </CModal>
     </>

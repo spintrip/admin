@@ -10,12 +10,22 @@ import {
   CTableRow,
   CPagination,
   CPaginationItem,
+  CInputGroup,
+  CFormInput,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
+  CButton,
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 
 const Hosts = () => {
   const [hostData, setHostData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterdData , setFilteredData] = useState([]);
+  const [selectedSearchOption , setSelectedSearchOption] = ('');
+  const [searchInput , setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
@@ -30,6 +40,7 @@ const Hosts = () => {
       try {
         const data = await fetchHosts();
         setHostData(data);
+        setFilteredData(data);
       } catch (error) {
         console.log(error);
       }
@@ -38,13 +49,34 @@ const Hosts = () => {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(hostData.length / limit);
+  useEffect(() => {
+    const filterBooking = () => {
+      if(!searchInput){
+        setFilteredData(hostData);
+        setCurrentPage(1);
+      } else {
+        const filtered = hostData.filter((host) => {
+          const value = host[selectedSearchOption];
+          if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+            const formattedDate = new Date(value).toLocaleString();
+            return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+          }
+          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+        });
+        setFilteredData(filtered);
+        setCurrentPage(1);
+      }
+    };
+    filterBooking();
+  }, [hostData , searchInput , selectedSearchOption ]);
+
+  const totalPages = Math.ceil(filterdData.length / limit);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const displayedHosts = hostData.slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedHosts = filterdData.slice((currentPage - 1) * limit, currentPage * limit);
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -52,8 +84,42 @@ const Hosts = () => {
     return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
   };
 
+  const tableHeaders = [
+    { label: 'Id', value: 'id' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' },
+  ]
+
   return (
     <>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
+        <div className='crud-group d-flex mx-2'>
+          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+        </div>
+        <div>
+          <CInputGroup className="mx-2">
+            <CFormInput
+              aria-label="Text input with dropdown button"
+              placeholder='Search'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <CDropdown alignment="end" variant="input-group">
+            <CDropdownToggle color="secondary" variant="outline">
+              {tableHeaders.find(header => header.value === selectedSearchOption)?.label || 'Select'}
+            </CDropdownToggle>
+              <CDropdownMenu>
+                {tableHeaders.map((header, index) => (
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                    {header.label}
+                  </CDropdownItem>
+                ))}
+              </CDropdownMenu>
+            </CDropdown>
+          </CInputGroup>
+        </div>
+      </div>
       <DocsExample href="components/table#hoverable-rows">
         <CTable color="dark" hover>
           <CTableHead>

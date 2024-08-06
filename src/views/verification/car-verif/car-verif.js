@@ -158,11 +158,14 @@ const CarProfiles = () => {
       {selectedProfile && (
         <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
           <CModalHeader>
-            <CModalTitle>Car Details</CModalTitle>
+            <CModalTitle className='d-flex  align-items-center justify-content-between w-100'>
+              <h3>Car Details</h3>
+              <span className='rounded p-1 bg-light text-black mx-2'>{selectedProfile.carid}</span> 
+              </CModalTitle>
           </CModalHeader>
           <CModalBody>
             <CRow>
-              <CCol>
+              <CCol className='d-flex flex-column flex-wrap align-items-start justify-content-between'>
                 <p><strong>Car ID:</strong> {selectedProfile.carid}</p>
                 <p><strong>Horse Power:</strong> {selectedProfile.HorsePower}</p>
                 <p><strong>AC:</strong> {renderBooleanIcon(selectedProfile.AC)}</p>
@@ -172,12 +175,15 @@ const CarProfiles = () => {
                 <p><strong>Touchscreen:</strong> {renderBooleanIcon(selectedProfile.Touchscreen)}</p>
                 <p><strong>Seven Seater:</strong> {renderBooleanIcon(selectedProfile.Sevenseater)}</p>
                 <p><strong>Reverse Camera:</strong> {renderBooleanIcon(selectedProfile.Reversecamera)}</p>
-                <p><strong>Transmission:</strong> {renderBooleanIcon(selectedProfile.Transmission)}</p>
                 <p><strong>Airbags:</strong> {renderBooleanIcon(selectedProfile.Airbags)}</p>
                 <p><strong>Fuel Type:</strong> {renderBooleanIcon(selectedProfile.FuelType)}</p>
                 <p><strong>Pet Friendly:</strong> {renderBooleanIcon(selectedProfile.PetFriendly)}</p>
                 <p><strong>Power Steering:</strong> {renderBooleanIcon(selectedProfile.PowerSteering)}</p>
                 <p><strong>ABS:</strong> {renderBooleanIcon(selectedProfile.ABS)}</p>
+              </CCol>
+              <CCol className='d-flex flex-column flex-wrap align-items-start justify-content-between'>
+              <p><strong>Transmission:</strong> {renderBooleanIcon(selectedProfile.Transmission)}</p>
+               
                 <p><strong>Traction Control:</strong> {renderBooleanIcon(selectedProfile.tractionControl)}</p>
                 <p><strong>Full Boot Space:</strong> {renderBooleanIcon(selectedProfile.fullBootSpace)}</p>
                 <p><strong>Keyless Entry:</strong> {renderBooleanIcon(selectedProfile.KeylessEntry)}</p>
@@ -192,6 +198,7 @@ const CarProfiles = () => {
                 <p><strong>Address:</strong> {selectedProfile.address}</p>
                 <p><strong>Created At:</strong> {new Date(selectedProfile.createdAt).toLocaleString()}</p>
                 <p><strong>Updated At:</strong> {new Date(selectedProfile.updatedAt).toLocaleString()}</p>
+
               </CCol>
             </CRow>
             <CRow className="mt-4 border rounded p-3">

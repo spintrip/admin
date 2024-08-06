@@ -26,9 +26,11 @@ import {
 
 const Bookings = () => {
   const [bookingData, setBookingData] = useState([]);
-  const [selectedSearchOption, setSelectedSearchOption] = useState('Booking ID');
+  const [filteredData, setFilteredData] = useState([]);
+  const [selectedSearchOption, setSelectedSearchOption] = useState('Bookingid');
+  const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [visible, setVisible] = useState(false); // State for modal visibility
+  const [visible, setVisible] = useState(false);
   const limit = 20;
   const visiblePages = 3;
 
@@ -37,6 +39,7 @@ const Bookings = () => {
       try {
         const data = await getBooking();
         setBookingData(data);
+        setFilteredData(data);
       } catch (error) {
         console.log(error);
       }
@@ -45,13 +48,29 @@ const Bookings = () => {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(bookingData.length / limit);
+  useEffect(() => {
+    const filterBookings = () => {
+      if (!searchInput) {
+        setFilteredData(bookingData);
+      } else {
+        const filtered = bookingData.filter((booking) => {
+          const value = booking[selectedSearchOption];
+          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+        });
+        setFilteredData(filtered);
+      }
+    };
+
+    filterBookings();
+  }, [searchInput, selectedSearchOption, bookingData]);
+
+  const totalPages = Math.ceil(filteredData.length / limit);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const displayedBookings = bookingData.slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedBookings = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -60,10 +79,20 @@ const Bookings = () => {
   };
 
   const tableHeaders = [
-    'Booking ID', 'Car ID', 'Status', 'Amount', 'GST Amount',
-    'Total User Amount', 'TDS Amount', 'Total Host Amount',
-    'Start Trip Date', 'End Trip Date', 'Start Trip Time', 'End Trip Time',
-    'Created At', 'Updated At'
+    { label: 'Booking ID', value: 'Bookingid' },
+    { label: 'Car ID', value: 'carid' },
+    { label: 'Status', value: 'status' },
+    { label: 'Amount', value: 'amount' },
+    { label: 'GST Amount', value: 'GSTAmount' },
+    { label: 'Total User Amount', value: 'totalUserAmount' },
+    { label: 'TDS Amount', value: 'TDSAmount' },
+    { label: 'Total Host Amount', value: 'totalHostAmount' },
+    { label: 'Start Trip Date', value: 'startTripDate' },
+    { label: 'End Trip Date', value: 'endTripDate' },
+    { label: 'Start Trip Time', value: 'startTripTime' },
+    { label: 'End Trip Time', value: 'endTripTime' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' },
   ];
 
   return (
@@ -76,13 +105,20 @@ const Bookings = () => {
         </div>
         <div>
           <CInputGroup className="mx-2">
-            <CFormInput aria-label="Text input with dropdown button" placeholder='Search' />
+            <CFormInput
+              aria-label="Text input with dropdown button"
+              placeholder='Search'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
             <CDropdown alignment="end" variant="input-group">
-              <CDropdownToggle color="secondary" variant="outline">{selectedSearchOption}</CDropdownToggle>
+              <CDropdownToggle color="secondary" variant="outline">
+                {tableHeaders.find(header => header.value === selectedSearchOption)?.label}
+              </CDropdownToggle>
               <CDropdownMenu>
                 {tableHeaders.map((header, index) => (
-                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header)}>
-                    {header}
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                    {header.label}
                   </CDropdownItem>
                 ))}
               </CDropdownMenu>
@@ -97,7 +133,7 @@ const Bookings = () => {
             <CTableRow>
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
               {tableHeaders.map((header, index) => (
-                <CTableHeaderCell key={index} scope="col">{header}</CTableHeaderCell>
+                <CTableHeaderCell key={index} scope="col">{header.label}</CTableHeaderCell>
               ))}
             </CTableRow>
           </CTableHead>

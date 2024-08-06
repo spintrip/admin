@@ -68,11 +68,11 @@ const Features = () => {
 
   return (
     <>
-      <div className='container-fluid px-4 d-flex align-items-center '>
+      <div className='container-fluid d-flex align-items-center '>
         <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setVisible(true)}>Create</CButton>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 container-fluid">
         <CTable hover>
           <CTableHead>
             <CTableRow>
