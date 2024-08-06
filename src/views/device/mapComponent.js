@@ -20,7 +20,7 @@ const Map = ({ locations }) => {
       <GoogleMap 
        mapContainerStyle = {containerStyle}
        center = {center}
-       zoom = {10}
+       zoom = {30}
       >
         {locations.map((locations , index) => (
           <Marker
