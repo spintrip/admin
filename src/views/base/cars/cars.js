@@ -46,8 +46,9 @@ const Cars = () => {
   };
 
   return (
-    <>
-      <DocsExample href="components/table#hoverable-rows">
+    <div className='container-fluid'>
+      
+      <DocsExample href="components/table#hoverable-rows ">
         <CTable color="dark" hover>
           <CTableHead>
             <CTableRow>
@@ -124,7 +125,7 @@ const Cars = () => {
           </CPaginationItem>
         </CPagination>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -43,14 +43,25 @@ const AppHeader = () => {
   }, [])
 
   return (
-    <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
-      <CContainer className="border-bottom px-4" fluid>
+    <CHeader position="sticky" className="mb-4 py-2" ref={headerRef}>
+      <CContainer className="border-bottom px-4 d-flex flex-row align-items-center justify-content-between" fluid>
+        <div>
         <CHeaderToggler
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
           style={{ marginInlineStart: '-14px' }}
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
+        </div>
+        
+        <div>
+        {!sidebarShow ? <div className='d-flex align-items-center justify-content-center'>
+          <CNavLink to="/dashboard" as={NavLink}>
+               <img  src="logo-admin.png" alt="spintrip admin" style={{maxWidth: '50px'}}/>
+            </CNavLink>
+         </div> : <></>}
+        </div>
+        <div className='d-flex align-items-center justify-content-end'>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
             <CNavLink to="/dashboard" as={NavLink}>
@@ -106,7 +117,9 @@ const AppHeader = () => {
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <AppHeaderDropdown />
+       
         </CHeaderNav>
+        </div>
       </CContainer>
       <CContainer className="px-4" fluid>
         <AppBreadcrumb />

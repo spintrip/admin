@@ -45,8 +45,8 @@ const Login = () => {
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
-                  <CForm onSubmit={handleLogin}>
-                    <h1>Login</h1>
+                  <CForm onSubmit={handleLogin} className='d-flex flex-column align-items-center justify-content-center'>
+                    <h3><img src='logo-admin.png' alt="signin-logo" style={{maxHeight:'80px'}} /></h3>
                     <p className="text-body-secondary">Sign In to your account</p>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
@@ -73,12 +73,12 @@ const Login = () => {
                     </CInputGroup>
                     {error && <p style={{ color: 'red' }}>{error}</p>}
                     <CRow>
-                      <CCol xs={6}>
-                        <CButton type="submit" color="primary" className="px-4">
+                      <CCol xs={12}>
+                        <CButton type="submit" color="primary" className="px-4 w-100">
                           Login
                         </CButton>
                       </CCol>
-                      <CCol xs={6} className="text-right">
+                      <CCol xs={12} className='d-flex align-items-center justify-content-center'>
                         <CButton color="link" className="px-0">
                           Forgot password?
                         </CButton>
@@ -87,22 +87,7 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
-                <CCardBody className="text-center">
-                  <div>
-                    <h2>Spintrip Admin</h2>
-                    <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
-                    <Link to="/register">
-                      <CButton color="primary" className="mt-3" active tabIndex={-1}>
-                        Register Now!
-                      </CButton>
-                    </Link>
-                  </div>
-                </CCardBody>
-              </CCard>
+             
             </CCardGroup>
           </CCol>
         </CRow>

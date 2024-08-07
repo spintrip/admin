@@ -5,7 +5,7 @@ import { Google_Maps_Api_key } from '../../env';
 const Map = ({ locations }) => {
   const containerStyle = {
     width: '100%',
-    height: '400px'
+    height: '800px'
   };
 
   const defaultCenter = {

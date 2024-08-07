@@ -112,12 +112,12 @@ const Bookings = () => {
               onChange={(e) => setSearchInput(e.target.value)}
             />
             <CDropdown alignment="end" variant="input-group">
-              <CDropdownToggle color="secondary" variant="outline">
+              <CDropdownToggle color="primary" variant="outline">
                 {tableHeaders.find(header => header.value === selectedSearchOption)?.label}
               </CDropdownToggle>
               <CDropdownMenu>
                 {tableHeaders.map((header, index) => (
-                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                  <CDropdownItem className='cursor-pointer' key={index} onClick={() => setSelectedSearchOption(header.value)}>
                     {header.label}
                   </CDropdownItem>
                 ))}
