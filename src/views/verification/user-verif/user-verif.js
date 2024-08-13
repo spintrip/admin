@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchUserVerification, approveUserVerification } from '../../../api/user';
+import { fetchUserVerification, approveUserVerification , rejectUserVerification } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
 import {
   CTable,
@@ -19,7 +19,14 @@ import {
   CImage,
   CCol,
   CRow,
+  CInputGroup,
+  CFormInput,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem
 } from '@coreui/react';
+import '../../../scss/verif.css'
 
 const UserVerification = () => {
   const [userProfilesData, setUserProfilesData] = useState([]);
@@ -27,6 +34,9 @@ const UserVerification = () => {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [enlargedImage, setEnlargedImage] = useState(null);
+  const [filteredData , setFilteredData] = useState([]);
+  const [selectedSearchOption, setSelectedSearchOption] = useState('id');
+  const [searchInput, setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
@@ -49,13 +59,34 @@ const UserVerification = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const filterUserVerif = () =>{
+      if(!searchInput){
+        setFilteredData(userProfilesData)
+        setCurrentPage(1);
+      } else {
+        const filtered = userProfilesData.filter((user) => {
+          const value = user[selectedSearchOption];
+          if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+            const formattedDate = new Date(value).toLocaleString();
+            return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+          }
+          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+        })
+        setFilteredData(filtered);
+        setCurrentPage(1);
+      }
+    };
+    filterUserVerif();
+  }, [userProfilesData , selectedSearchOption, searchInput] )
+
   const totalPages = Math.ceil((userProfilesData?.length || 0) / limit);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const displayedProfiles = (userProfilesData || []).slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedProfiles = (filteredData || []).slice((currentPage - 1) * limit, currentPage * limit);
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -83,15 +114,57 @@ const UserVerification = () => {
     
   };
 
-  const handleDecline = () => {
-    setModalVisible(false);
+  const handleDecline = async(userId) => {
+    try{
+      await rejectUserVerification(userId);
+      setModalVisible(false);
+      fetchData();
+  } catch(error){
+      console.log(error);
+  }
   };
+
+  const tableHeaders = [
+    { label: 'User Id', value: 'id' },
+    { label: 'Full Name', value: 'FullName' },
+    { label: 'Verif. Status', value: 'verification_status' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' },
+  ];
 
   return (
     <div className='container-fluid'>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-between mb-3'>
+        <div className='crud-group d-flex mx-2'>
+          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+        </div>
+        <div>
+          <CInputGroup className="mx-2">
+            <CFormInput
+              aria-label="Text input with dropdown button"
+              placeholder='Search'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <CDropdown alignment="end" variant="input-group">
+            <CDropdownToggle color="secondary" variant="outline">
+              {tableHeaders.find(header => header.value === selectedSearchOption)?.label || 'Select'}
+            </CDropdownToggle>
+              <CDropdownMenu>
+                {tableHeaders.map((header, index) => (
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                    {header.label}
+                  </CDropdownItem>
+                ))}
+              </CDropdownMenu>
+            </CDropdown>
+          </CInputGroup>
+        </div>
+      </div>
       <CTable  color="dark" hover>
         <CTableHead>
-          <CTableRow>
+          <CTableRow className = "row-style" >
             <CTableHeaderCell scope="col">#</CTableHeaderCell>
             <CTableHeaderCell scope="col">ID</CTableHeaderCell>
             <CTableHeaderCell scope="col">Full Name</CTableHeaderCell>
@@ -104,9 +177,31 @@ const UserVerification = () => {
           {displayedProfiles.map((profile, index) => (
             <CTableRow key={profile.id} onClick={() => handleProfileClick(profile)}>
               <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-              <CTableDataCell>{profile.id}</CTableDataCell>
-              <CTableDataCell>{profile.FullName}</CTableDataCell>
-              <CTableDataCell>{profile.verification_status}</CTableDataCell>
+              <CTableDataCell className="profileid">{profile.id}</CTableDataCell>
+              <CTableDataCell>{profile.FullName ? profile.FullName : 'N/A'}</CTableDataCell>
+              <CTableDataCell className ="verification-status">
+                  {profile.verification_status === 1 ? (
+                    <>
+                      <span className="verification-pending">Pending</span>
+                      <code className="verification-code verification-pending">Code-1</code>
+                    </>
+                  ) : profile.verification_status === 2 ? (
+                    <>
+                      <span className="verification-confirmed">Confirmed</span>
+                      <code className="verification-code verification-confirmed">Code-2</code>
+                    </>
+                  ) : profile.verification_status === null ? (
+                    <>
+                      <span className="verification-na">N/A</span>
+                      <code className="verification-code verification-na">Code-null</code>
+                    </>
+                  ) : (
+                    <>
+                      <span>Unknown Status</span>
+                      <code className="verification-code">Code-{profile.verification_status}</code>
+                    </>
+                  )}
+              </CTableDataCell>
               <CTableDataCell>{new Date(profile.createdAt).toLocaleString()}</CTableDataCell>
               <CTableDataCell>{new Date(profile.updatedAt).toLocaleString()}</CTableDataCell>
             </CTableRow>
@@ -147,11 +242,30 @@ const UserVerification = () => {
             <CRow>
               <CCol>
                 <p><strong>ID:</strong> {selectedProfile.id}</p>
-                <p><strong>Full Name:</strong> {selectedProfile.FullName}</p>
+                <p><strong>Full Name:</strong> {selectedProfile.FullName ? selectedProfile.FullName  : 'N/A'}</p>
                 <p>
-                    <strong>Verification Status:</strong> 
-                    {selectedProfile.verification_status === 1 ? ' Image Uploaded ' : selectedProfile.verification_status === 2 ? 'Image Verified' : 'Unknown Status'}  
-                    <code className='p-2 border rounded'>Code-{selectedProfile.verification_status}</code>
+                  <strong>Verification Status:</strong>
+                  {selectedProfile.verification_status === 1 ? (
+                    <>
+                      <span style={{ color: 'orange' }}> Pending </span>
+                      <code className='p-2 border rounded' style={{ color: 'orange' }}>Code-1</code>
+                    </>
+                  ) : selectedProfile.verification_status === 2 ? (
+                    <>
+                      <span style={{ color: 'green' }}> Confirmed </span>
+                      <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
+                    </>
+                  ) : selectedProfile.verification_status === null ? (
+                    <>
+                      <span style={{ color: 'red' }}> N/A </span>
+                      <code className='p-2 border rounded' style={{ color: 'red' }}>Code-null</code>
+                    </>
+                  ) : (
+                    <>
+                      <span>Unknown Status</span>
+                      <code className='p-2 border rounded'>Code-{selectedProfile.verification_status}</code>
+                    </>
+                  )}
                 </p>
                 <p><strong>Created At:</strong> {new Date(selectedProfile.createdAt).toLocaleString()}</p>
                 <p><strong>Updated At:</strong> {new Date(selectedProfile.updatedAt).toLocaleString()}</p>
@@ -200,11 +314,11 @@ const UserVerification = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
                 </CButton>
-            <CButton color="danger" onClick={handleDecline} className='d-flex  align-items-center justify-content-center'>
+            <CButton color="danger" onClick={() => handleDecline(selectedProfile.id)} className='d-flex  align-items-center justify-content-center'>
                 <span>Decline</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
 
             </CButton>
           </CModalFooter>
@@ -212,8 +326,8 @@ const UserVerification = () => {
       )}
       {enlargedImage && (
         <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
-          <CModalBody style={{ display: 'flex', justifyContent: 'center' }}>
-            <CImage src={enlargedImage} width="auto" height="auto" />
+          <CModalBody className="enlarged-image-modal">
+            <CImage src={enlargedImage} />
           </CModalBody>
         </CModal>
       )}

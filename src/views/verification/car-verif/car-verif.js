@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getCarVerififcation , approveCarVerification } from '../../../api/car';
+import { getCarVerififcation , approveCarVerification, rejectCarVerification } from '../../../api/car';
 import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,14 +20,25 @@ import {
   CButton,
   CCol,
   CRow,
+  CInputGroup,
+  CFormInput,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
 } from '@coreui/react';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import '../../../scss/verif.css'
 
 const CarProfiles = () => {
   const [carProfilesData, setCarProfilesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [filteredData , setFilteredData] = useState([]);
+  const [enlargedImage, setEnlargedImage] = useState(null);
+  const [selectedSearchOption, setSelectedSearchOption] = useState('carid');
+  const [searchInput, setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
@@ -50,13 +61,34 @@ const CarProfiles = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const filterCarVerif = () =>{
+      if(!searchInput){
+        setFilteredData(carProfilesData)
+        setCurrentPage(1);
+      } else {
+        const filtered = carProfilesData.filter((user) => {
+          const value = user[selectedSearchOption];
+          if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+            const formattedDate = new Date(value).toLocaleString();
+            return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+          }
+          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+        })
+        setFilteredData(filtered);
+        setCurrentPage(1);
+      }
+    };
+    filterCarVerif();
+  }, [carProfilesData , selectedSearchOption, searchInput] )
+
   const totalPages = Math.ceil((carProfilesData?.length || 0) / limit);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const displayedCarProfiles = (carProfilesData || []).slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedCarProfiles = (filteredData || []).slice((currentPage - 1) * limit, currentPage * limit);
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -79,21 +111,70 @@ const CarProfiles = () => {
     }
   };
 
-  const handleDecline = () => {
-    // Decline logic here
-    setModalVisible(false);
+  const handleDecline = async(carId) => {
+    try{
+      await rejectCarVerification(carId);
+      setModalVisible(false);
+      fetchData();
+  } catch (error){
+      console.log(error);
+  }
+   
   };
 
   const renderBooleanIcon = (value) => {
     return value ? <FaCheckCircle style={{ color: 'green' }} /> : <FaTimesCircle style={{ color: 'red' }} />;
   };
+  
+  const handleImageClick = (imageUrl) => {
+    setEnlargedImage(imageUrl);
+  };
+
+  const tableHeaders = [
+    { label: 'Car Id', value: 'carid' },
+    { label: 'HP', value: 'HorsePower' },
+    { label: 'Verif. Status', value: 'verification_status' },
+    { label: 'Latitude', value: 'latitude' },
+    { label: 'Longitude', value: 'longitude' },
+    { label: 'Address', value: 'address' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' },
+  ];
 
   return (
     <div className='container-fluid'>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
+        <div className='crud-group d-flex mx-2'>
+          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+        </div>
+        <div>
+          <CInputGroup className="mx-2">
+            <CFormInput
+              aria-label="Text input with dropdown button"
+              placeholder='Search'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <CDropdown alignment="end" variant="input-group">
+            <CDropdownToggle color="secondary" variant="outline">
+              {tableHeaders.find(header => header.value === selectedSearchOption)?.label || 'Select'}
+            </CDropdownToggle>
+              <CDropdownMenu>
+                {tableHeaders.map((header, index) => (
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                    {header.label}
+                  </CDropdownItem>
+                ))}
+              </CDropdownMenu>
+            </CDropdown>
+          </CInputGroup>
+        </div>
+      </div>
       <DocsExample href="components/table#hoverable-rows">
         <CTable color="dark" hover>
           <CTableHead>
-            <CTableRow>
+            <CTableRow className = "row-style">
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
               <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
               <CTableHeaderCell scope="col">Horse Power</CTableHeaderCell>
@@ -113,14 +194,36 @@ const CarProfiles = () => {
             {displayedCarProfiles.map((profile, index) => (
               <CTableRow key={profile.carid} onClick={() => handleProfileClick(profile)}>
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell style={{ cursor: 'pointer' }}>{profile.carid}</CTableDataCell>
+                <CTableDataCell style={{ cursor: 'pointer', fontSize : '12px'}}>{profile.carid}</CTableDataCell>
                 <CTableDataCell>{profile.HorsePower}</CTableDataCell>
                 <CTableDataCell>{profile.AC ? 'Yes' : 'No'}</CTableDataCell>
                 <CTableDataCell>{profile.Musicsystem ? 'Yes' : 'No'}</CTableDataCell>
-                <CTableDataCell>{profile.verification_status}</CTableDataCell>
+                <CTableDataCell className ="verification-status">
+                  {profile.verification_status === 1 ? (
+                    <>
+                      <span className="verification-pending">Pending</span>
+                      <code className="verification-code verification-pending">Code-1</code>
+                    </>
+                  ) : profile.verification_status === 2 ? (
+                    <>
+                      <span className="verification-confirmed">Confirmed</span>
+                      <code className="verification-code verification-confirmed">Code-2</code>
+                    </>
+                  ) : profile.verification_status === null ? (
+                    <>
+                      <span className="verification-na">N/A</span>
+                      <code className="verification-code verification-na">Code-null</code>
+                    </>
+                  ) : (
+                    <>
+                      <span>Unknown Status</span>
+                      <code className="verification-code">Code-{profile.verification_status}</code>
+                    </>
+                  )}
+                </CTableDataCell>
                 <CTableDataCell>{profile.latitude.toFixed(6)}</CTableDataCell>
                 <CTableDataCell>{profile.longitude.toFixed(6)}</CTableDataCell>
-                <CTableDataCell>{profile.address}</CTableDataCell>
+                <CTableDataCell>{profile.address ? profile.address : 'N/A'}</CTableDataCell>
                 <CTableDataCell>{profile.Sunroof ? 'Yes' : 'No'}</CTableDataCell>
                 <CTableDataCell>{profile.Touchscreen ? 'Yes' : 'No'}</CTableDataCell>
                 <CTableDataCell>{new Date(profile.createdAt).toLocaleString()}</CTableDataCell>
@@ -194,7 +297,30 @@ const CarProfiles = () => {
                 <p><strong>Bluetooth:</strong> {renderBooleanIcon(selectedProfile.bluetooth)}</p>
                 <p><strong>Air Freshener:</strong> {renderBooleanIcon(selectedProfile.airFreshner)}</p>
                 <p><strong>Ventilated Front Seat:</strong> {renderBooleanIcon(selectedProfile.ventelatedFrontSeat)}</p>
-                <p><strong>Verification Status:</strong> {selectedProfile.verification_status}</p>
+                <p>
+                  <strong>Verification Status:</strong>
+                  {selectedProfile.verification_status === 1 ? (
+                    <>
+                      <span style={{ color: 'orange' }}> Pending </span>
+                      <code className='p-2 border rounded' style={{ color: 'orange' }}>Code-1</code>
+                    </>
+                  ) : selectedProfile.verification_status === 2 ? (
+                    <>
+                      <span style={{ color: 'green' }}> Confirmed </span>
+                      <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
+                    </>
+                  ) : selectedProfile.verification_status === null ? (
+                    <>
+                      <span style={{ color: 'red' }}> N/A </span>
+                      <code className='p-2 border rounded' style={{ color: 'red' }}>Code-null</code>
+                    </>
+                  ) : (
+                    <>
+                      <span>Unknown Status</span>
+                      <code className='p-2 border rounded'>Code-{selectedProfile.verification_status}</code>
+                    </>
+                  )}
+                </p>
                 <p><strong>Address:</strong> {selectedProfile.address}</p>
                 <p><strong>Created At:</strong> {new Date(selectedProfile.createdAt).toLocaleString()}</p>
                 <p><strong>Updated At:</strong> {new Date(selectedProfile.updatedAt).toLocaleString()}</p>
@@ -202,26 +328,25 @@ const CarProfiles = () => {
               </CCol>
             </CRow>
             <CRow className="mt-4 border rounded p-3">
-              <CCol xs="6" className='d-flex flex-column align-items-center justify-content-center'>
-                <p><strong>Car Image 1:</strong></p>
-                <CImage
-                  className='border rounded'
-                  src={selectedProfile.carimage1}
-                  width={200}
-                  height={150}
-                  style={{ cursor: 'pointer', objectFit: 'cover' }}
-                />
-              </CCol>
-              <CCol xs="6" className='d-flex flex-column align-items-center justify-content-center'>
-                <p><strong>Car Image 2:</strong></p>
-                <CImage
-                  className='border rounded'
-                  src={selectedProfile.carimage2}
-                  width={200}
-                  height={150}
-                  style={{ cursor: 'pointer', objectFit: 'cover' }}
-                />
-              </CCol>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <CCol key={index} xs="6" className='d-flex flex-column align-items-center justify-content-center mb-3'>
+                  <p><strong>{`Car Image ${index + 1}:`}</strong></p>
+                  {selectedProfile[`carimage${index + 1}`] ? (
+                    <CImage
+                      className='border rounded'
+                      src={selectedProfile[`carimage${index + 1}`]}
+                      width={200}
+                      height={150}
+                      style={{ cursor: 'pointer', objectFit: 'cover' }}
+                      onClick={() => handleImageClick(selectedProfile[`carimage${index + 1}`])} 
+                    />
+                  ) : (
+                    <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
+                      <span><FaTimesCircle style={{ color: 'grey' }} /> Not Uploaded</span>
+                    </div>
+                  )}
+                </CCol>
+              ))}
               <CCol xs="12" className='d-flex flex-column align-items-center justify-content-center mt-3'>
                 <p><strong>Location:</strong></p>
                 <iframe
@@ -241,13 +366,21 @@ const CarProfiles = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
             </CButton>
-            <CButton color="danger" onClick={handleDecline} className='d-flex  align-items-center justify-content-center'>
+            <CButton color="danger" onClick={() => handleDecline(selectedProfile.carid)} className='d-flex  align-items-center justify-content-center'>
               <span>Decline</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
             </CButton>
           </CModalFooter>
+        </CModal>
+      )}
+
+      {enlargedImage && (
+        <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
+          <CModalBody className="enlarged-image-modal">
+            <CImage src={enlargedImage} />
+          </CModalBody>
         </CModal>
       )}
     </div>

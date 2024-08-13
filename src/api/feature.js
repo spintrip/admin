@@ -18,7 +18,11 @@ export const createFeature = async (featureName) => {
 };
 export const getFeatures = async() => {
     try{
-        const response = await axios.get(`${apiUrl}admin/allfeatures`);
+        const response = await axios.get(`${apiUrl}admin/allfeatures` , {
+          headers: {
+            'token' : token,
+          }
+        });
         return response.data;
     } catch(error){
         throw error;

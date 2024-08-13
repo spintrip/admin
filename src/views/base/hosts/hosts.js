@@ -24,7 +24,7 @@ const Hosts = () => {
   const [hostData, setHostData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterdData , setFilteredData] = useState([]);
-  const [selectedSearchOption , setSelectedSearchOption] = ('');
+  const [selectedSearchOption , setSelectedSearchOption] = useState('id');
   const [searchInput , setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
@@ -135,8 +135,8 @@ const Hosts = () => {
             {displayedHosts.map((host, index) => (
               <CTableRow key={host.id}>
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell>{host.id.length > 10 ? `${host.id.slice(0, 10)}...` : host.id}</CTableDataCell>
-                <CTableDataCell>{host.UserId ? (host.UserId.length > 10 ? `${host.UserId.slice(0, 10)}...` : host.UserId) : 'N/A'}</CTableDataCell>
+                <CTableDataCell style={{ fontSize: '12px' }} >{host.id}</CTableDataCell>
+                <CTableDataCell style={{ fontSize: '12px' }} >{host.UserId ? host.UserId : 'N/A'}</CTableDataCell>
                 <CTableDataCell>{new Date(host.createdAt).toLocaleString()}</CTableDataCell>
                 <CTableDataCell>{new Date(host.updatedAt).toLocaleString()}</CTableDataCell>
               </CTableRow>

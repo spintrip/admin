@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getAllSupportTickets, getSupportChat } from '../../../api/adminSupport';
+import React, { useState, useEffect, useRef } from 'react';
+import { getAllSupportTickets, getSupportChat, replySupportChat } from '../../../api/adminSupport';
 import {
   CInputGroup,
   CModal,
@@ -19,7 +19,7 @@ import {
   CLink,
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
-import '../../../scss/blog.css';
+import '../../../scss/support.css';
 
 const Support = () => {
   const [tickets, setTickets] = useState([]);
@@ -29,6 +29,7 @@ const Support = () => {
   const [newMessage, setNewMessage] = useState('');
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
+  const chatBoxRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -61,19 +62,30 @@ const Support = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    // try {
-    //   const updatedChat = await sendSupportChatMessage(selectedTicketId, newMessage);
-    //   setSelectedChat(updatedChat);
-    //   setNewMessage('');
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    try {
+      
+      const updatedChat = await replySupportChat(selectedTicketId , newMessage);
+      setSelectedChat((prevChat) => [...prevChat, updatedChat]);
+      setNewMessage('');
+      fetchSupportChat(selectedTicketId); // Refresh the chat after sending the message
+    } catch (error) {
+      console.log(error);
+    }
   };
+  
+  useEffect(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTo({
+        top: chatBoxRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [selectedChat, chatModalVisible]);
 
   return (
     <>
       <div className="container-fluid mt-4">
-        <CTable hover>
+        <CTable hover className= "ticket-Container">
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
@@ -99,7 +111,7 @@ const Support = () => {
                 </CTableDataCell>
                 <CTableDataCell>{ticket.subject}</CTableDataCell>
                 <CTableDataCell>{ticket.message}</CTableDataCell>
-                <CTableDataCell className='fw-bold text-uppercase'>{ticket.status ? <span className='p-1 rounded text-white bg-success'>{ticket.status}</span>: ticket.status}</CTableDataCell>
+                <CTableDataCell className='fw-bold text-uppercase'>{ticket.status ? <span className='p-1 rounded text-white bg-success' style={{fontSize : '12px'}}>{ticket.status}</span>: ticket.status}</CTableDataCell>
                 <CTableDataCell>{new Date(ticket.createdAt).toLocaleString()}</CTableDataCell>
                 <CTableDataCell>{new Date(ticket.updatedAt).toLocaleString()}</CTableDataCell>
               </CTableRow>
@@ -113,23 +125,23 @@ const Support = () => {
         <CModalHeader>
           <CModalTitle className='d-flex align-items-center justify-content-between w-100'>
             <h3>Support Chat - Ticket </h3>
-            <span className='p-1 rounded bg-light text-dark font-sm mx-2'>{selectedTicketId}</span>
+            <span className='ticket-no p-1 rounded bg-light text-dark font-sm mx-2'>Ticket No. - {selectedTicketId}</span>
           </CModalTitle>
         </CModalHeader>
         <CModalBody>
-            <div className="chat-box bg-black" style={{minHeight: '60vh' ,maxHeight: '90vh', overflowY: 'auto', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
+          <div className="chat-box" ref={chatBoxRef}>
             {selectedChat.map((chat) => (
-                <div key={chat.id} className={`chat-message ${chat.senderId === token ? 'right' : 'left'}`}>
-                    <div className={`chat-bubble ${chat.senderId === token ? 'sent' : 'received'}`}>
-                    <strong>{chat.senderId}</strong>
-                    <p className='support-chat-message'>{chat.message}</p>
-                    <small>{new Date(chat.createdAt).toLocaleString()}</small>
-                    </div>
+              <div key={chat.id} className={`chat-message ${chat.adminId === chat.senderId ? 'right' : 'left'}`}>
+                <div className={`chat-bubble ${chat.adminId === chat.senderId ? 'sent' : 'received'}`}>
+                  <strong>{chat.adminId === chat.senderId ? `Admin - (${chat.adminId})` : `User - (${chat.userId || 'Unknown'})`}</strong>
+                  <p>{chat.message}</p>
+                  <small>{new Date(chat.createdAt).toLocaleString()}</small>
                 </div>
+              </div>
             ))}
-        </div>
+          </div>
         </CModalBody>
-        <CModalFooter>
+        <CModalFooter >
           <CForm onSubmit={handleSendMessage} className="w-100">
             <CInputGroup className="mb-3">
               <CFormInput 

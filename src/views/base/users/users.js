@@ -137,7 +137,6 @@ const Users = () => {
               <CTableHeaderCell scope="col">Role</CTableHeaderCell>
               <CTableHeaderCell scope="col">OTP</CTableHeaderCell>
               <CTableHeaderCell scope="col">Timestamp</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Status</CTableHeaderCell>
               <CTableHeaderCell scope="col">Rating</CTableHeaderCell>
               <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
               <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
@@ -147,13 +146,12 @@ const Users = () => {
             {displayedUsers.map((user, index) => (
               <CTableRow key={user.id}>
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell>{user.id.length > 10 ? `${user.id.slice(0, 10)}...` : user.id}</CTableDataCell>
+                <CTableDataCell style={{ fontSize: '12px' }}>{user.id}</CTableDataCell>
                 <CTableDataCell>{user.phone}</CTableDataCell>
                 <CTableDataCell>{user.password.length > 10 ? `${user.password.slice(0, 10)}...` : user.password}</CTableDataCell>
                 <CTableDataCell>{user.role}</CTableDataCell>
                 <CTableDataCell>{user.otp}</CTableDataCell>
                 <CTableDataCell>{user.timestamp}</CTableDataCell>
-                <CTableDataCell>{user.status}</CTableDataCell>
                 <CTableDataCell>{user.rating !== null && user.rating !== undefined ? user.rating.toFixed(2) : 'N/A'}</CTableDataCell>
 
                 <CTableDataCell>{new Date(user.createdAt).toLocaleString()}</CTableDataCell>

@@ -141,8 +141,8 @@ const Bookings = () => {
             {displayedBookings.map((booking, index) => (
               <CTableRow key={booking.Bookingid}>
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell>{booking.Bookingid.length > 10 ? `${booking.Bookingid.slice(0, 10)}...` : booking.Bookingid}</CTableDataCell>
-                <CTableDataCell>{booking.carid.length > 10 ? `${booking.carid.slice(0, 10)}...` : booking.carid}</CTableDataCell>
+                <CTableDataCell style={{ fontSize: '12px' }}>{booking.Bookingid ? booking.Bookingid : 'N/A'}</CTableDataCell>
+                <CTableDataCell style={{ fontSize: '12px' }}>{booking.carid}</CTableDataCell>
                 <CTableDataCell>{booking.status}</CTableDataCell>
                 <CTableDataCell>{booking.amount}</CTableDataCell>
                 <CTableDataCell>{booking.GSTAmount}</CTableDataCell>

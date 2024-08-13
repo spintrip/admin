@@ -40,42 +40,4 @@
     }
   }
 
-  .chat-box {
-    background-color: #f9f9f9;
-  }
-  
-  .chat-message {
-    margin-bottom: 10px;
-  }
-  
-  .chat-bubble {
-    max-width: 35%;
-    padding: 10px;
-    border-radius: 15px;
-    position: relative;
-  }
-  
-  .chat-bubble.sent {
-    background-color: #d1e7dd;
-    margin-left: auto;
-    text-align: right;
-  }
-  
-  .chat-bubble.received {
-    background-color: #112455;
-    text-align: left;
-  }
-  
-  .chat-bubble p {
-    margin: 5px 0;
-  }
-  
-  .chat-bubble small {
-    display: block;
-    margin-top: 5px;
-    font-size: 0.8em;
-    color: #666;
-  }
-  
-  
   

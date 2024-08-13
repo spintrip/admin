@@ -85,6 +85,14 @@ const Brand = () => {
         Create Brand
       </CButton>
       <CTable color="dark" hover className="mt-3">
+        {brands.length === 0 ? (
+          <CTableRow>
+          <CTableDataCell colSpan="8" className="text-center">
+            No brands available
+          </CTableDataCell>
+        </CTableRow>
+        ) : (
+        <>
         <CTableHead>
           <CTableRow>
             <CTableHeaderCell>#</CTableHeaderCell>
@@ -111,6 +119,8 @@ const Brand = () => {
             </CTableRow>
           ))}
         </CTableBody>
+        </>
+        )}
       </CTable>
 
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>

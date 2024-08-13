@@ -10,16 +10,33 @@ import {
   CTableRow,
   CPagination,
   CPaginationItem,
+  CInputGroup,
+  CFormInput,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
+  CButton
 } from '@coreui/react';
+import { useNavigate } from 'react-router-dom';
 
 const Cars = () => {
   const [carData, setCarData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filteredData , setFilteredData] = useState([]);
+  const [selectedSearchOption, setSelectedSearchOption] = useState('carid');
+  const [searchInput, setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
+  const token = localStorage.getItem('adminToken');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
+      if(!token){
+        console.log('No token Found');
+        navigate('/login')
+      }
       try {
         const data = await getCars();
         setCarData(data);
@@ -31,13 +48,35 @@ const Cars = () => {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(carData.length / limit);
+  useEffect(() => {
+    const filterCars = () =>{
+      if(!searchInput){
+        setFilteredData(carData)
+        setCurrentPage(1);
+      } else {
+        const filtered = carData.filter((user) => {
+          const value = user[selectedSearchOption];
+          if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+            const formattedDate = new Date(value).toLocaleString();
+            return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+          }
+          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+        })
+        setFilteredData(filtered);
+        setCurrentPage(1);
+      }
+    };
+    filterCars();
+  }, [carData , selectedSearchOption, searchInput] )
+
+
+  const totalPages = Math.ceil(filteredData.length / limit);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const displayedCars = carData.slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedCars = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -45,14 +84,58 @@ const Cars = () => {
     return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
   };
 
+  const tableHeaders = [
+    { label: 'Car Model', value: 'carmodel' },
+    { label: 'Type', value: 'type' },
+    { label: 'Brand', value: 'brand' },
+    { label: 'Chassis No', value: 'chassisno' },
+    { label: 'RC Number', value: 'Rcnumber' },
+    { label: 'Engine Number', value: 'Enginenumber' },
+    { label: 'Registration Year', value: 'Registrationyear' },
+    { label: 'Body Type', value: 'bodyType' },
+    { label: 'Car ID', value: 'carid' },
+    { label: 'Rating', value: 'rating' },
+    { label: 'Host ID', value: 'hostId' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' },
+  ];
+  
   return (
     <div className='container-fluid'>
-      
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
+        <div className='crud-group d-flex mx-2'>
+          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+        </div>
+        <div>
+          <CInputGroup className="mx-2">
+            <CFormInput
+              aria-label="Text input with dropdown button"
+              placeholder='Search'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <CDropdown alignment="end" variant="input-group">
+            <CDropdownToggle color="secondary" variant="outline">
+              {tableHeaders.find(header => header.value === selectedSearchOption)?.label || 'Select'}
+            </CDropdownToggle>
+              <CDropdownMenu>
+                {tableHeaders.map((header, index) => (
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                    {header.label}
+                  </CDropdownItem>
+                ))}
+              </CDropdownMenu>
+            </CDropdown>
+          </CInputGroup>
+        </div>
+      </div>
       <DocsExample href="components/table#hoverable-rows ">
         <CTable color="dark" hover>
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
+              <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
               <CTableHeaderCell scope="col">Car Model</CTableHeaderCell>
               <CTableHeaderCell scope="col">Type</CTableHeaderCell>
               <CTableHeaderCell scope="col">Brand</CTableHeaderCell>
@@ -61,7 +144,6 @@ const Cars = () => {
               <CTableHeaderCell scope="col">Engine Number</CTableHeaderCell>
               <CTableHeaderCell scope="col">Registration Year</CTableHeaderCell>
               <CTableHeaderCell scope="col">Body Type</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
               <CTableHeaderCell scope="col">Rating</CTableHeaderCell>
               <CTableHeaderCell scope="col">Host ID</CTableHeaderCell>
               <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
@@ -72,11 +154,14 @@ const Cars = () => {
           {displayedCars.map((car, index) => (
             <CTableRow key={car.carid}>
               <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
+              <CTableDataCell style={{ fontSize: '12px' }}>
+                {car.carid ? car.carid : 'N/A'}
+              </CTableDataCell>
               <CTableDataCell>{car.carmodel}</CTableDataCell>
               <CTableDataCell>{car.type}</CTableDataCell>
               <CTableDataCell>{car.brand}</CTableDataCell>
-              <CTableDataCell>
-                {car.chassisno && car.chassisno.length > 10 ? `${car.chassisno.slice(0, 10)}...` : car.chassisno}
+              <CTableDataCell style={{ fontSize: '12px' }}>
+                {car.chassisno ? car.chassisno : 'N/A'}
               </CTableDataCell>
               <CTableDataCell>{car.Rcnumber}</CTableDataCell>
               <CTableDataCell>
@@ -85,13 +170,10 @@ const Cars = () => {
               <CTableDataCell>{car.Registrationyear}</CTableDataCell>
               <CTableDataCell>{car.bodytype}</CTableDataCell>
               <CTableDataCell>
-                {car.carid && car.carid.length > 10 ? `${car.carid.slice(0, 10)}...` : car.carid}
-              </CTableDataCell>
-              <CTableDataCell>
                 {car.rating !== null && car.rating !== undefined ? car.rating.toFixed(2) : 'N/A'}
               </CTableDataCell>
               <CTableDataCell>
-                {car.hostId ? (car.hostId.length > 10 ? `${car.hostId.slice(0, 10)}...` : car.hostId) : 'N/A'}
+                {car.hostId ? car.hostId : 'N/A'}
               </CTableDataCell>
               <CTableDataCell>{new Date(car.createdAt).toLocaleString()}</CTableDataCell>
               <CTableDataCell>{new Date(car.updatedAt).toLocaleString()}</CTableDataCell>

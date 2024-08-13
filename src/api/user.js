@@ -42,3 +42,16 @@ export const approveUserVerification = async(userId) => {
     throw error;
   }
 }
+
+export const rejectUserVerification = async(userId) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/reject-profile` , { userId } , {
+      headers : {
+        'token' : token,
+      },
+     });
+     return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

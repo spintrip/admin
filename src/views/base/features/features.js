@@ -16,7 +16,14 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-  CFormSelect
+  CFormSelect,
+  CFormInput,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
+  CPagination,
+  CPaginationItem
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import '../../../scss/blog.css';
@@ -26,7 +33,13 @@ const Features = () => {
   const [features, setFeatures] = useState([]);
   const [selectedFeatureName, setSelectedFeatureName] = useState('');
   const token = localStorage.getItem('adminToken');
+  const [filteredData , setFilteredData] = useState([]);
+  const [selectedSearchOption, setSelectedSearchOption] = useState('featureName');
+  const [searchInput, setSearchInput] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+  const limit = 20;
+  const visiblePages = 3;
 
   useEffect(() => {
     fetchFeatureData();
@@ -65,11 +78,77 @@ const Features = () => {
       console.log(error);
     }
   };
+  useEffect(() => {
+    const filterFeatures = () =>{
+      if(!searchInput) {
+        setFilteredData(features);
+        setCurrentPage(1);
+      } else {
+        const filtered = features.filter((feature) => {
+          const value = feature[selectedSearchOption];
+          if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+            const formattedDate = new Date(value).toLocaleString();
+            return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+          }
+          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+        })
+        setFilteredData(filtered);
+        setCurrentPage(1);
+      }
+    };
+    filterFeatures();
+  }, [features , selectedSearchOption , searchInput])
+
+  const totalPages = Math.ceil(filteredData.length / limit);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const displayedfeatures = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
+
+  const getVisiblePages = () => {
+    const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + visiblePages - 1);
+    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+  };
+
+  
+  const tableHeaders = [
+    { label: 'Feature', value: 'featureName' },
+    { label: 'Create Date', value: 'createdAt' },
+    { label: 'Update Date', value: 'updatedAt' },
+  ];
 
   return (
     <>
-      <div className='container-fluid d-flex align-items-center '>
-        <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setVisible(true)}>Create</CButton>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
+        <div className='crud-group d-flex mx-2'>
+          <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setVisible(true)} >Create</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+        </div>
+        <div>
+          <CInputGroup className="mx-2">
+            <CFormInput
+              aria-label="Text input with dropdown button"
+              placeholder='Search'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <CDropdown alignment="end" variant="input-group">
+            <CDropdownToggle color="secondary" variant="outline">
+              {tableHeaders.find(header => header.value === selectedSearchOption)?.label || 'Select'}
+            </CDropdownToggle>
+              <CDropdownMenu>
+                {tableHeaders.map((header, index) => (
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                    {header.label}
+                  </CDropdownItem>
+                ))}
+              </CDropdownMenu>
+            </CDropdown>
+          </CInputGroup>
+        </div>
       </div>
 
       <div className="mt-4 container-fluid">
@@ -84,7 +163,7 @@ const Features = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {features.map((feature, index) => (
+            {displayedfeatures.map((feature, index) => (
               <CTableRow key={feature.id}>
                 <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                 <CTableDataCell>{feature.featureName}</CTableDataCell>
@@ -97,6 +176,31 @@ const Features = () => {
             ))}
           </CTableBody>
         </CTable>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <CPagination aria-label="Page navigation example">
+          <CPaginationItem
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            Previous
+          </CPaginationItem>
+          {getVisiblePages().map((page) => (
+            <CPaginationItem
+              key={page}
+              active={page === currentPage}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </CPaginationItem>
+          ))}
+          <CPaginationItem
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Next
+          </CPaginationItem>
+        </CPagination>
+      </div>
       </div>
 
       {/* Feature Creation Modal */}
