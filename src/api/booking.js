@@ -16,3 +16,30 @@ export const getBooking = async () => {
     throw error;
   }
 };
+
+export const fetchBookingById = async(id) => {
+  try{
+    const response = await axios.get(`${apiUrl}admin/bookings/${id}`, {
+      headers : {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const updateBooking = async(id , data) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/bookings/${id}`, data , {
+      headers : {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+

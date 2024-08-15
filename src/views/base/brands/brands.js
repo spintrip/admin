@@ -23,7 +23,7 @@ const Brand = () => {
   const [brands, setBrands] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newBrand, setNewBrand] = useState({
-    type: '',
+    type: 'Compact suv',
     brand: '',
     carmodel: '',
     brand_value: '',
@@ -131,6 +131,7 @@ const Brand = () => {
           <CForm>
             <div className="mb-3">
               <CFormSelect id="type" name="type" value={newBrand.type} onChange={handleInputChange}>
+                <option value="MUV">Compact suv</option>
                 <option value="MUV">MUV</option>
                 <option value="SUV">SUV</option>
                 <option value="Sedan">Sedan</option>

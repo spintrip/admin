@@ -24,7 +24,7 @@ const Hosts = () => {
   const [hostData, setHostData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterdData , setFilteredData] = useState([]);
-  const [selectedSearchOption , setSelectedSearchOption] = useState('id');
+  const [selectedSearchOption , setSelectedSearchOption] = useState('all');
   const [searchInput , setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
@@ -56,12 +56,18 @@ const Hosts = () => {
         setCurrentPage(1);
       } else {
         const filtered = hostData.filter((host) => {
-          const value = host[selectedSearchOption];
-          if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
-            const formattedDate = new Date(value).toLocaleString();
-            return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+          if (selectedSearchOption === 'all') {
+            return Object.values(host).some(value =>
+              value && value.toString().toLowerCase().includes(searchInput.toLowerCase())
+            );
+          } else {
+            const value = host[selectedSearchOption];
+            if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+              const formattedDate = new Date(value).toLocaleString();
+              return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+            }
+            return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
           }
-          return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
         });
         setFilteredData(filtered);
         setCurrentPage(1);
@@ -85,6 +91,7 @@ const Hosts = () => {
   };
 
   const tableHeaders = [
+    { label: 'All', value: 'all' },
     { label: 'Id', value: 'id' },
     { label: 'Created At', value: 'createdAt' },
     { label: 'Updated At', value: 'updatedAt' },

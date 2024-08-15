@@ -16,3 +16,16 @@ export const createTax = async (data) => {
     throw error;
   }
 };
+
+export const getTax = async() => {
+  try{
+    const response = await axios.get(`${apiUrl}admin/tax` , {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

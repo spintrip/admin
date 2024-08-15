@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { getDevice } from '../../api/deviceLocation';
 import {
   CButton,
@@ -10,13 +10,20 @@ import {
   CCardBody,
   CCardHeader,
   CCardTitle,
+  CInputGroup,
+  CInputGroupText,
+  CFormSelect,
 } from '@coreui/react';
-import Map from './mapComponent'
+import { CIcon } from '@coreui/icons-react';
+import { cilReload } from '@coreui/icons';
+import Map from './mapComponent2'
 
 const DeviceLocation = () => {
   const [deviceId, setDeviceId] = useState('');
   const [deviceData, setDeviceData] = useState([]);
   const [error, setError] = useState(null);
+  const [markerLimit, setMarkerLimit] = useState(10);
+  const [isSearchTriggered, setIsSearchTriggered] = useState(false);
 
   const handleInputChange = (e) => {
     setDeviceId(e.target.value);
@@ -25,20 +32,65 @@ const DeviceLocation = () => {
   const handleSearch = async () => {
     try {
       const data = await getDevice(deviceId);
-      const validData = data.slice(0, 3).map(location => ({
+      const validData = data.map(location => ({
         ...location,
         lat: parseFloat(location.lat),
         lng: parseFloat(location.lng),
-        speed: parseFloat(location.speed)
+        speed: parseFloat(location.speed),
       })).filter(location => 
         !isNaN(location.lat) && !isNaN(location.lng)
       );
       setDeviceData(validData);
       setError(null);
+      setIsSearchTriggered(true);
     } catch (error) {
       setError('Error fetching device data');
     }
   };
+  
+
+  const handleRefresh = async () => {
+    try {
+      const data = await getDevice(deviceId);
+      const validData = data
+        .map(location => ({
+          ...location,
+          lat: parseFloat(location.lat),
+          lng: parseFloat(location.lng),
+          speed: parseFloat(location.speed),
+        }))
+        .filter(location => !isNaN(location.lat) && !isNaN(location.lng));
+  
+      // Only update if there's new data with a more recent updatedAt
+      const lastUpdate = deviceData.length > 0 ? new Date(deviceData[0].updatedAt) : null;
+      const newData = validData.filter(
+        location => lastUpdate === null || new Date(location.updatedAt) > lastUpdate
+      );
+  
+      if (newData.length > 0) {
+        setDeviceData(prevData =>  [...prevData, ...newData]);
+      }
+  
+      setError(null);
+    } catch (error) {
+      setError('Error refreshing device data');
+    }
+  };
+  
+  
+
+  useEffect(() => {
+    if (!isSearchTriggered || !deviceId) return;
+  
+    const intervalId = setInterval(() => {
+      handleRefresh();
+    }, 5000); 
+  
+    return () => clearInterval(intervalId);
+  }, [isSearchTriggered, deviceId, deviceData]);
+  
+  
+  
 
   const latestLocation = deviceData.length > 0 ? deviceData[0] : null;
 
@@ -47,13 +99,28 @@ const DeviceLocation = () => {
       <CForm className="mb-3">
         <CRow className='d-flex align-items-center justify-content-center'>
           <CCol className='d-flex align-items-center justify-content-center'>
-            <CFormInput
-              type="text"
-              placeholder="Enter Device ID"
-              value={deviceId}
-              className='py-2'
-              onChange={handleInputChange}
-            />
+          <CInputGroup>
+              <CFormInput
+                type="text"
+                placeholder="Enter Device ID"
+                value={deviceId}
+                className='py-2'
+                onChange={handleInputChange}
+              />
+              <CFormSelect
+                value={markerLimit}
+                onChange={(e) => setMarkerLimit(parseInt(e.target.value))}
+                className="mx-2"
+              >
+                <option value="5">10</option>
+                <option value="10">20</option>
+                <option value="15">50</option>
+                <option value="20">80</option>
+              </CFormSelect>
+              <CInputGroupText onClick={handleRefresh} style={{ cursor: 'pointer' }}>
+                <CIcon icon={cilReload} />
+              </CInputGroupText>
+            </CInputGroup>
             <CButton className='mx-2 py-2' color="primary" onClick={handleSearch}>
               Search
             </CButton>
@@ -64,7 +131,7 @@ const DeviceLocation = () => {
       {deviceData.length > 0 && (
         <div>
           <div className='container'>
-            <Map locations={deviceData} />
+            <Map locations={deviceData}/>
           </div>
           {latestLocation && (
             <CCard className="my-4">
@@ -90,5 +157,7 @@ const DeviceLocation = () => {
     </div>
   );
 };
+
+
 
 export default DeviceLocation;

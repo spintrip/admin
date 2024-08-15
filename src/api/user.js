@@ -17,6 +17,31 @@ export const fetchUsers = async () => {
   }
 };
 
+export const fetchUserById = async(id) => {
+  try{
+    const response = await axios.get(`${apiUrl}admin/users/${id}`, {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error){
+    throw error;
+  }
+}
+
+export const updateUser = async(id , data) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/users/${id}` , data  , {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 export const fetchUserVerification = async () => {
   try {
     const response = await axios.get(`${apiUrl}admin/pending-profile`, {
