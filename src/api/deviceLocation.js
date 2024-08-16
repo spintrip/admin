@@ -4,7 +4,7 @@ import serverApiUrl from "../env";
 const apiUrl = serverApiUrl;
 const token = localStorage.getItem('authToken');
 
-export const getDevice = async(id, limit = 10000) => {
+export const getDevice = async(id, limit) => {
     try{
         const response = await axios.get(`${apiUrl}admin/device/${id}/?limit=${limit}` , {
             headers : {

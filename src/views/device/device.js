@@ -22,7 +22,7 @@ const DeviceLocation = () => {
   const [deviceId, setDeviceId] = useState('');
   const [deviceData, setDeviceData] = useState([]);
   const [error, setError] = useState(null);
-  const [markerLimit, setMarkerLimit] = useState(10);
+  const [markerLimit, setMarkerLimit] = useState(20);
   const [isSearchTriggered, setIsSearchTriggered] = useState(false);
 
   const handleInputChange = (e) => {
@@ -31,7 +31,7 @@ const DeviceLocation = () => {
 
   const handleSearch = async () => {
     try {
-      const data = await getDevice(deviceId);
+      const data = await getDevice(deviceId , markerLimit);
       const validData = data.map(location => ({
         ...location,
         lat: parseFloat(location.lat),
@@ -51,7 +51,7 @@ const DeviceLocation = () => {
 
   const handleRefresh = async () => {
     try {
-      const data = await getDevice(deviceId);
+      const data = await getDevice(deviceId , markerLimit);
       const validData = data
         .map(location => ({
           ...location,
@@ -107,16 +107,14 @@ const DeviceLocation = () => {
                 className='py-2'
                 onChange={handleInputChange}
               />
-              <CFormSelect
-                value={markerLimit}
-                onChange={(e) => setMarkerLimit(parseInt(e.target.value))}
-                className="mx-2"
-              >
-                <option value="5">10</option>
-                <option value="10">20</option>
-                <option value="15">50</option>
-                <option value="20">80</option>
-              </CFormSelect>
+              <CFormInput
+  type="number"
+  value={markerLimit}
+  onChange={(e) => setMarkerLimit(parseInt(e.target.value))}
+  className="mx-2"
+  placeholder="Enter Marker Limit"
+/>
+
               <CInputGroupText onClick={handleRefresh} style={{ cursor: 'pointer' }}>
                 <CIcon icon={cilReload} />
               </CInputGroupText>
@@ -131,7 +129,7 @@ const DeviceLocation = () => {
       {deviceData.length > 0 && (
         <div>
           <div className='container'>
-            <Map locations={deviceData}/>
+            <Map locations={deviceData} />
           </div>
           {latestLocation && (
             <CCard className="my-4">
