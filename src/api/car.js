@@ -50,7 +50,7 @@ export const getCarVerififcation = async () => {
           token: token,
         },
       });
-      return response.data.carProfiles; 
+      return response.data.pendingProfiles; 
     } catch (error) {
       throw error;
     }
