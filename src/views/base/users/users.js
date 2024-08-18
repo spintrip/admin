@@ -35,6 +35,7 @@ const Users = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredData , setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
+  const [originalUserData, setOriginalUserData] = useState(null);
   const [updateUserData , setUpdateUserData ] =  useState({
     phone: '',
     password: '',
@@ -73,6 +74,7 @@ const Users = () => {
     try {
       const dataByID = await fetchUserById(id);
       setUserById(dataByID.user);
+      setOriginalUserData(dataByID.user); 
       setUpdateUserData({
         phone: dataByID.user.phone || '',
         password: dataByID.user.password || '',
@@ -100,23 +102,44 @@ const Users = () => {
 
   const handleUpdateUser = async (e) => {
     e.preventDefault();
-    try {
-      const updatedData = {
-        phone: updateUserData.phone || undefined, 
-        password: updateUserData.password || undefined,
-        role: updateUserData.role || undefined,
-        otp: updateUserData.otp || undefined,
-        status: parseInt(updateUserData.status, 10), 
-        rating: parseFloat(updateUserData.rating), 
-      };
-      
-      await updateUser(userById.id, updatedData);
+  
+    const updatedFields = {};
+    for (let key in updateUserData) {
+      const originalValue = originalUserData[key];
+      const updatedValue = updateUserData[key];
+  
+      // Check for changes and avoid sending unchanged or empty fields
+      if (
+        (originalValue === null || originalValue === undefined) &&
+        updatedValue !== null &&
+        updatedValue !== undefined &&
+        updatedValue !== '' &&
+        !(Array.isArray(updatedValue) && updatedValue.length === 0)
+      ) {
+        updatedFields[key] = updatedValue;
+      } else if (
+        originalValue !== updatedValue &&
+        updatedValue !== '' &&
+        !(Array.isArray(updatedValue) && updatedValue.length === 0)
+      ) {
+        updatedFields[key] = updatedValue;
+      }
+    }
+  
+    if (Object.keys(updatedFields).length > 0) {
+      try {
+        await updateUser(userById.id, updatedFields);
+        setUpdateModalVisible(false);
+        fetchData();
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.log("No changes detected");
       setUpdateModalVisible(false);
-      fetchData();
-    } catch (error) {
-      console.error(error);
     }
   };
+  
   
   useEffect(() => {
     const filterUsers = () =>{

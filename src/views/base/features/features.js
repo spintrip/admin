@@ -220,6 +220,7 @@ const Features = () => {
                 <option value="">Choose...</option>
                 <option value="cleaning">Cleaning</option>
                 <option value="pick/up">Pick/Up</option>
+                <option value="selfdirve">Self Drive</option>
               </CFormSelect>
             </CInputGroup>
             <CModalFooter>

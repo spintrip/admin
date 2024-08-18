@@ -1,0 +1,122 @@
+.custom-modal .modal-dialog {
+    max-width: 80%; /* Adjust this percentage as needed */
+    margin: auto; /* Center horizontally */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Full-screen height to center vertically */
+  }
+  
+  .custom-modal .modal-content {
+    width: 100%; /* Ensure modal content takes full width */
+    margin: 0; /* Remove default margin */
+  }
+
+  .create-input{
+    margin-top: 10px;
+  }
+
+  .custom-modal .modal-dialog {
+    max-width: 50%; /* Adjust width as needed */
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  .custom-modal .modal-content {
+    width: 100%;
+    padding: 20px; /* Add padding to the modal content */
+    border-radius: 8px; /* Optional: Add border radius for rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+  }
+  
+  .modal-header-styled {
+    border-bottom: none;
+    font-size: 1.25rem;
+    font-weight: bold;
+    padding-bottom: 10px;
+  }
+  
+  .modal-body-styled {
+    padding: 20px 0;
+  }
+  
+  .modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Add space between form elements */
+  }
+  
+  .modal-input {
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+  }
+  
+  .modal-footer-styled {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+  }
+  .icon-button {
+    background-color: transparent; /* Transparent background */
+    color: white;
+    border: none; /* Remove border */
+    padding: 8px; /* Add padding for better click area */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.2s; /* Smooth transition on hover */
+  }
+  
+  .icon-button:hover {
+    background-color: #f0f0f0; /* Light grey background on hover */
+    border-radius: 5px; /* Optional: Add rounded corners */
+    color: black
+  }
+  .icon-button {
+    background-color: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .icon-button:hover {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+  }
+  
+  .custom-modal .modal-dialog {
+    max-width: 60%; /* Adjust the width for the delete modal */
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  .custom-modal .modal-content {
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .modal-header-styled {
+    border-bottom: none;
+    font-size: 1.25rem;
+    font-weight: bold;
+    padding-bottom: 10px;
+  }
+  
+  .modal-body-styled {
+    padding: 20px 0;
+  }
+  
+  .modal-footer-styled {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+  }
+  

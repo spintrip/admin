@@ -38,6 +38,7 @@ const Bookings = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [bookingById, setBookingById] = useState(null);
+  const [originalBookingData, setOriginalBookingData] = useState(null);
   const [updateBookingData, setUpdateBookingData] = useState({
     status: '',
     amount: '',
@@ -45,7 +46,6 @@ const Bookings = () => {
     totalUserAmount: '',
     TDSAmount: '',
     totalHostAmount: '',
-    Transactionid: '',
     startTripDate: '',
     endTripDate: '',
     startTripTime: '',
@@ -97,6 +97,7 @@ const Bookings = () => {
     try {
       const data = await fetchBookingById(id);
       setBookingById(data.booking);
+      setOriginalBookingData(data.booking);
       setUpdateBookingData({
         status: data.booking.status || '',
         amount: data.booking.amount || '',
@@ -118,6 +119,7 @@ const Bookings = () => {
       console.log(error);
     }
   };
+  
 
   const handleOpenUpdateForm = () => {
     setUpdateModalVisible(true);
@@ -126,16 +128,48 @@ const Bookings = () => {
 
   const handleUpdateBooking = async (e) => {
     e.preventDefault();
-    try {
-      await updateBooking(bookingById.Bookingid, updateBookingData);
+  
+    const updatedFields = {};
+    for (let key in updateBookingData) {
+      const originalValue = originalBookingData[key];
+      const updatedValue = updateBookingData[key];
+  
+      // Handle null/undefined and empty values specifically
+      if (
+        (originalValue === null || originalValue === undefined) &&
+        updatedValue !== null &&
+        updatedValue !== undefined &&
+        updatedValue !== '' &&
+        !(Array.isArray(updatedValue) && updatedValue.length === 0)
+      ) {
+        updatedFields[key] = updatedValue;
+      } else if (
+        originalValue !== updatedValue &&
+        updatedValue !== '' &&
+        !(Array.isArray(updatedValue) && updatedValue.length === 0)
+      ) {
+        updatedFields[key] = updatedValue;
+      }
+    }
+  
+    if (Object.keys(updatedFields).length > 0) {
+      try {
+        await updateBooking(bookingById.Bookingid, updatedFields);
+        setUpdateModalVisible(false);
+        const updatedData = await getBooking();
+        setBookingData(updatedData);
+        setFilteredData(updatedData);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.log("No changes detected");
       setUpdateModalVisible(false);
-      const updatedData = await getBooking();
-      setBookingData(updatedData);
-      setFilteredData(updatedData);
-    } catch (error) {
-      console.error(error);
     }
   };
+  
+  
+  
 
   const totalPages = Math.ceil(filteredData.length / limit);
 
@@ -364,7 +398,6 @@ const Bookings = () => {
                     <CFormInput
                       type="text"
                       value={updateBookingData.Transactionid}
-                      onChange={(e) => setUpdateBookingData({ ...updateBookingData, Transactionid: e.target.value })}
                     />
                   </CCol>
                 </CRow>

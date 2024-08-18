@@ -16,6 +16,7 @@ const Pricings = React.lazy(() => import('./views/base/pricings/pricings'))
 const Features = React.lazy(() => import('./views/base/features/features'))
 const Tax = React.lazy(() => import('./views/base/tax_data/tax_data'))
 const Brands = React.lazy(() => import('./views/base/brands/brands'))
+const Messages = React.lazy(() => import('./views/base/messages/messages'))
 
 //Verification
 const UserVerification = React.lazy(() => import('./views/verification/user-verif/user-verif'))
@@ -69,6 +70,7 @@ const routes = [
   { path: '/base/tax_data', name: 'Tax', element: Tax },
   { path: '/base/support', name: 'Support', element: Support },
   { path: '/base/brands', name: 'Brands', element: Brands },
+  { path: '/base/messages', name: 'Messages', element: Messages },
   { path: '/forms/range', name: 'Range', element: Range },
   { path: '/icons', exact: true, name: 'Icons', element: CoreUIIcons },
   { path: '/icons/coreui-icons', name: 'CoreUI Icons', element: CoreUIIcons },

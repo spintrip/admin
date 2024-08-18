@@ -36,6 +36,7 @@ const Cars = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [searchInput, setSearchInput] = useState('');
+  const [originalCarData, setOriginalCarData] = useState(null);
   const [updateCarData, setUpdateCarData] = useState({
     carmodel: "",
     type: "",
@@ -80,6 +81,7 @@ const Cars = () => {
     try {
       const dataByID = await fetchCarById(id);
       setCarById(dataByID.car);
+      setOriginalCarData(dataByID.car);
       setUpdateCarData({
         carmodel: dataByID.car.carmodel || '',
         type: dataByID.car.type || '',
@@ -112,29 +114,44 @@ const Cars = () => {
 
   const handleUpdateCar = async (e) => {
     e.preventDefault();
-    try {
-      const updatedData = {
-        carmodel: updateCarData.carmodel || undefined,
-        type: updateCarData.type || undefined,
-        brand: updateCarData.brand || undefined,
-        variant: updateCarData.variant || undefined,
-        color: updateCarData.color || undefined,
-        chassisno: updateCarData.chassisno || undefined,
-        Rcnumber: updateCarData.Rcnumber || undefined,
-        mileage: updateCarData.mileage || undefined,
-        Enginenumber: updateCarData.Enginenumber || undefined,
-        Registrationyear: updateCarData.Registrationyear || undefined,
-        bodytype: updateCarData.bodytype || undefined,
-        rating: parseFloat(updateCarData.rating), // Ensure rating is parsed as a float
-      };
-
-      await updateCar(carById.carid, updatedData);
+  
+    const updatedFields = {};
+    for (let key in updateCarData) {
+      const originalValue = originalCarData[key];
+      const updatedValue = updateCarData[key];
+  
+      // Check for changes and avoid sending unchanged or empty fields
+      if (
+        (originalValue === null || originalValue === undefined) &&
+        updatedValue !== null &&
+        updatedValue !== undefined &&
+        updatedValue !== '' &&
+        !(Array.isArray(updatedValue) && updatedValue.length === 0)
+      ) {
+        updatedFields[key] = updatedValue;
+      } else if (
+        originalValue !== updatedValue &&
+        updatedValue !== '' &&
+        !(Array.isArray(updatedValue) && updatedValue.length === 0)
+      ) {
+        updatedFields[key] = updatedValue;
+      }
+    }
+  
+    if (Object.keys(updatedFields).length > 0) {
+      try {
+        await updateCar(carById.carid, updatedFields);
+        setUpdateModalVisible(false);
+        fetchData(); 
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.log("No changes detected");
       setUpdateModalVisible(false);
-      fetchData(); 
-    } catch (error) {
-      console.error(error);
     }
   };
+  
 
   useEffect(() => {
     const filterCars = () => {
@@ -305,6 +322,7 @@ const Cars = () => {
           <CModalBody>
             <CRow>
               <CCol className='car-modal'>
+                <p><strong>Car ID:</strong> {carById.carid || 'N/A'}</p>
                 <p><strong>Car Model:</strong> {carById.carmodel || 'N/A'}</p>
                 <p><strong>Type:</strong> {carById.type || 'N/A'}</p>
                 <p><strong>Brand:</strong> {carById.brand || 'N/A'}</p>
