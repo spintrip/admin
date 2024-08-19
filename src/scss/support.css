@@ -67,3 +67,11 @@
     font-size: 14px;
   }
 
+.escalated-issues {
+  background-color: #2c2f33;
+  margin-bottom: 30px;
+}
+
+.status-support{
+  color:black;
+}

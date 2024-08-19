@@ -16,3 +16,29 @@ export const getPricing = async () => {
     throw error;
   }
 };
+
+export const manualCarPricing = async(data) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/pricing` , data , {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const autoCarPricing = async(carid) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/auto-pricing` ,  carid  , {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

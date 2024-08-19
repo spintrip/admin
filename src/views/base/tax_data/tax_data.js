@@ -63,7 +63,6 @@ const UpdateTaxModal = () => {
    }
 
   }
-  console.log(taxData);
 
   const handleTaxInputChange = (e) => {
     const { name, value } = e.target;

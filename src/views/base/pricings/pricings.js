@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getPricing } from '../../../api/pricing';
+import { getPricing , autoCarPricing , manualCarPricing } from '../../../api/pricing';
 import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,14 +17,26 @@ import {
   CDropdownToggle,
   CDropdownMenu,
   CDropdownItem,
-  CButton
+  CButton,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
+  CForm,
 } from '@coreui/react';
+import '../../../scss/pricing.css';
 
 const Pricing = () => {
   const [pricingData, setPricingData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredData , setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('carid');
+  const [showAutoModal, setShowAutoModal] = useState(false);
+  const [updatedCarId , setUpdatedCarId] = useState({ carid : ''})
+  const [updatedAutoData , setUpdateAutoData] = useState([])
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [updatedManualData , setUpdatedManualData] = useState({ carid : '' , costperhr: ''});
+  const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
@@ -83,6 +95,35 @@ const Pricing = () => {
     return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
   };
 
+  const handleAutoPricing = async() => {
+      const trimmedData = {
+        carid: updatedCarId.carid.trim(),
+      };
+      setLoading(true)
+      try {
+        const data = await autoCarPricing(trimmedData);
+        setUpdateAutoData(data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false)
+      }
+  }
+
+  const handleManualPricing = async() => {
+    const trimmedData = {
+      carid: updatedManualData.carid.trim(),
+      costperhr: updatedManualData.costperhr.trim(),
+    };
+    console.log(updatedManualData.carid);
+  
+    try {
+      await manualCarPricing(trimmedData);
+      setShowManualModal(false);
+    } catch (error) {
+      console.log(error);
+    }
+}
   const tableHeaders = [
     { label: 'Car Id', value: 'carid' },
     { label: 'Cost/Hr', value: 'costperhr' },
@@ -94,8 +135,8 @@ const Pricing = () => {
     <>
       <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
         <div className='crud-group d-flex mx-2'>
-          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
-          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setShowManualModal(true)}>Manual Pricing</CButton>
+          <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setShowAutoModal(true)}>Auto Pricing</CButton>
         </div>
         <div>
           <CInputGroup className="mx-2">
@@ -169,6 +210,66 @@ const Pricing = () => {
           </CPaginationItem>
         </CPagination>
       </div>
+      <CModal visible={showAutoModal} onClose={() => setShowAutoModal(false)} className="custom-modal">
+          <CModalHeader className="modal-header-styled">Auto Pricing</CModalHeader>
+          <CModalBody className="modal-body-styled">
+            <CForm className="modal-form">
+              <CFormInput
+                type="text"
+                placeholder="Enter Car ID"
+                value={updatedCarId.carid}
+                onChange={(e) => setUpdatedCarId({ ...updatedCarId, carid: e.target.value })}
+                className="modal-input"
+              />
+            </CForm>
+              {loading && (
+                <div className="loader-container">
+                  <div className="loader"></div> 
+                </div>
+              )}
+
+              {!loading && updatedAutoData && (
+                <div className="received-data-container">
+                  <p><strong>Message:</strong> {updatedAutoData.message}</p>
+                  <p><strong>Car ID:</strong> {updatedAutoData.carid}</p>
+                  <p><strong>Cost per Hour:</strong> ₹{updatedAutoData.costperhr}</p>
+                </div>
+              )}
+          </CModalBody>
+          <CModalFooter className="modal-footer-styled">
+            <CButton color="secondary" onClick={() => setShowAutoModal(false)}>Close</CButton>
+            <CButton color="primary" onClick={handleAutoPricing}>Update</CButton>
+          </CModalFooter>
+        </CModal>
+
+        <CModal visible={showManualModal} onClose={() => setShowManualModal(false)} className="custom-modal">
+          <CModalHeader className="modal-header-styled">Manual Pricing</CModalHeader>
+          <CModalBody className="modal-body-styled">
+            <CForm className="modal-form">
+              <CFormInput
+                type="text"
+                placeholder="Enter Car ID"
+                value={updatedManualData.carid}
+                onChange={(e) => setUpdatedManualData({ ...updatedManualData, carid: e.target.value })}
+                className="modal-input"
+              />
+            </CForm>
+
+            <CForm className="modal-form">
+              <CFormInput
+                type="text"
+                placeholder="Enter Cost/Hr"
+                value={updatedManualData.costperhr}
+                onChange={(e) => setUpdatedManualData({ ...updatedManualData, costperhr: e.target.value })}
+                className="modal-input"
+              />
+            </CForm>
+          </CModalBody>
+          <CModalFooter className="modal-footer-styled">
+            <CButton color="secondary" onClick={() => setShowManualModal(false)}>Close</CButton>
+            <CButton color="primary" onClick={handleManualPricing}>Update</CButton>
+          </CModalFooter>
+        </CModal>
     </>
   );
 };

@@ -34,7 +34,7 @@ const Messages = () => {
   const [selectedSearchOption, setSelectedSearchOption] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedBooking, setSelectedBooking] = useState(null); // To hold selected booking's messages
+  const [selectedBooking, setSelectedBooking] = useState(null); 
   const token = localStorage.getItem('adminToken');
   const [activeMessage, setActiveMessage] = useState(null);
   const navigate = useNavigate();
@@ -102,6 +102,7 @@ const Messages = () => {
   const handleBookingClick = (bookingId) => {
     const bookingMessages = messageData.filter((message) => message.bookingId === bookingId);
     setSelectedBooking(bookingMessages);
+    fetchMessageData();
     setVisible(true);
   };
 
@@ -185,41 +186,37 @@ const Messages = () => {
           <CModalTitle>Chat Messages</CModalTitle>
         </CModalHeader>
         <CModalBody>
-  <div className="chat-container">
-    {selectedBooking &&
-      selectedBooking.map((message, index) => {
-        // Determine the side for each message based on the senderId
-        let messageClass;
-        if (index === 0) {
-          // First message is always on the left
-          messageClass = 'left';
-        } else if (message.senderId !== selectedBooking[index - 1].senderId) {
-          // If the senderId is different from the previous message, switch sides
-          messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
-        } else {
-          // Otherwise, keep the same side as the previous message
-          messageClass = selectedBooking[index - 1].messageClass;
-        }
-        
-        // Save the class on the current message object for future reference
-        message.messageClass = messageClass;
+          <div className="chat-container">
+            {selectedBooking &&
+              selectedBooking.map((message, index) => {
+                let messageClass;
+                if (index === 0) {
+                  messageClass = 'left';
+                } else if (message.senderId !== selectedBooking[index - 1].senderId) {
+                  // If the senderId is different from the previous message, switch sides
+                  messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
+                } else {
+                  // Otherwise, keep the same side as the previous message
+                  messageClass = selectedBooking[index - 1].messageClass;
+                }
+                
+                // Save the class on the current message object for future reference
+                message.messageClass = messageClass;
 
-        return (
-          <div key={index} className={`chat-message ${messageClass}`} onClick={() => handleMessageClick(message.id)}>
-            <div className="message-content">{message.message}</div>
-            {activeMessage === message.id && (
-              <div className="dropup">
-                <FaFlag onClick={() => handleFlagClick(message.id)} />
-              </div>
-            )}
-            <div className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</div>
+                return (
+                  <div key={index} className={`chat-messages ${messageClass}`} onClick={() => handleMessageClick(message.id)}>
+                    <div className="message-content">{message.message}</div>
+                    {activeMessage === message.id && (
+                      <div className={`dropup ${messageClass === 'left' ? 'right-side' : 'left-side'}`}>
+                        <FaFlag onClick={() => handleFlagClick(message.id)} />
+                      </div>
+                    )}
+                    <div className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</div>
+                  </div>
+                );
+              })}
           </div>
-        );
-      })}
-  </div>
-</CModalBody>
-
-
+        </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setVisible(false)}>
             Close

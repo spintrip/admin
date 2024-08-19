@@ -43,3 +43,29 @@ export const getSupportChat = async (supportId) => {
       throw error;
     }
   }
+
+  export const escalationSupport = async(supportId) => {
+    try{
+      const response = await axios.post(`${apiUrl}admin/support/escalate` , supportId , {
+        headers : {
+          'token' : token,
+        },
+      });
+      return response.data;
+    }catch (error) {
+      throw error;
+    }
+  }
+
+  export const resolveSupport = async(supportId) => {
+    try{
+      const response = await axios.post(`${apiUrl}admin/support/resolve` , supportId  , {
+        headers : {
+          'token' : token,
+        },
+      });
+      return response.data;
+    }catch (error) {
+      throw error;
+    }
+  }
