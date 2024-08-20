@@ -104,16 +104,6 @@ const DeviceLocation = () => {
   };
   
   
-
-  useEffect(() => {
-    if (!isSearchTriggered || !deviceId) return;
-  
-    const intervalId = setInterval(() => {
-      handleRefresh();
-    }, 5000); 
-  
-    return () => clearInterval(intervalId);
-  }, [isSearchTriggered, deviceId, deviceData]);
   
   const handleSeeDevices = async () => {
     try {

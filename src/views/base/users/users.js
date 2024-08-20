@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
 import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
@@ -34,6 +34,7 @@ const Users = () => {
   const [userData, setUsersData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredData , setFilteredData] = useState([]);
+  const [error, setError] = useState(null); 
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [originalUserData, setOriginalUserData] = useState(null);
   const [updateUserData , setUpdateUserData ] =  useState({
@@ -53,46 +54,57 @@ const Users = () => {
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
-  const fetchData = async () => {
-    if(!token){
+  const fetchData = useCallback(async () => {
+    if (!token) {
       console.log('No token Found');
-      navigate('/login')
+      navigate('/login');
+      return;
     }
     try {
       const data = await fetchUsers();
       setUsersData(data);
       setFilteredData(data);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching users:', error);
+      setError(error.message);
     }
-  };
+  }, [token, navigate]);
+
   useEffect(() => {
     fetchData();
   }, []);
 
-  const handleUser = async (id) => {
+  const handleUser = useCallback(async (id) => {
     try {
       const dataByID = await fetchUserById(id);
-      setUserById(dataByID.user);
-      setOriginalUserData(dataByID.user); 
-      setUpdateUserData({
-        phone: dataByID.user.phone || '',
-        password: dataByID.user.password || '',
-        role: dataByID.user.role || '',
-        otp: dataByID.user.otp || '',
-        status: dataByID.user.status || '',
-        rating: dataByID.user.rating || ''
-      });
+      
+      if (dataByID && dataByID.user) { 
+        setUserById(dataByID.user);
+        setOriginalUserData(dataByID.user); 
+        setUpdateUserData({
+          phone: dataByID.user.phone || '',
+          password: dataByID.user.password || '',
+          role: dataByID.user.role || '',
+          otp: dataByID.user.otp || '',
+          status: dataByID.user.status !== null ? dataByID.user.status : '', 
+          rating: dataByID.user.rating !== null ? dataByID.user.rating : ''  
+        });
+        setError(null); 
+      } else {
+        throw new Error('User data not found');
+      }
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching user by ID:', error);
+      setError(error.message); 
     }
-  };
+  }, [fetchUserById, setUserById, setOriginalUserData, setUpdateUserData, setError]);
   
-  const handleuserByIdClick = (userById) => {
+  
+  const handleuserByIdClick = useCallback((userById) => {
     handleUser(userById.id);
     console.log("userByIdId: ",userById.id);
     setModalVisible(true);
-  };
+  }, [handleUser, setModalVisible]);
 
   const handleOpenUpdateForm = () => {
     setUpdateModalVisible(true);
@@ -100,15 +112,13 @@ const Users = () => {
   };
   
 
-  const handleUpdateUser = async (e) => {
+  const handleUpdateUser = useCallback(async (e) => {
     e.preventDefault();
   
     const updatedFields = {};
     for (let key in updateUserData) {
       const originalValue = originalUserData[key];
       const updatedValue = updateUserData[key];
-  
-      // Check for changes and avoid sending unchanged or empty fields
       if (
         (originalValue === null || originalValue === undefined) &&
         updatedValue !== null &&
@@ -132,26 +142,33 @@ const Users = () => {
         setUpdateModalVisible(false);
         fetchData();
       } catch (error) {
-        console.error(error);
+        setError(error.message);
       }
     } else {
       console.log("No changes detected");
       setUpdateModalVisible(false);
     }
-  };
+  } , [updateUserData, originalUserData, userById.id, fetchData, setError]);
   
   
   useEffect(() => {
-    const filterUsers = () =>{
-      if(!searchInput){
-        setFilteredData(userData)
+    const filterUsers = () => {
+      if (!searchInput) {
+        setFilteredData(userData);
         setCurrentPage(1);
       } else {
         const filtered = userData.filter((user) => {
           if (selectedSearchOption === 'all') {
-            return Object.values(user).some(value =>
-              value && value.toString().toLowerCase().includes(searchInput.toLowerCase())
-            );
+            return Object.values(user).some(value => {
+              if (typeof value === 'object' && value !== null) {
+                return Object.values(value).some(nestedValue =>
+                  nestedValue && nestedValue.toString().toLowerCase().includes(searchInput.toLowerCase())
+                );
+              }
+              return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+            });
+          } else if (selectedSearchOption === 'FullName') {
+            return user.additionalInfo?.FullName?.toLowerCase().includes(searchInput.toLowerCase());
           } else {
             const value = user[selectedSearchOption];
             if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
@@ -160,13 +177,14 @@ const Users = () => {
             }
             return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
           }
-        })
+        });
         setFilteredData(filtered);
         setCurrentPage(1);
       }
     };
     filterUsers();
-  }, [userData , selectedSearchOption, searchInput] )
+  }, [userData, selectedSearchOption, searchInput]);
+  
 
   const totalPages = Math.ceil(filteredData.length / limit);
 
@@ -185,6 +203,7 @@ const Users = () => {
   const tableHeaders = [
     { label: 'All', value: 'all' },
     { label: 'ID', value: 'id' },
+    { label: 'Full Name', value: 'FullName' },
     { label: 'Phone No.', value: 'phone' },
     { label: 'Password', value: 'password' },
     { label: 'Role', value: 'role' },
@@ -196,10 +215,16 @@ const Users = () => {
   ]
 
   return (
-    <>
+    <div>
+      {error ? (
+        <div className="error-message">
+        {error}
+      </div>
+      ) : (
+        <>
       <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
         <div className='crud-group d-flex mx-2'>
-          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
+          
         </div>
         <div>
           <CInputGroup className="mx-2">
@@ -230,6 +255,7 @@ const Users = () => {
             <CTableRow>
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
               <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+              <CTableHeaderCell scope="col">Full Name</CTableHeaderCell>
               <CTableHeaderCell scope="col">Phone</CTableHeaderCell>
               <CTableHeaderCell scope="col">Password</CTableHeaderCell>
               <CTableHeaderCell scope="col">Role</CTableHeaderCell>
@@ -244,6 +270,7 @@ const Users = () => {
               <CTableRow key={user.id} onClick={() => handleuserByIdClick(user)}>
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
                 <CTableDataCell style={{ fontSize: '12px' }}>{user.id}</CTableDataCell>
+                <CTableDataCell>{user.additionalInfo.FullName ? user.additionalInfo.FullName : 'N/A'}</CTableDataCell>
                 <CTableDataCell>{user.phone}</CTableDataCell>
                 <CTableDataCell>{user.password.length > 10 ? `${user.password.slice(0, 10)}...` : user.password}</CTableDataCell>
                 <CTableDataCell>{user.role}</CTableDataCell>
@@ -320,6 +347,35 @@ const Users = () => {
                 <p><strong>Rating:</strong> {userById.rating ? userById.rating  : 'N/A'}</p>
                 <p><strong>Created At:</strong> {new Date(userById.createdAt).toLocaleString()}</p>
                 <p><strong>Updated At:</strong> {new Date(userById.updatedAt).toLocaleString()}</p>
+                {userById.additionalInfo && (
+                  <div>
+                    <p><strong>Full Name:</strong> {userById.additionalInfo.FullName || 'N/A'}</p>
+                    <p><strong>Email:</strong> {userById.additionalInfo.Email || 'N/A'}</p>
+                    <p><strong>DL Verification:</strong> {userById.additionalInfo.Dlverification || 'N/A'}</p>
+                    <p><strong>Aadhar Verification ID:</strong> {userById.additionalInfo.AadharVfid || 'N/A'}</p>
+                    <p><strong>Address:</strong> {userById.additionalInfo.Address || 'N/A'}</p>
+                    <p><strong>Verification Status:</strong> {userById.additionalInfo.verification_status || 'N/A'}</p>
+                    <p><strong>Current Address Verification ID:</strong> {userById.additionalInfo.CurrentAddressVfid || 'N/A'}</p>
+                    <p><strong>Machine Learning Data:</strong> {userById.additionalInfo.ml_data || 'N/A'}</p>
+                    <p><strong>Profile Picture:  </strong> 
+                      {userById.additionalInfo.profilepic ? (
+                        <img src={userById.additionalInfo.profilepic} alt="Profile" width="100" />
+                      ) : 'N/A'}
+                    </p>
+                    <p><strong>Driving License:   </strong> 
+                      {userById.additionalInfo.dl ? (
+                        <img src={userById.additionalInfo.dl} alt="dl" width="100" />
+                      ) : 'N/A'}
+                    </p>
+                    <p><strong>Aadhaar:   </strong> 
+                      {userById.additionalInfo.aadhar ? (
+                        <img src={userById.additionalInfo.aadhar} alt="Aadhar" width="100" />
+                      ) : 'N/A'}
+                    </p>
+                    <p><strong>Additional Created At:</strong> {new Date(userById.additionalInfo.createdAt).toLocaleString()}</p>
+                    <p><strong>Additional Updated At:</strong> {new Date(userById.additionalInfo.updatedAt).toLocaleString()}</p>
+                  </div>
+                )}
               </CCol>
             </CRow>
           </CModalBody>
@@ -385,6 +441,8 @@ const Users = () => {
         )}
 
     </>
+      )}
+    </div>
   );
 };
 

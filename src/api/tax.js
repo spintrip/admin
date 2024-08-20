@@ -29,3 +29,16 @@ export const getTax = async() => {
     throw error;
   }
 }
+
+export const updateTax = async(id , data) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/tax/${id}`, data , {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
