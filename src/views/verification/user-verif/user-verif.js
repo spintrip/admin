@@ -119,9 +119,9 @@ const UserVerification = () => {
       await rejectUserVerification(userId);
       setModalVisible(false);
       fetchData();
-  } catch(error){
+    } catch(error){
       console.log(error);
-  }
+    }
   };
 
   const tableHeaders = [
@@ -136,8 +136,7 @@ const UserVerification = () => {
     <div className='container-fluid'>
       <div className='container-fluid px-4 d-flex align-items-center justify-content-between mb-3'>
         <div className='crud-group d-flex mx-2'>
-          <CButton className="fw-bolder bg-light text-black mx-2" >Create</CButton>
-          <CButton className="fw-bolder bg-light text-black mx-2">Update</CButton>
+          
         </div>
         <div>
           <CInputGroup className="mx-2">

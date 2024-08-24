@@ -215,11 +215,13 @@ const Cars = () => {
 
   useEffect(() => {
     const filterCars = () => {
+      let sortedData = [...carData];
+      sortedData.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       if (!searchInput) {
-        setFilteredData(carData);
+        setFilteredData(sortedData);
         setCurrentPage(1);
       } else {
-        const filtered = carData.filter((car) => {
+        const filtered = sortedData.filter((car) => {
           if (selectedSearchOption === 'all') {
             return Object.values(car).some(value =>
               value && value.toString().toLowerCase().includes(searchInput.toLowerCase())

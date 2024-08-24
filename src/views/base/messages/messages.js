@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getallmessages } from '../../../api/message';
+import { flagmessage, getallmessages } from '../../../api/message';
 import {
   CInputGroup,
   CModal,
@@ -35,6 +35,7 @@ const Messages = () => {
   const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState(null); 
+  const [flagged, setFlagged] = useState(false); 
   const token = localStorage.getItem('adminToken');
   const [activeMessage, setActiveMessage] = useState(null);
   const navigate = useNavigate();
@@ -110,9 +111,14 @@ const Messages = () => {
     setActiveMessage(activeMessage === messageId ? null : messageId);
   };
 
-  const handleFlagClick = (messageId) => {
-    // Implement your flagging logic here
-    console.log(`Flagged message ID: ${messageId}`);
+  const handleFlagClick = async(messageId) => {
+    try{
+      const flag = await flagmessage(messageId);
+      fetchMessageData();
+    } catch (error) {
+      console.log(error.message);
+    }
+    
   };
   
   
@@ -186,36 +192,40 @@ const Messages = () => {
           <CModalTitle>Chat Messages</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <div className="chat-container">
-            {selectedBooking &&
-              selectedBooking.map((message, index) => {
-                let messageClass;
-                if (index === 0) {
-                  messageClass = 'left';
-                } else if (message.senderId !== selectedBooking[index - 1].senderId) {
-                  // If the senderId is different from the previous message, switch sides
-                  messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
-                } else {
-                  // Otherwise, keep the same side as the previous message
-                  messageClass = selectedBooking[index - 1].messageClass;
-                }
-                
-                // Save the class on the current message object for future reference
-                message.messageClass = messageClass;
+        <div className="chat-container">
+          {selectedBooking &&
+            selectedBooking.map((message, index) => {
+              let messageClass;
+              if (index === 0) {
+                messageClass = 'left';
+              } else if (message.senderId !== selectedBooking[index - 1].senderId) {
+                messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
+              } else {
+                messageClass = selectedBooking[index - 1].messageClass;
+              }
+              
+              message.messageClass = messageClass;
 
-                return (
-                  <div key={index} className={`chat-messages ${messageClass}`} onClick={() => handleMessageClick(message.id)}>
-                    <div className="message-content">{message.message}</div>
-                    {activeMessage === message.id && (
-                      <div className={`dropup ${messageClass === 'left' ? 'right-side' : 'left-side'}`}>
-                        <FaFlag onClick={() => handleFlagClick(message.id)} />
-                      </div>
-                    )}
-                    <div className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</div>
-                  </div>
-                );
-              })}
-          </div>
+              return (
+                <div key={index} className={`chat-messages ${messageClass}`} onClick={() => handleMessageClick(message.id)}>
+                  {messageClass === 'left' && message.flagged && (
+                    <div className="red-dot right-side"></div>  
+                  )}
+                  <div className="message-content">{message.message}</div>
+                  {messageClass === 'right' && message.flagged && (
+                    <div className="red-dot left-side"></div> 
+                  )}
+                  {activeMessage === message.id && (
+                    <div className={`dropup ${messageClass === 'left' ? 'right-side' : 'left-side'}`}>
+                      <FaFlag onClick={() => handleFlagClick(message.id)} />
+                    </div>
+                  )}
+                  <div className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</div>
+                </div>
+              );
+            })}
+        </div>
+
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setVisible(false)}>

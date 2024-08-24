@@ -82,11 +82,15 @@ const CarProfiles = () => {
 
   useEffect(() => {
     const filterCarVerif = () =>{
+      let sortedData = [...carProfilesData];
+
+      // Sort the data by updatedAt field to show the latest data first
+      sortedData.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       if(!searchInput){
-        setFilteredData(carProfilesData)
+        setFilteredData(sortedData)
         setCurrentPage(1);
       } else {
-        const filtered = carProfilesData.filter((user) => {
+        const filtered = sortedData.filter((user) => {
           const value = user[selectedSearchOption];
           if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
             const formattedDate = new Date(value).toLocaleString();
@@ -402,7 +406,7 @@ const CarProfiles = () => {
 
 
           {enlargedImage && (
-            <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
+            <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="xl">
               <CModalBody className="enlarged-image-modal">
                 <div className='image-fit'>
                 <CImage src={enlargedImage} className='responsive-image'/>

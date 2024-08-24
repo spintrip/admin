@@ -16,3 +16,17 @@ export const getallmessages = async () => {
         throw error;
     }
 };
+
+export const flagmessage = async (id) => {
+    try {
+        const response = await axios.post(`${apiUrl}admin/chat/flag/${id}`, {
+            headers: {
+                token: token,
+            },
+        });
+        return response.data; 
+    } catch (error) {
+        throw error;
+    }
+};
+
