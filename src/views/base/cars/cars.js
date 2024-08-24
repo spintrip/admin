@@ -27,8 +27,10 @@ import {
   CForm,
   CFormLabel,
   CFormSelect,
+  CImage
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import '../../../scss/cars.css';
 
 const Cars = () => {
@@ -45,6 +47,7 @@ const Cars = () => {
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [error , setError] = useState('')
   const [updateAdditionalInfoModalVisible, setUpdateAdditionalInfoModalVisible] = useState(false);
+  const [enlargedImage , setEnlargedImage] = useState(null);
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
@@ -251,6 +254,10 @@ const Cars = () => {
     return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
   };
 
+  const handleImageClick = (imageUrl) => {
+    setEnlargedImage(imageUrl);
+  };
+
   const tableHeaders = [
     { label: 'All', value: 'all' },
     { label: 'Car Model', value: 'carmodel' },
@@ -299,12 +306,13 @@ const Cars = () => {
             </div>
           </div>
           <DocsExample href="components/table#hoverable-rows ">
-          <CTable color="dark" hover>
+          <CTable className = "car-table" color="dark" hover>
             <CTableHead>
               <CTableRow className="cars-header">
                 {/* Table Headers */}
                 <CTableHeaderCell scope="col">#</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Host ID</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Car Model</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Type</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Brand</CTableHeaderCell>
@@ -312,9 +320,8 @@ const Cars = () => {
                 <CTableHeaderCell scope="col">RC Number</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Engine Number</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Registration Year</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Body Type</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Verification</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Rating</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Host ID</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
               </CTableRow>
@@ -322,21 +329,48 @@ const Cars = () => {
             <CTableBody>
               {displayedCars.map((car, index) => (
                 <CTableRow key={car.carid} onClick={() => handleCarByIdClick(car)}>
-                  <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                  <CTableDataCell style={{ fontSize: '12px' }}>{car.carid || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{car.carmodel}</CTableDataCell>
-                  <CTableDataCell>{car.type}</CTableDataCell>
-                  <CTableDataCell>{car.brand}</CTableDataCell>
-                  <CTableDataCell style={{ fontSize: '12px' }}>{car.chassisno || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{car.Rcnumber}</CTableDataCell>
-                  <CTableDataCell>{car.Enginenumber?.slice(0, 10) + (car.Enginenumber?.length > 10 ? '...' : '')}</CTableDataCell>
-                  <CTableDataCell>{car.Registrationyear}</CTableDataCell>
-                  <CTableDataCell>{car.bodytype}</CTableDataCell>
-                  <CTableDataCell>{car.rating?.toFixed(2) || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{car.hostId || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{new Date(car.createdAt).toLocaleString()}</CTableDataCell>
-                  <CTableDataCell>{new Date(car.updatedAt).toLocaleString()}</CTableDataCell>
-                </CTableRow>
+                <CTableHeaderCell scope="row">
+                  {(currentPage - 1) * limit + index + 1}
+                </CTableHeaderCell>
+                <CTableDataCell>{car.carid || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.hostId || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.carmodel || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.type || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.brand || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.chassisno || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.Rcnumber || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{car.Enginenumber ? car.Enginenumber : ''}</CTableDataCell>
+                <CTableDataCell>{car.Registrationyear || 'N/A'}</CTableDataCell>
+                <CTableDataCell>
+                  <div>
+                    {car.additionalInfo.verification_status === 1 ? (
+                      <>
+                        <span className="m-2" style={{ color: 'orange', display: 'block' }}>Pending</span>
+                        <code className="p-2 border rounded" style={{ color: 'orange', display: 'block' }}>Code-1</code>
+                      </>
+                    ) : car.additionalInfo.verification_status === 2 ? (
+                      <>
+                        <span className="m-2" style={{ color: 'lightgreen', display: 'block' }}>Confirmed</span>
+                        <code className="p-2 border rounded" style={{ color: 'lightgreen', display: 'block' }}>Code-2</code>
+                      </>
+                    ) : car.additionalInfo.verification_status === null ? (
+                      <>
+                        <span className="m-2" style={{ color: 'red', display: 'block' }}>N/A</span>
+                        <code className="p-2 border rounded" style={{ color: 'red', display: 'block' }}>Code-N/A </code>
+                      </>
+                    ) : (
+                      <>
+                        <span className="m-2" style={{ display: 'block' }}>Unknown Status</span>
+                        <code className="p-2 border rounded" style={{ display: 'block' }}>Code-{car.additionalInfo.verification_status}</code>
+                      </>
+                    )}
+                  </div>
+                </CTableDataCell>
+                <CTableDataCell>{car.rating?.toFixed(2) || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{new Date(car.createdAt).toLocaleString()}</CTableDataCell>
+                <CTableDataCell>{new Date(car.updatedAt).toLocaleString()}</CTableDataCell>
+              </CTableRow>
+              
               ))}
             </CTableBody>
           </CTable>
@@ -359,17 +393,19 @@ const Cars = () => {
 
           {/* Modal for Car Details */}
           {carById && (
-            <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
+            <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
               <CModalHeader>
                 <CModalTitle>Car Details</CModalTitle>
               </CModalHeader>
               <CModalBody>
                 <CRow>
-                  <CCol className="car-modal">
-                    {/* Car Basic Details */}
+                  <CCol xs={5} className="car-modal">
+                    <p><strong>Car Id:</strong> {carById.carid || 'N/A'}</p>
+                    <p><strong>Host Id:</strong> {carById.hostId || 'N/A'}</p>
                     <p><strong>Car Model:</strong> {carById.carmodel || 'N/A'}</p>
                     <p><strong>Type:</strong> {carById.type || 'N/A'}</p>
                     <p><strong>Brand:</strong> {carById.brand || 'N/A'}</p>
+                    <p><strong>Variant:</strong> {carById.variant || 'N/A'}</p>
                     <p><strong>Color:</strong> {carById.color || 'N/A'}</p>
                     <p><strong>Chassis No:</strong> {carById.chassisno || 'N/A'}</p>
                     <p><strong>RC Number:</strong> {carById.Rcnumber || 'N/A'}</p>
@@ -377,6 +413,13 @@ const Cars = () => {
                     <p><strong>Registration Year:</strong> {carById.Registrationyear || 'N/A'}</p>
                     <p><strong>Body Type:</strong> {carById.bodytype || 'N/A'}</p>
                     <p><strong>Rating:</strong> {carById.rating?.toFixed(2) || 'N/A'}</p>
+                    <p><strong>Mileage:</strong> {carById.mileage || 'N/A'}</p>
+                  </CCol>
+                  <CCol xs={1} className="d-flex justify-content-center align-items-stretch">
+                    <div style={{ borderLeft: '1px solid #dee2e6', height: '100%' }}></div>
+                  </CCol>
+                  <CCol xs={5} className="car-modal">
+                    <h3>Additional Info: </h3>
                     <p><strong>Horse Power:</strong> {carById.additionalInfo?.HorsePower || 'N/A'}</p>
                     <p><strong>AC:</strong> {carById.additionalInfo?.AC ? 'Yes' : 'No'}</p>
                     <p><strong>Music System:</strong> {carById.additionalInfo?.Musicsystem ? 'Yes' : 'No'}</p>
@@ -405,31 +448,111 @@ const Cars = () => {
                     <p><strong>Address:</strong> {carById.additionalInfo?.address || 'N/A'}</p>
                     <p><strong>Latitude:</strong> {carById.additionalInfo?.latitude || 'N/A'}</p>
                     <p><strong>Longitude:</strong> {carById.additionalInfo?.longitude || 'N/A'}</p>
-                    <div>
-                        <p><strong>Car Image 1:</strong></p>
-                        <img src={carById.additionalInfo?.carimage1 || 'N/A'} alt="Car Image 1" style={{ maxWidth: '40vh', height: '30vh ' }}  />
-                        
-                        <p><strong>Car Image 2:</strong></p>
-                        <img src={carById.additionalInfo?.carimage2 || 'N/A'} alt="Car Image 2" style={{ maxWidth: '40vh', height: '30vh' }} />
-                        
-                        <p><strong>Car Image 3:</strong></p>
-                        <img src={carById.additionalInfo?.carimage3 || 'N/A'} alt="Car Image 3" style={{ maxWidth: '40vh', height: 'auto' }}  />
-                        
-                        <p><strong>Car Image 4:</strong></p>
-                        <img src={carById.additionalInfo?.carimage4 || 'N/A'} alt="Car Image 4" style={{ maxWidth: '40vh', height: 'auto' }} />
-                        
-                        <p><strong>Car Image 5:</strong></p>
-                        <img src={carById.additionalInfo?.carimage5 || 'N/A'} alt="Car Image 5" style={{ maxWidth: '40vh', height: 'auto' }}  />
+                  </CCol>
+                </CRow>
+                <hr />
+                <CRow>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>Car Image 1:</strong></p>
+                      {carById.additionalInfo?.carimage1 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={carById.additionalInfo.carimage1}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(carById.additionalInfo.carimage1)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
                     </div>
-
+                  </CCol>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>Car Image 2:</strong></p>
+                      {carById.additionalInfo?.carimage2 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={carById.additionalInfo.carimage2}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(carById.additionalInfo.carimage2)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
+                    </div>
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>Car Image 3:</strong></p>
+                      {carById.additionalInfo?.carimage3 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={carById.additionalInfo.carimage3}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(carById.additionalInfo.carimage3)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
+                    </div>
+                  </CCol>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>Car Image 4:</strong></p>
+                      {carById.additionalInfo?.carimage4 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={carById.additionalInfo.carimage4}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(carById.additionalInfo.carimage4)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
+                    </div>
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>Car Image 5:</strong></p>
+                      {carById.additionalInfo?.carimage5 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={carById.additionalInfo.carimage5}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(carById.additionalInfo.carimage5)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
+                    </div>
                   </CCol>
                 </CRow>
               </CModalBody>
               <CModalFooter className="d-flex align-items-center justify-content-end">
-                <CButton color="success" onClick={handleOpenUpdateForm}>
+                <CButton className="btn-interactive basicInfo" onClick={handleOpenUpdateForm}>
                   Update Info
                 </CButton>
-                <CButton color="warning" onClick={handleOpenUpdateAdditionalInfoForm}>
+                <CButton className="btn-interactive additionalInfo" onClick={handleOpenUpdateAdditionalInfoForm}>
                   Update Additional Info
                 </CButton>
               </CModalFooter>
@@ -457,11 +580,16 @@ const Cars = () => {
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Type</CFormLabel>
-                      <CFormInput
-                        type="text"
+                      <CFormSelect
                         value={updateCarData.type}
                         onChange={(e) => setUpdateCarData({ ...updateCarData, type: e.target.value })}
-                      />
+                      >
+                        <option value="Compact SUV">Compact SUV</option>
+                        <option value="Sedan">Sedan</option>
+                        <option value="MUV">MUV</option>
+                        <option value="SUV">SUV</option>
+                        <option value="Hatchback">Hatchback</option>
+                      </CFormSelect>
                     </CCol>
                   </CRow>
                   <CRow className="mb-3">
@@ -593,6 +721,7 @@ const Cars = () => {
                       />
                     </CCol>
                   </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>AC</CFormLabel>
@@ -605,6 +734,7 @@ const Cars = () => {
                       </CFormSelect>
                     </CCol>
                   </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Music System</CFormLabel>
@@ -617,6 +747,7 @@ const Cars = () => {
                       </CFormSelect>
                     </CCol>
                   </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Autowindow</CFormLabel>
@@ -629,7 +760,268 @@ const Cars = () => {
                       </CFormSelect>
                     </CCol>
                   </CRow>
-                  {/* Repeat for all other boolean fields */}
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Sunroof</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.Sunroof}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, Sunroof: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Touchscreen</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.Touchscreen}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, Touchscreen: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Seven Seater</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.Sevenseater}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, Sevenseater: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Reverse Camera</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.Reversecamera}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, Reversecamera: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Transmission</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.Transmission}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, Transmission: e.target.value })}
+                      >
+                        <option value="Yes">Automatic</option>
+                        <option value="No">Manual</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Airbags</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.Airbags}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, Airbags: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Fuel Type</CFormLabel>
+                      <CFormSelect
+                        type="text"
+                        value={updateAdditionalInfo.FuelType || ''}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, FuelType: e.target.value })}
+                      >
+                        <option value="Yes">Diesel</option>
+                        <option value="No">Petrol</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Pet Friendly</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.PetFriendly}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, PetFriendly: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Power Steering</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.PowerSteering}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, PowerSteering: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>ABS</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.ABS}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, ABS: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Traction Control</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.tractionControl}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, tractionControl: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Full Boot Space</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.fullBootSpace}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, fullBootSpace: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Keyless Entry</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.KeylessEntry}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, KeylessEntry: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Air Purifier</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.airPurifier}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, airPurifier: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Cruise Control</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.cruiseControl}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, cruiseControl: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Voice Control</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.voiceControl}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, voiceControl: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>USB Charger</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.usbCharger}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, usbCharger: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Bluetooth</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.bluetooth}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, bluetooth: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Air Freshner</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.airFreshner}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, airFreshner: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Ventilated Front Seat</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.ventelatedFrontSeat}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, ventelatedFrontSeat: e.target.value })}
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Additional Info</CFormLabel>
@@ -640,6 +1032,7 @@ const Cars = () => {
                       />
                     </CCol>
                   </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Address</CFormLabel>
@@ -650,6 +1043,7 @@ const Cars = () => {
                       />
                     </CCol>
                   </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Latitude</CFormLabel>
@@ -660,6 +1054,7 @@ const Cars = () => {
                       />
                     </CCol>
                   </CRow>
+
                   <CRow className="mb-3">
                     <CCol>
                       <CFormLabel>Longitude</CFormLabel>
@@ -673,10 +1068,19 @@ const Cars = () => {
                 </CForm>
               </CModalBody>
               <CModalFooter>
-                <CButton color="success" onClick={handleUpdateAdditionalInfo}>
+                <CButton className="additionalInfo" onClick={handleUpdateAdditionalInfo}>
                   Update Additional Info
                 </CButton>
               </CModalFooter>
+            </CModal>
+          )}
+          {enlargedImage && (
+            <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
+              <CModalBody className="enlarged-image-modal">
+                <div className='image-fit'>
+                <CImage src={enlargedImage} className='responsive-image'/>
+                </div>
+              </CModalBody>
             </CModal>
           )}
         </div>

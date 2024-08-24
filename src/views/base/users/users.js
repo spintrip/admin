@@ -310,7 +310,7 @@ const Users = () => {
       {userById && (
         <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
           <CModalHeader>
-            <CModalTitle>userById Details</CModalTitle>
+            <CModalTitle>User Details</CModalTitle>
           </CModalHeader>
           <CModalBody>
             <CRow>

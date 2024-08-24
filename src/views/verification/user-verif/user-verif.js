@@ -27,7 +27,7 @@ import {
   CDropdownItem
 } from '@coreui/react';
 import '../../../scss/verif.css'
-
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 const UserVerification = () => {
   const [userProfilesData, setUserProfilesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -323,7 +323,124 @@ const UserVerification = () => {
             </CButton>
           </CModalFooter>
         </CModal>
+      )}{selectedProfile && (
+        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
+          <CModalHeader>
+            <CModalTitle>Profile Details</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <CRow>
+              <CCol>
+                <p><strong>ID:</strong> {selectedProfile.id}</p>
+                <p><strong>Full Name:</strong> {selectedProfile.FullName || 'N/A'}</p>
+                <p><strong>Email:</strong> {selectedProfile.Email || 'N/A'}</p>
+                <p><strong>DL Verification:</strong> {selectedProfile.Dlverification || 'N/A'}</p>
+                <p><strong>Aadhar Verification ID:</strong> {selectedProfile.AadharVfid || 'N/A'}</p>
+                <p><strong>Address:</strong> {selectedProfile.Address || 'N/A'}</p>
+                <p><strong>Phone:</strong> {selectedProfile.user.phone || 'N/A'}</p>
+                <p><strong>Password:</strong> {selectedProfile.user.password || 'N/A'}</p>
+                <p><strong>Otp:</strong> {selectedProfile.user.otp || 'N/A'}</p>
+                <p><strong>User Role:</strong> {selectedProfile.user.role || 'N/A'}</p>
+                <p><strong>Status:</strong> {selectedProfile.user.status === 1 ? 'Active' : 'Inactive'}</p>
+                <p>
+                  <strong>Verification Status:</strong>
+                  {selectedProfile.verification_status === 1 ? (
+                    <>
+                      <span style={{ color: 'orange' }}> Pending </span>
+                      <code className='p-2 border rounded' style={{ color: 'orange' }}>Code-1</code>
+                    </>
+                  ) : selectedProfile.verification_status === 2 ? (
+                    <>
+                      <span style={{ color: 'green' }}> Confirmed </span>
+                      <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
+                    </>
+                  ) : selectedProfile.verification_status === null ? (
+                    <>
+                      <span style={{ color: 'red' }}> N/A </span>
+                      <code className='p-2 border rounded' style={{ color: 'red' }}>Code-null</code>
+                    </>
+                  ) : (
+                    <>
+                      <span>Unknown Status</span>
+                      <code className='p-2 border rounded'>Code-{selectedProfile.verification_status}</code>
+                    </>
+                  )}
+                </p>
+                <p><strong>Created At:</strong> {new Date(selectedProfile.createdAt).toLocaleString()}</p>
+                <p><strong>Updated At:</strong> {new Date(selectedProfile.updatedAt).toLocaleString()}</p>
+              </CCol>
+            </CRow>
+            <CRow className="mt-4 border rounded p-3">
+              <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
+                <p><strong>Profile Pic:</strong></p>
+                {selectedProfile.profilepic ? (
+                  <CImage 
+                    src={selectedProfile.profilepic} 
+                    width={100} 
+                    height={150} 
+                    className='border rounded'
+                    onClick={() => handleImageClick(selectedProfile.profilepic)} 
+                    style={{ cursor: 'pointer', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
+                    <span><FaTimesCircle style={{ color: 'grey' }} /> Not Uploaded</span>
+                  </div>
+                )}
+              </CCol>
+              <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
+                <p><strong>DL:</strong></p>
+                {selectedProfile.dl ? (
+                  <CImage 
+                    src={selectedProfile.dl} 
+                    width={100} 
+                    height={150} 
+                    className='border rounded'
+                    onClick={() => handleImageClick(selectedProfile.dl)} 
+                    style={{ cursor: 'pointer' , objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
+                    <span><FaTimesCircle style={{ color: 'grey' }} /> Not Uploaded</span>
+                  </div>
+                )}
+              </CCol>
+              <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
+                <p><strong>Aadhar:</strong></p>
+                {selectedProfile.aadhar ? (
+                  <CImage 
+                    src={selectedProfile.aadhar} 
+                    width={100} 
+                    height={150} 
+                    className='border rounded'
+                    onClick={() => handleImageClick(selectedProfile.aadhar)} 
+                    style={{ cursor: 'pointer', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
+                    <span><FaTimesCircle style={{ color: 'grey' }} /> Not Uploaded</span>
+                  </div>
+                )}
+              </CCol>
+            </CRow>
+          </CModalBody>
+          <CModalFooter className='d-flex align-items-center justify-content-between'>
+            <CButton color="success" onClick={() => handleApprove(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
+              <span>Approve</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </CButton>
+            <CButton color="danger" onClick={() => handleDecline(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
+              <span>Decline</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </CButton>
+          </CModalFooter>
+        </CModal>
       )}
+      
       {enlargedImage && (
         <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
           <CModalBody className="enlarged-image-modal">

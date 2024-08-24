@@ -1,3 +1,100 @@
-.cars-header{
+.car-table{
     font-size: 14px;
+}
+
+.enlarged-image-modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black; 
+  }
+  
+  .image-fit {
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .responsive-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; 
+  }
+  
+  .verification-status {
+    font-size: 12px;
+  }
+  .verification-pending {
+    color: orange;
+  }
+  
+  .verification-confirmed {
+    color: green;
+  }
+  
+  .verification-na {
+    color: red;
+  }
+  
+  .verification-code {
+    padding: 2px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    margin-left: 5px;
+    
+  }
+  
+  .row-style {
+    font-size : 14px;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+  }
+  
+  .empty-image-placeholder {
+    width: 200px;
+    height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #999;
+    background-color: #f9f9f9;
+  }
+  
+  .empty-image-placeholder p {
+    margin: 0;
+    font-weight: bold;
+  }
+  
+  .profileid{
+    font-size: 12px;
+  }  
+
+  .img-interactive {
+    transition: transform 0.2s ease;
+  }
+  
+  .img-interactive:hover {
+    transform: scale(1.05);
+  }
+  
+  .btn-interactive {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  .btn-interactive:hover {
+    background-color: #f0ad4e;
+    color: white;
+  }
+.additionalInfo{
+    background-color: white;
+    color: black;
+}  
+
+.basicInfo{
+    background-color: rgb(226, 112, 6);
+    color: white;
 }

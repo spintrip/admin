@@ -1,12 +1,22 @@
 .enlarged-image-modal {
   display: flex;
   justify-content: center;
+  align-items: center;
+  background-color: black; 
 }
 
-.enlarged-image-modal img {
-  width: 900px;
-  height: 900px;
-  object-fit: cover;
+.image-fit {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.responsive-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; 
 }
 
 .verification-status {
@@ -32,10 +42,6 @@
   
 }
 
-.row-style {
-  font-size : 14px;
-  font-family:Georgia, 'Times New Roman', Times, serif;
-}
 
 .empty-image-placeholder {
   width: 200px;
@@ -58,4 +64,45 @@
 .profileid{
   font-size: 12px;
 }
+.carVerif-table{
+  font-size: 14px;
+}
+.carId{
+  color: rgb(228, 246, 244) !important;
+  text-decoration: underline;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
 
+.list-unstyled {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.list-unstyled li {
+  margin-bottom: 0.5rem; 
+  font-size: 1rem;
+  line-height: 1.5; 
+  border-bottom: 1px solid #e0e0e0; 
+  padding-bottom: 0.5rem;
+}
+
+.list-unstyled li:last-child {
+  border-bottom: none; /* Remove border from the last item */
+}
+.host-section-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #ff7700;
+  margin-top: 1rem;
+}
+
+.host-details  {
+  padding-left: 1rem;
+  border-left: 3px solid #ff8800;
+  margin-top: 0.5rem;
+}
+
+.host-details  strong {
+  color: #f2c7a6;
+}
