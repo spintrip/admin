@@ -18,6 +18,77 @@ import {
   CFormInput,
   CFormSelect,
 } from '@coreui/react';
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+
+
+const columns = [
+  
+  {
+    name: 'Type',
+    selector: row => row.type ? row.type : '--', // Replace with the actual key for Type in your data
+    sortable: true,
+  },
+  {
+    name: 'Brand',
+    selector: row => row.brand, // Replace with the actual key for Brand in your data
+    sortable: true,
+  },
+  
+  {
+    name: 'Brand Value',
+    selector: row => row.brand_value, // Replace with the actual key for Brand Value in your data
+    sortable: true,
+  },
+  {
+    name: 'Base Price',
+    selector: row => row.base_price, // Replace with the actual key for Base Price in your data
+    sortable: true,
+  },
+  {
+    name: 'Created At',
+    selector: row => new Date(row.createdAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+  {
+    name: 'Updated At',
+    selector: row => new Date(row.updatedAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+];
 
 const Brand = () => {
   const [brands, setBrands] = useState([]);
@@ -78,51 +149,30 @@ const Brand = () => {
     }
   };
   
-
+  console.log('brands', brands)
   return (
     <div className="container-fluid">
-      <CButton color="primary" onClick={() => setModalVisible(true)}>
+      <div className='d-flex align-items-center justify-content-end w-full px-4'>
+        <CButton color="primary" onClick={() => setModalVisible(true)}>
         Create Brand
-      </CButton>
-      <CTable color="dark" hover className="mt-3">
-        {brands.length === 0 ? (
-          <CTableRow>
-          <CTableDataCell colSpan="8" className="text-center">
-            No brands available
-          </CTableDataCell>
-        </CTableRow>
-        ) : (
-        <>
-        <CTableHead>
-          <CTableRow>
-            <CTableHeaderCell>#</CTableHeaderCell>
-            <CTableHeaderCell>Type</CTableHeaderCell>
-            <CTableHeaderCell>Brand</CTableHeaderCell>
-            <CTableHeaderCell>Car Model</CTableHeaderCell>
-            <CTableHeaderCell>Brand Value</CTableHeaderCell>
-            <CTableHeaderCell>Base Price</CTableHeaderCell>
-            <CTableHeaderCell>Created At</CTableHeaderCell>
-            <CTableHeaderCell>Updated At</CTableHeaderCell>
-          </CTableRow>
-        </CTableHead>
-        <CTableBody>
-          {brands.map((brand, index) => (
-            <CTableRow key={brand.id} onClick={() => handleView(brand)}>
-              <CTableDataCell>{index + 1}</CTableDataCell>
-              <CTableDataCell>{brand.type}</CTableDataCell>
-              <CTableDataCell>{brand.brand}</CTableDataCell>
-              <CTableDataCell>{brand.carmodel}</CTableDataCell>
-              <CTableDataCell>{brand.brand_value}</CTableDataCell>
-              <CTableDataCell>{brand.base_price}</CTableDataCell>
-              <CTableDataCell>{new Date(brand.createdAt).toLocaleString()}</CTableDataCell>
-              <CTableDataCell>{new Date(brand.updatedAt).toLocaleString()}</CTableDataCell>
-            </CTableRow>
-          ))}
-        </CTableBody>
-        </>
-        )}
-      </CTable>
+        </CButton>
+      </div>
+     
 
+      <div className='container-fluid h-fit-content '>
+          <DataTable
+                  columns={columns}
+                  data={brands}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'Brands Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(brand)=>handleView(brand)}
+          />
+        </div>
+      
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>
           <CModalTitle>Create New Brand</CModalTitle>

@@ -33,6 +33,100 @@ import {
 import '../../../scss/user.css';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
+
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+
+const columns = [
+    // {
+    //   name: '#',
+    //   selector: (row) => row.index, // Assuming there's an 'index' property for row numbering
+    //   sortable: true,
+    // },
+    {
+      name: 'ID',
+      selector: (row) => row.id,
+      sortable: true,
+
+    },
+    {
+      name: 'Full Name',
+      selector: (row) => row.additionalInfo?.FullName? row.additionalInfo?.FullName : '--' || row.FullName, // Check both possible locations
+      sortable: true,
+    },
+    {
+      name: 'Phone',
+      selector: (row) => row.phone,
+      sortable: true,
+    },
+    {
+      name: 'Role',
+      selector: (row) => row.role,
+      sortable: true,
+    },
+    {
+      name: 'Rating',
+      selector: (row) => row.additionalInfo?.rating? row.additionalInfo?.rating:'N/A' || row.rating, // Adjusted to check nested 'additionalInfo'
+      sortable: true,
+    },
+    // {
+    //   name: 'Status',
+    //   selector: (row) => row.status,
+    //   sortable: true,
+    // },
+    {
+      name: 'Verif-Status',
+      selector: (row) =>
+        row.additionalInfo?.verification_status ? 'true' : 'false',
+      sortable: true,
+    },
+    {
+      name: 'Created At',
+      selector: (row) => row.createdAt,
+      sortable: true,
+    },
+    {
+      name: 'Updated At',
+      selector: (row) => row.updatedAt,
+      sortable: true,
+    },
+  ];
+
+
+
 const Users = () => {
   const [userData, setUsersData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -215,7 +309,7 @@ const Users = () => {
       let sortedData = [...userData];
 
       // Sort the data by updatedAt field to show the latest data first
-      sortedData.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
         setCurrentPage(1);
@@ -255,7 +349,7 @@ const Users = () => {
     setCurrentPage(page);
   };
 
-  const displayedUsers = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedUsers = filteredData;
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -272,11 +366,9 @@ const Users = () => {
     { label: 'ID', value: 'id' },
     { label: 'Full Name', value: 'FullName' },
     { label: 'Phone No.', value: 'phone' },
-    { label: 'Password', value: 'password' },
     { label: 'Role', value: 'role' },
-    { label: 'Otp', value: 'otp' },
-    { label: 'Status', value: 'status' },
     { label: 'Rating', value: 'rating' },
+    { label: 'Status', value: 'status' },
     { label: 'Created At', value: 'createdAt' },
     { label: 'Updated At', value: 'updatedAt' },
   ]
@@ -289,10 +381,8 @@ const Users = () => {
       </div>
       ) : (
         <>
-      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
-        <div className='crud-group d-flex mx-2'>
-          
-        </div>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
+       
         <div>
           <CInputGroup className="mx-2">
             <CFormInput
@@ -316,111 +406,21 @@ const Users = () => {
           </CInputGroup>
         </div>
       </div>
-      <DocsExample href="components/table#hoverable-rows">
-        <CTable color="dark" hover className='user-column'>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell scope="col">#</CTableHeaderCell>
-              <CTableHeaderCell scope="col">ID</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Full Name</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Phone</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Role</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Rating</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Verif-Status</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {displayedUsers.map((user, index) => (
-              <CTableRow key={user.id} >
-                <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell className='userId' onClick={() => handleuserByIdClick(user)}>{user.id}</CTableDataCell>
-                <CTableDataCell>{user.additionalInfo.FullName ? user.additionalInfo.FullName : 'N/A'}</CTableDataCell>
-                <CTableDataCell>{user.phone || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{user.role || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{user.rating !== null && user.rating !== undefined ? user.rating.toFixed(2) : 'N/A'}</CTableDataCell>
-                <CTableDataCell>
-                  <div>
-                    {user.status === 1 ? (
-                      <>
-                        <span className="m-2" style={{ color: 'orange', display: 'block' }}>Pending</span>
-                        <code className="p-2 border rounded" style={{ color: 'orange', display: 'block' }}>Code-1</code>
-                      </>
-                    ) : user.status === 2 ? (
-                      <>
-                        <span className="m-2" style={{ color: 'lightgreen', display: 'block' }}>Confirmed</span>
-                        <code className="p-2 border rounded" style={{ color: 'lightgreen', display: 'block' }}>Code-2</code>
-                      </>
-                    ) : user.status === null ? (
-                      <>
-                        <span className="m-2" style={{ color: 'red', display: 'block' }}>N/A</span>
-                        <code className="p-2 border rounded" style={{ color: 'red', display: 'block' }}>Code-N/A </code>
-                      </>
-                    ) : (
-                      <>
-                        <span className="m-2" style={{ display: 'block' }}>Unknown Status</span>
-                        <code className="p-2 border rounded" style={{ display: 'block' }}>Code-{user.status}</code>
-                      </>
-                    )}
-                  </div>
-                </CTableDataCell>
-                <CTableDataCell>
-                  <div>
-                    {user.additionalInfo.verification_status === 1 ? (
-                      <>
-                        <span className="m-2" style={{ color: 'orange', display: 'block' }}>Pending</span>
-                        <code className="p-2 border rounded" style={{ color: 'orange', display: 'block' }}>Code-1</code>
-                      </>
-                    ) : user.additionalInfo.verification_status === 2 ? (
-                      <>
-                        <span className="m-2" style={{ color: 'lightgreen', display: 'block' }}>Confirmed</span>
-                        <code className="p-2 border rounded" style={{ color: 'lightgreen', display: 'block' }}>Code-2</code>
-                      </>
-                    ) : user.additionalInfo.verification_status === null ? (
-                      <>
-                        <span className="m-2" style={{ color: 'red', display: 'block' }}>N/A</span>
-                        <code className="p-2 border rounded" style={{ color: 'red', display: 'block' }}>Code-N/A </code>
-                      </>
-                    ) : (
-                      <>
-                        <span className="m-2" style={{ display: 'block' }}>Unknown Status</span>
-                        <code className="p-2 border rounded" style={{ display: 'block' }}>Code-{user.additionalInfo.verification_status}</code>
-                      </>
-                    )}
-                  </div>
-                </CTableDataCell>
-                <CTableDataCell>{new Date(user.createdAt).toLocaleString()}</CTableDataCell>
-                <CTableDataCell>{new Date(user.updatedAt).toLocaleString()}</CTableDataCell>
-              </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
-      </DocsExample>
-      <CPagination style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', cursor: 'pointer' }}>
-        <CPaginationItem
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </CPaginationItem>
-        {getVisiblePages().map((page) => (
-          <CPaginationItem
-            key={page}
-            active={page === currentPage}
-            onClick={() => handlePageChange(page)}
-          >
-            {page}
-          </CPaginationItem>
-        ))}
-        <CPaginationItem
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </CPaginationItem>
-      </CPagination>
+      <div className='container-fluid h-fit-content '>
+          <DataTable
+                  
+                  columns={columns}
+                  data={displayedUsers}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'User Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(user)=>handleuserByIdClick(user)}
+          />
+        </div>
+      
         {userById && (
           <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
             <CModalHeader>

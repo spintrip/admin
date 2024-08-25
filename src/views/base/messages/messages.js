@@ -25,8 +25,58 @@ import {
 import { useNavigate } from 'react-router-dom';
 import '../../../scss/message.css';
 import { FaFlag } from 'react-icons/fa'; // Import the flag icon from react-icons
-
-
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+const columns = [
+  {
+    name: 'Booking ID',
+    selector: row => row.bookingId, // Replace with the actual key for Booking ID in your data
+    sortable: true,
+  },
+  {
+    name: 'Created At',
+    selector: row => new Date(row.createdAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+  {
+    name: 'Updated At',
+    selector: row => new Date(row.updatedAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+];
 const Messages = () => {
   const [visible, setVisible] = useState(false);
   const [messageData, setMessageData] = useState([]);
@@ -92,7 +142,7 @@ const Messages = () => {
     setCurrentPage(page);
   };
 
-  const displayedBookings = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedBookings = filteredData
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -125,7 +175,7 @@ const Messages = () => {
 
   return (
     <>
-      <div className="container-fluid px-4 d-flex align-items-center justify-content-between">
+      <div className="container-fluid px-4 d-flex align-items-center justify-content-end">
         <div>
           <CInputGroup className="mx-2">
             <CFormInput
@@ -147,44 +197,20 @@ const Messages = () => {
           </CInputGroup>
         </div>
       </div>
-
-      <div className="mt-4 container-fluid">
-        <CTable hover>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell scope="col">#</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Booking ID</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {displayedBookings.map((booking, index) => (
-              <CTableRow key={index} onClick={() => handleBookingClick(booking.bookingId)}>
-                <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                <CTableDataCell>{booking.bookingId}</CTableDataCell>
-                <CTableDataCell>{new Date(booking.createdAt).toLocaleString()}</CTableDataCell>
-                <CTableDataCell>{new Date(booking.updatedAt).toLocaleString()}</CTableDataCell>
-              </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-          <CPagination aria-label="Page navigation example">
-            <CPaginationItem disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
-              Previous
-            </CPaginationItem>
-            {getVisiblePages().map((page) => (
-              <CPaginationItem key={page} active={page === currentPage} onClick={() => handlePageChange(page)}>
-                {page}
-              </CPaginationItem>
-            ))}
-            <CPaginationItem disabled={currentPage === totalPages} onClick={() => handlePageChange(currentPage + 1)}>
-              Next
-            </CPaginationItem>
-          </CPagination>
+      <div className='container-fluid h-fit-content '>
+          <DataTable
+                  columns={columns}
+                  data={displayedBookings}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'Messages Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(booking)=>handleBookingClick(booking.bookingId)}
+          />
         </div>
-      </div>
+      
 
       {/* Chat Modal */}
       <CModal visible={visible} onClose={() => setVisible(false)} alignment="center" size="lg">
