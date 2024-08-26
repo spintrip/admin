@@ -55,6 +55,7 @@
     border-radius: 5px;
     border: 1px solid #ced4da;
   }
+
   
   .modal-footer-styled {
     display: flex;
@@ -68,6 +69,9 @@
     padding: 8px; /* Add padding for better click area */
     cursor: pointer; /* Pointer cursor on hover */
     transition: background-color 0.2s; /* Smooth transition on hover */
+    max-width: 25px;
+    margin: 0 10px;
+    cursor: pointer;
   }
   
   .icon-button:hover {
@@ -118,5 +122,39 @@
     display: flex;
     justify-content: flex-end;
     padding-top: 10px;
+  }
+  .device-dropdown{
+    width: 5%;
+    border-color: rgb(255, 255, 255);
+  }
+
+  .device-menu{
+    width: 5% !important;
+  }
+
+  .error-message{
+    font-size: small;
+    max-width: 35%;
+    width: 35%;
+    margin: 40px;
+  }
+  
+  .deviceEdit{
+    max-width: 25px;
+    cursor: pointer;
+  }
+  .device-tool{
+    width: 100%;
+  }
+
+  .tool-color{
+    max-width: 100%;
+    width: 100%;
+    max-height: 50%;
+    height: 20px;
+    margin: 10px 0;
+    display: flex ;
+    align-items: center;
+    justify-content: space-around;
   }
   

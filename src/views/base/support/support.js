@@ -292,7 +292,7 @@ const Support = () => {
             {selectedChat.map((chat) => (
               <div key={chat.id} className={`chat-message ${chat.adminId === chat.senderId ? 'right' : 'left'}`}>
                 <div className={`chat-bubble ${chat.adminId === chat.senderId ? 'sent' : 'received'}`}>
-                  <strong>{chat.adminId === chat.senderId ? `Admin - (${chat.adminId})` : `User - (${chat.userId || 'Unknown'})`}</strong>
+                  <strong>{chat.adminId === chat.senderId ? `Admin - (${chat.adminId})` : `User - (${chat.senderId ? chat.senderId : 'Unknown'})`}</strong>
                   <p>{chat.message}</p>
                   <small>{new Date(chat.createdAt).toLocaleString()}</small>
                 </div>

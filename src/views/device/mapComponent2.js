@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Google_Maps_Api_key } from '../../env';
-import { CButton } from '@coreui/react';
 
 const Map = React.memo(({ locations }) => {
   const containerStyle = {
     width: '100%',
-    height: '800px',
+    height: '500px',
   };
 
   const defaultCenter = {
@@ -61,7 +60,30 @@ const Map = React.memo(({ locations }) => {
       strokeWeight: 2,
       map,
     });
-  }, [sortedLocations]);
+
+    // Create and add the custom control button
+    const controlButton = document.createElement('button');
+    controlButton.style.backgroundColor = '#fff';
+    controlButton.style.border = '2px solid #fff';
+    controlButton.style.borderRadius = '3px';
+    controlButton.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+    controlButton.style.color = 'rgb(25,25,25)';
+    controlButton.style.cursor = 'pointer';
+    controlButton.style.fontFamily = 'Roboto,Arial,sans-serif';
+    controlButton.style.fontSize = '16px';
+    controlButton.style.lineHeight = '38px';
+    controlButton.style.margin = '8px 0 22px';
+    controlButton.style.padding = '2 2px';
+    controlButton.style.textAlign = 'center';
+    controlButton.textContent = 'Center';
+    controlButton.title = 'Click to recenter the map';
+    controlButton.type = 'button';
+
+    controlButton.addEventListener('click', () => {
+      map.setCenter(center);
+    });
+    map.controls[window.google.maps.ControlPosition.TOP_CENTER].push(controlButton); // following code creates a new custom control and adds it to the map in the TOP_RIGHT position.
+  }, [sortedLocations, center]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -80,31 +102,18 @@ const Map = React.memo(({ locations }) => {
         });
       }
 
-      // Update polyline
       if (polylineRef.current) {
         polylineRef.current.setPath(sortedLocations.map(loc => ({ lat: loc.lat, lng: loc.lng })));
       }
 
-      // Handle auto-centering
       if (autoCenter && sortedLocations.length > 0) {
         mapRef.current.panTo(center);
       }
     }
   }, [sortedLocations, autoCenter, center]);
 
-  const handleCenter = () => {
-    if (sortedLocations.length > 0) {
-      mapRef.current.panTo(center);
-      setAutoCenter(true);
-    }
-  };
-
   return (
     <div>
-      <CButton className='mx-2 py-2' color="secondary" onClick={handleCenter}>
-        Center
-      </CButton>
-
       <LoadScript googleMapsApiKey={Google_Maps_Api_key}>
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={17} onLoad={onLoad} />
       </LoadScript>
