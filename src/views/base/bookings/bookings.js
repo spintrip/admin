@@ -75,7 +75,7 @@ const tableHeaders = [
 const columns = tableHeaders.map(header => ({
   name: header.label,
   selector: row => row[header.value],
-  sortable: true,
+  sortable: false,
 }));
 
 const Bookings = () => {
