@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { flagmessage, getallmessages } from '../../../api/message';
 import {
   CInputGroup,
@@ -13,14 +13,6 @@ import {
   CDropdownToggle,
   CDropdownMenu,
   CDropdownItem,
-  CPagination,
-  CPaginationItem,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import '../../../scss/message.css';
@@ -83,14 +75,11 @@ const Messages = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState(null); 
   const [flagged, setFlagged] = useState(false); 
   const token = localStorage.getItem('adminToken');
   const [activeMessage, setActiveMessage] = useState(null);
   const navigate = useNavigate();
-  const limit = 20;
-  const visiblePages = 3;
 
   useEffect(() => {
     fetchMessageData();
@@ -133,23 +122,15 @@ const Messages = () => {
         return acc;
       }, []);
       setFilteredData(groupedBookings);
-      setCurrentPage(1);
     };
     filterMessages();
   }, [messageData]);
-
-  const totalPages = Math.ceil(filteredData.length / limit);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
 
   const displayedBookings = filteredData
 
   const handleBookingClick = (bookingId) => {
     const bookingMessages = messageData.filter((message) => message.bookingId === bookingId);
     setSelectedBooking(bookingMessages);
-    fetchMessageData();
     setVisible(true);
   };
 
@@ -157,15 +138,20 @@ const Messages = () => {
     setActiveMessage(activeMessage === messageId ? null : messageId);
   };
 
-  const handleFlagClick = async(messageId) => {
-    try{
+  const handleFlagClick = useCallback(async(messageId) => {
+    try {
       await flagmessage(messageId);
-      fetchMessageData();
+  
+      setSelectedBooking(prevSelectedBooking =>
+        prevSelectedBooking.map(message =>
+          message.id === messageId ? { ...message, flagged: true } : message
+        )
+      );
     } catch (error) {
       console.log(error.message);
     }
     
-  };
+  },[setSelectedBooking]);
   
   
 

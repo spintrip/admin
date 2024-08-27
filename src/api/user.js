@@ -3,6 +3,7 @@ import serverApiUrl from "../env";
 
 const apiUrl = serverApiUrl;
 const token = localStorage.getItem('adminToken');
+
 export const fetchUsers = async () => {
   try {
     const response = await axios.get(`${apiUrl}admin/users`, {

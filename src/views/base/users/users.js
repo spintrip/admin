@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
-import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
 import {
   CButton,
@@ -23,7 +22,7 @@ import {
   CImage
 } from '@coreui/react';
 import '../../../scss/user.css';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaTimesCircle } from 'react-icons/fa';
 
 
 import DataTable from 'react-data-table-component';
@@ -121,7 +120,6 @@ const columns = [
 
 const Users = () => {
   const [userData, setUsersData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [filteredData , setFilteredData] = useState([]);
   const [error, setError] = useState(null); 
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
@@ -304,7 +302,6 @@ const Users = () => {
       sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
-        setCurrentPage(1);
       } else {
         const filtered = sortedData.filter((user) => {
           if (selectedSearchOption === 'all') {
@@ -328,26 +325,14 @@ const Users = () => {
           }
         });
         setFilteredData(filtered);
-        setCurrentPage(1);
       }
     };
     filterUsers();
   }, [userData, selectedSearchOption, searchInput]);
   
 
-  const totalPages = Math.ceil(filteredData.length / limit);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
 
   const displayedUsers = filteredData;
-
-  const getVisiblePages = () => {
-    const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + visiblePages - 1);
-    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
-  };
 
   const handleImageClick = (imageUrl) => {
     setEnlargedImage(imageUrl);
