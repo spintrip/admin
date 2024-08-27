@@ -94,6 +94,11 @@ const _nav = [
         name: 'Notification',
         to: '/operations/notifications'
       },
+      {
+        component: CNavItem,
+        name: 'Payout',
+        to: '/operations/payout'
+      },
     ],
   },
   {

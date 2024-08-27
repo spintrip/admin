@@ -48,6 +48,36 @@ body {
   }
  
 }
+.error-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: easeIn 1s ease-in;
+}
+
+.error-message {
+  border: 1px solid rgb(200, 46, 46);
+  background-color: rgb(199, 57, 57);
+  color: white;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  min-width: 300px;
+}
+
+@keyframes easeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) translateX(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}
 .cursor-pointer{
   cursor: pointer;
 }
