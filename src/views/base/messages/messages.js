@@ -111,7 +111,9 @@ const Messages = () => {
 
   useEffect(() => {
     const filterMessages = () => {
-      const groupedBookings = messageData.reduce((acc, message) => {
+      let sortedData = [...messageData]
+      sortedData.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const groupedBookings = sortedData.reduce((acc, message) => {
         const booking = acc.find((item) => item.bookingId === message.bookingId);
         if (booking) {
           // Update the latest updatedAt and createdAt
@@ -144,12 +146,6 @@ const Messages = () => {
 
   const displayedBookings = filteredData
 
-  const getVisiblePages = () => {
-    const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + visiblePages - 1);
-    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
-  };
-
   const handleBookingClick = (bookingId) => {
     const bookingMessages = messageData.filter((message) => message.bookingId === bookingId);
     setSelectedBooking(bookingMessages);
@@ -163,7 +159,7 @@ const Messages = () => {
 
   const handleFlagClick = async(messageId) => {
     try{
-      const flag = await flagmessage(messageId);
+      await flagmessage(messageId);
       fetchMessageData();
     } catch (error) {
       console.log(error.message);
@@ -197,7 +193,7 @@ const Messages = () => {
           </CInputGroup>
         </div>
       </div>
-      <div className='container-fluid h-fit-content '>
+      <div className='container-fluid h-fit-content mt-3'>
           <DataTable
                   columns={columns}
                   data={displayedBookings}

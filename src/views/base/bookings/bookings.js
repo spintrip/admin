@@ -225,7 +225,7 @@ const Bookings = () => {
     <>
       <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
         <div className='crud-group d-flex mx-2'>
-          <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setVisible(true)}>Create</CButton>
+          
         </div>
         <div>
           <CInputGroup className="mx-2">
@@ -250,7 +250,7 @@ const Bookings = () => {
           </CInputGroup>
         </div>
       </div>
-      <div className='container-fluid h-fit-content mb-5'>
+      <div className='container-fluid h-fit-content mt-2 mb-5'>
           <DataTable
                   columns={columns}
                   data={displayedBookings}

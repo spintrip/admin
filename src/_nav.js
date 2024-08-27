@@ -4,10 +4,12 @@ import {
   cilDescription,
   cilPuzzle,
   cilSpeedometer,
-  cilStar,
+  cilSend,
   cilLocationPin,
+  cibElectron,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { compose } from 'redux';
 
 const _nav = [
   {
@@ -34,11 +36,11 @@ const _nav = [
         name: 'Users',
         to: '/base/users',
       },
-      {
-        component: CNavItem,
-        name: 'Hosts',
-        to: '/base/hosts',
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Hosts',
+      //   to: '/base/hosts',
+      // },
       {
         component: CNavItem,
         name: 'Cars',
@@ -82,6 +84,18 @@ const _nav = [
     ],
   },
   
+  {
+    component: CNavGroup,
+    name: 'Operations',
+    icon: <CIcon icon={cibElectron} customClassName="nav-icon"/>,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Notification',
+        to: '/operations/notifications'
+      },
+    ],
+  },
   {
     component: CNavTitle,
     name: 'Extras',

@@ -59,18 +59,18 @@ const columns = [
   
   {
     name: 'Type',
-    selector: row => row.type ? row.type : '--', // Replace with the actual key for Type in your data
+    selector: row => row.type ? row.type : '--', 
     sortable: true,
   },
   {
     name: 'Brand',
-    selector: row => row.brand, // Replace with the actual key for Brand in your data
+    selector: row => row.brand, 
     sortable: true,
   },
   
   {
     name: 'Brand Value',
-    selector: row => row.brand_value, // Replace with the actual key for Brand Value in your data
+    selector: row => row.brand_value,
     sortable: true,
   },
   {
@@ -159,17 +159,17 @@ const Brand = () => {
       </div>
      
 
-      <div className='container-fluid h-fit-content '>
+      <div className='container-fluid h-fit-content mt-3 '>
           <DataTable
-                  columns={columns}
-                  data={brands}
-                  customStyles={customStyles}
-                  responsive={true}
-                  title={'Brands Table'}
-                  highlightOnHover={true}
-                  pointerOnHover={true}
-                  fixedHeader={true}
-                  onRowClicked={(brand)=>handleView(brand)}
+            columns={columns}
+            data={brands}
+            customStyles={customStyles}
+            responsive={true}
+            title={'Brands Table'}
+            highlightOnHover={true}
+            pointerOnHover={true}
+            fixedHeader={true}
+            onRowClicked={(brand)=>handleView(brand)}
           />
         </div>
       

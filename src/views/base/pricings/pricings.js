@@ -218,7 +218,7 @@ const Pricing = () => {
           </CInputGroup>
         </div>
       </div>
-      <div className='container-fluid h-fit-content '>
+      <div className='container-fluid h-fit-content mt-4 '>
       <DataTable
                   columns={columns}
                   data={displayedPricing}
