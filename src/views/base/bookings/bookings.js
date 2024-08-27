@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getBooking, fetchBookingById, updateBooking } from '../../../api/booking';
-import DocsExample from '../../../components/DocsExample';
+
 import {
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CPagination,
-  CPaginationItem,
+
   CInputGroup,
   CFormInput,
   CDropdown,
@@ -28,6 +21,62 @@ import {
   CRow
 } from '@coreui/react';
 import '../../../scss/booking.css';
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+const tableHeaders = [
+  { label: 'Booking ID', value: 'Bookingid' },
+  { label: 'Car ID', value: 'carid' },
+  { label: 'Status', value: 'status' },
+  { label: 'Amount', value: 'amount' },
+  { label: 'GST Amount', value: 'GSTAmount' },
+  { label: 'Total User Amount', value: 'totalUserAmount' },
+  { label: 'TDS Amount', value: 'TDSAmount' },
+  { label: 'Total Host Amount', value: 'totalHostAmount' },
+  { label: 'Start Trip Date', value: 'startTripDate' },
+  { label: 'End Trip Date', value: 'endTripDate' },
+  { label: 'Start Trip Time', value: 'startTripTime' },
+  { label: 'End Trip Time', value: 'endTripTime' },
+  { label: 'Created At', value: 'createdAt' },
+  { label: 'Updated At', value: 'updatedAt' },
+];
+const columns = tableHeaders.map(header => ({
+  name: header.label,
+  selector: row => row[header.value],
+  sortable: false,
+}));
 
 const Bookings = () => {
   const [bookingData, setBookingData] = useState([]);
@@ -54,8 +103,6 @@ const Bookings = () => {
     cancelReason: null,
     features: []
   });
-  const limit = 20;
-  const visiblePages = 3;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -167,44 +214,16 @@ const Bookings = () => {
       setUpdateModalVisible(false);
     }
   };
-  
-  
-  
+ 
 
-  const totalPages = Math.ceil(filteredData.length / limit);
+  const displayedBookings = filteredData
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  console.log(displayedBookings)
 
-  const displayedBookings = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
-
-  const getVisiblePages = () => {
-    const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + visiblePages - 1);
-    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
-  };
-
-  const tableHeaders = [
-    { label: 'Booking ID', value: 'Bookingid' },
-    { label: 'Car ID', value: 'carid' },
-    { label: 'Status', value: 'status' },
-    { label: 'Amount', value: 'amount' },
-    { label: 'GST Amount', value: 'GSTAmount' },
-    { label: 'Total User Amount', value: 'totalUserAmount' },
-    { label: 'TDS Amount', value: 'TDSAmount' },
-    { label: 'Total Host Amount', value: 'totalHostAmount' },
-    { label: 'Start Trip Date', value: 'startTripDate' },
-    { label: 'End Trip Date', value: 'endTripDate' },
-    { label: 'Start Trip Time', value: 'startTripTime' },
-    { label: 'End Trip Time', value: 'endTripTime' },
-    { label: 'Created At', value: 'createdAt' },
-    { label: 'Updated At', value: 'updatedAt' },
-  ];
 
   return (
     <>
-      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
         <div className='crud-group d-flex mx-2'>
           <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setVisible(true)}>Create</CButton>
         </div>
@@ -231,8 +250,20 @@ const Bookings = () => {
           </CInputGroup>
         </div>
       </div>
-
-      <DocsExample href="components/table#hoverable-rows">
+      <div className='container-fluid h-fit-content mb-5'>
+          <DataTable
+                  columns={columns}
+                  data={displayedBookings}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'Bookings Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(booking)=>handleBookingByIdClick(booking.Bookingid)}
+          />
+        </div>
+      {/* <DocsExample href="components/table#hoverable-rows">
         <CTable color="lightdark border rounded-md booking-table" hover responsive>
           <CTableHead>
             <CTableRow>
@@ -264,9 +295,9 @@ const Bookings = () => {
             ))}
           </CTableBody>
         </CTable>
-      </DocsExample>
+      </DocsExample> */}
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+      {/* <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <CPagination aria-label="Page navigation example">
           <CPaginationItem
             disabled={currentPage === 1}
@@ -290,7 +321,7 @@ const Bookings = () => {
             Next
           </CPaginationItem>
         </CPagination>
-      </div>
+      </div> */}
 
       {/* Booking Details Modal */}
       {bookingById && (

@@ -1,7 +1,7 @@
 // UpdateTransactionModal.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getTransaction , updateTransaction } from '../../../api/transaction';
-import DocsExample from '../../../components/DocsExample';
+
 import {
   CInputGroup,
   CFormInput,
@@ -13,19 +13,90 @@ import {
   CButton,
   CForm,
   CFormLabel,
-  CPagination,
-  CPaginationItem,
   CDropdown,
   CDropdownToggle,
   CDropdownMenu,
   CDropdownItem,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
 } from '@coreui/react';
+import { useNavigate } from 'react-router-dom';
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+const columns = [
+ 
+  {
+    name: 'Transaction ID',
+    selector: (row) => row.Transactionid, // Replace with the actual key for Transaction ID in your data
+    sortable: false,
+  },
+  {
+    name: 'Booking ID',
+    selector: (row) => row.Bookingid, // Replace with the actual key for Booking ID in your data
+    sortable: false,
+  },
+  {
+    name: 'Status',
+    selector: (row) => row.status? row.status : "N/A", // Replace with the actual key for Status in your data
+    sortable: false,
+  },
+  {
+    name: 'Amount',
+    selector: (row) => row.amount, // Replace with the actual key for Amount in your data
+    sortable: false,
+  },
+  {
+    name: 'GST Amount',
+    selector: (row) => row.gstAmount? row.gstAmount : '0', // Replace with the actual key for GST Amount in your data
+    sortable: false,
+  },
+  {
+    name: 'Total Amount',
+    selector: (row) => row.totalAmount, // Replace with the actual key for Total Amount in your data
+    sortable: false,
+  },
+  {
+    name: 'Created At',
+    selector: (row) => new Date(row.createdAt).toLocaleString(), // Converts to a readable date string
+    sortable: false,
+  },
+  {
+    name: 'Updated At',
+    selector: (row) => new Date(row.updatedAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+];
 
 const UpdateTransactionModal = () => {
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
@@ -33,34 +104,37 @@ const UpdateTransactionModal = () => {
   const [transactionFormValues, setTransactionFormValues] = useState({
     status: ''
   });
+  const navigate = useNavigate();
   const [ transactionId , setTransactionId] = useState('')
   const token = localStorage.getItem('adminToken');
-  const [currentPage, setCurrentPage] = useState(1);
   const [filterdData , setFilteredData] = useState([]);
   const [selectedSearchOption , setSelectedSearchOption] = useState('all');
   const [searchInput , setSearchInput] = useState('');
-  const limit = 20;
-  const visiblePages = 3;
+  console.log('Transactions', filterdData)
+
 
   useEffect(() => {
-    if(!token) {
-      console.log('No token Found');
-      navigate('/login')
-    }  else {
-        fetchTransactionData();
-    }
+    console.log("DSIPLAYED Transactions", filterdData)
+  }, [filterdData])
+
+  useEffect(() => {
+    fetchTransactionData();
+    console.log('Fetched Transactions', filterdData)
   }, []);
 
-  const fetchTransactionData = async() =>{
+  const fetchTransactionData = useCallback(async() =>{
+   if(!token) {
+      console.log('No token Found');
+      navigate('/login')
+   }
    try{
     const data = await getTransaction();
     setTransactionData(data);
-
    } catch (error) {
     console.log(error);
    }
 
-  }
+  }, [token , navigate])
 
   const handleTransactionInputChange = (e) => {
     const { name, value } = e.target;
@@ -82,49 +156,41 @@ const UpdateTransactionModal = () => {
       console.log(error);
     }
   };
-
+  const filterBooking = () => {
+    let sortedData = [...transactionData];
+    sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (!searchInput) {
+        setFilteredData(sortedData);
+      } else {
+        const filtered = sortedData.filter((transaction) => {
+          if (selectedSearchOption == 'all') {
+              return Object.values(transaction).some(value =>
+                value && value.toString().toLowerCase().includes(searchInput.toLowerCase())
+              );
+          } else {
+              const value = transaction[selectedSearchOption];
+              if (selectedSearchOption == 'createdAt' || selectedSearchOption == 'updatedAt') {
+              const formattedDate = new Date(value).toLocaleString();
+              return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+              }
+              return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+          }
+        });
+        setFilteredData(filtered);
+        
+      }
+    };     
   useEffect(() => {
-    const filterBooking = () => {
-        if (!searchInput) {
-          setFilteredData(transactionData);
-          setCurrentPage(1);
-        } else {
-          const filtered = transactionData.filter((transaction) => {
-            if (selectedSearchOption === 'all') {
-                return Object.values(transaction).some(value =>
-                  value && value.toString().toLowerCase().includes(searchInput.toLowerCase())
-                );
-            } else {
-                const value = transaction[selectedSearchOption];
-                if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
-                const formattedDate = new Date(value).toLocaleString();
-                return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
-                }
-                return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
-            }
-          });
-          setFilteredData(filtered);
-          setCurrentPage(1);
-        }
-      };      
+    
     filterBooking();
-  }, [transactionData , searchInput , selectedSearchOption ]);
+  }, [transactionData ,selectedSearchOption, searchInput  ]);
 
-  const totalPages = Math.ceil(filterdData.length / limit);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const displayedHosts = filterdData
+  console.log('Transactions', filterdData)
 
-  const displayedHosts = filterdData.slice((currentPage - 1) * limit, currentPage * limit);
 
-  const getVisiblePages = () => {
-    const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + visiblePages - 1);
-    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
-  };
-
-  const handleTransaction = async (transaction) => {
+  const handleTransaction = (transaction) => {
     setTransactionId(transaction.Transactionid);
     setTransactionModalVisible(true);
   }
@@ -158,7 +224,7 @@ const UpdateTransactionModal = () => {
             />
             <CDropdown alignment="end" variant="input-group">
             <CDropdownToggle color="secondary" variant="outline">
-              {tableHeaders.find(header => header.value === selectedSearchOption)?.label || 'Select'}
+              {tableHeaders.find(header => header.value == selectedSearchOption)?.label || 'Select'}
             </CDropdownToggle>
               <CDropdownMenu>
                 {tableHeaders.map((header, index) => (
@@ -171,64 +237,21 @@ const UpdateTransactionModal = () => {
           </CInputGroup>
         </div>
       </div>
-      <DocsExample href="components/table#hoverable-rows">
-  <CTable color="dark" hover>
-    <CTableHead>
-      <CTableRow>
-        <CTableHeaderCell scope="col">#</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Transaction ID</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Booking ID</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Amount</CTableHeaderCell>
-        <CTableHeaderCell scope="col">GST Amount</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Total Amount</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
-        <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
-      </CTableRow>
-    </CTableHead>
-    <CTableBody>
-      {displayedHosts.map((transaction, index) => (
-        <CTableRow key={transaction.Transactionid} onClick={() => handleTransaction(transaction)}>
-          <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-          <CTableDataCell>{transaction.Transactionid}</CTableDataCell>
-          <CTableDataCell>{transaction.Bookingid}</CTableDataCell>
-          <CTableDataCell>{transaction.status}</CTableDataCell>
-          <CTableDataCell>{transaction.amount}</CTableDataCell>
-          <CTableDataCell>{transaction.GSTAmount ? transaction.GSTAmount : 'N/A'}</CTableDataCell>
-          <CTableDataCell>{transaction.totalAmount}</CTableDataCell>
-          <CTableDataCell>{new Date(transaction.createdAt).toLocaleString()}</CTableDataCell>
-          <CTableDataCell>{new Date(transaction.updatedAt).toLocaleString()}</CTableDataCell>
-        </CTableRow>
-      ))}
-    </CTableBody>
-  </CTable>
-</DocsExample>
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <CPagination aria-label="Page navigation example">
-          <CPaginationItem
-            disabled={currentPage === 1}
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            Previous
-          </CPaginationItem>
-          {getVisiblePages().map((page) => (
-            <CPaginationItem
-              key={page}
-              active={page === currentPage}
-              onClick={() => handlePageChange(page)}
-            >
-              {page}
-            </CPaginationItem>
-          ))}
-          <CPaginationItem
-            disabled={currentPage === totalPages}
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            Next
-          </CPaginationItem>
-        </CPagination>
-      </div>
+      <div className='container-fluid h-fit-content '>
+          <DataTable
+                  columns={columns}
+                  data={displayedHosts}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'Transactions Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(transaction)=>handleTransaction(transaction)}
+          />
+        </div>
+
 
       <CModal visible={transactionModalVisible} onClose={() => setTransactionModalVisible(false)} alignment="center" size="lg">
         <CModalHeader>

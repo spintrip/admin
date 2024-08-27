@@ -25,7 +25,64 @@ import {
   CForm,
 } from '@coreui/react';
 import '../../../scss/pricing.css';
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+const columns = [
 
+  {
+    name: 'Car ID',
+    selector: row => row.carid, // Replace with the actual key for Car ID in your data
+    sortable: true,
+  },
+  {
+    name: 'Cost per Hour',
+    selector: row => row.costperhr, // Replace with the actual key for Cost per Hour in your data
+    sortable: true,
+  },
+  {
+    name: 'Created At',
+    selector: row => new Date(row.createdAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+  {
+    name: 'Updated At',
+    selector: row => new Date(row.updatedAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+];
 const Pricing = () => {
   const [pricingData, setPricingData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,8 +144,8 @@ const Pricing = () => {
     setCurrentPage(page);
   };
 
-  const displayedPricing = (filteredData || []).slice((currentPage - 1) * limit, currentPage * limit);
-
+  const displayedPricing = filteredData || [];
+  console.log(displayedPricing)
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
     const endPage = Math.min(totalPages, startPage + visiblePages - 1);
@@ -161,55 +218,23 @@ const Pricing = () => {
           </CInputGroup>
         </div>
       </div>
-      <DocsExample href="components/table#hoverable-rows">
-        <CTable color="dark" hover>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell scope="col">#</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Cost per Hour</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {displayedPricing.map((pricing, index) => (
-              <CTableRow key={pricing.carid}>
-                <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell style={{ fontSize : '14px' }}>{pricing.carid ? pricing.carid : 'N/A'}</CTableDataCell>
-                <CTableDataCell>{pricing.costperhr}</CTableDataCell>
-                <CTableDataCell>{new Date(pricing.createdAt).toLocaleString()}</CTableDataCell>
-                <CTableDataCell>{new Date(pricing.updatedAt).toLocaleString()}</CTableDataCell>
-              </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
-      </DocsExample>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <CPagination aria-label="Page navigation example">
-          <CPaginationItem
-            disabled={currentPage === 1}
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            Previous
-          </CPaginationItem>
-          {getVisiblePages().map((page) => (
-            <CPaginationItem
-              key={page}
-              active={page === currentPage}
-              onClick={() => handlePageChange(page)}
-            >
-              {page}
-            </CPaginationItem>
-          ))}
-          <CPaginationItem
-            disabled={currentPage === totalPages}
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            Next
-          </CPaginationItem>
-        </CPagination>
-      </div>
+      <div className='container-fluid h-fit-content '>
+      <DataTable
+                  columns={columns}
+                  data={displayedPricing}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'Pricing Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(car)=>handleCarByIdClick(car)}
+          />
+          </div>
+      
+      
+
+
       <CModal visible={showAutoModal} onClose={() => setShowAutoModal(false)} className="custom-modal">
           <CModalHeader className="modal-header-styled">Auto Pricing</CModalHeader>
           <CModalBody className="modal-body-styled">

@@ -33,6 +33,108 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaTimesCircle, FaMapMarkerAlt } from 'react-icons/fa';
 import '../../../scss/cars.css';
+import DataTable from 'react-data-table-component';
+const customStyles = {
+  header: {
+    style: {
+      backgroundColor: 'transparent',
+      color: '#ffffff',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: '#212631',
+      color: '#ffffff',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#ffffff',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#282D37',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: 'black',
+      },
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: '#343a40',
+      color: '#ffffff',
+    },
+  },
+};
+const columns = [
+  {
+    name: 'Car ID',
+    selector: (row) => row.carid, // Assuming 'carId' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Host ID',
+    selector: (row) => row.hostId, // Assuming 'hostId' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Car Model',
+    selector: (row) => row.carmodel, // Assuming 'carModel' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Type',
+    selector: (row) => row.type, // Assuming 'type' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Brand',
+    selector: (row) => row.brand, // Assuming 'brand' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Chassis No',
+    selector: (row) => row.chassisno, // Assuming 'chassisNo' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'RC Number',
+    selector: (row) => row.Rcnumber, // Assuming 'rcNumber' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Engine Number',
+    selector: (row) => row.Enginenumber, // Assuming 'engineNumber' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Registration Year',
+    selector: (row) => row.Registrationyear, // Assuming 'registrationYear' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Verification',
+    selector: (row) => row.additionalInfo.verification_status ? row.additionalInfo.verification_status : 'N/A', // Assuming 'verification' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Rating',
+    selector: (row) => row.rating? row.rating : 0, // Assuming 'rating' is the key in your data
+    sortable: true,
+  },
+  {
+    name: 'Created At',
+    selector: (row) => new Date(row.createdAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+  {
+    name: 'Updated At',
+    selector: (row) => new Date(row.updatedAt).toLocaleString(), // Converts to a readable date string
+    sortable: true,
+  },
+];
 
 const Cars = () => {
   const [carData, setCarData] = useState([]);
@@ -67,7 +169,7 @@ const Cars = () => {
     } catch (error) {
       setError(error.message);
     }
-  } , [token , navigate])
+  } , [token , navigate]);
 
   useEffect(() => {
     fetchData();
@@ -235,7 +337,7 @@ const Cars = () => {
   useEffect(() => {
     const filterCars = () => {
       let sortedData = [...carData];
-      sortedData.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
         setCurrentPage(1);
@@ -267,8 +369,8 @@ const Cars = () => {
     setCurrentPage(page);
   };
 
-  const displayedCars = filteredData.slice((currentPage - 1) * limit, currentPage * limit);
-
+  const displayedCars = filteredData
+  console.log('dSIPLAYED CARS', displayedCars)
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
     const endPage = Math.min(totalPages, startPage + visiblePages - 1);
@@ -302,7 +404,7 @@ const Cars = () => {
         <div className='error-message'> {error} </div>
       ) : (
         <div className="container-fluid">
-        <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
+        <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
             <div>
               <CInputGroup className="mx-2">
                 <CFormInput
@@ -326,91 +428,20 @@ const Cars = () => {
               </CInputGroup>
             </div>
           </div>
-          <DocsExample href="components/table#hoverable-rows ">
-          <CTable className = "car-table" color="dark" hover>
-            <CTableHead>
-              <CTableRow className="cars-header">
-                {/* Table Headers */}
-                <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Host ID</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Car Model</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Type</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Brand</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Chassis No</CTableHeaderCell>
-                <CTableHeaderCell scope="col">RC Number</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Engine Number</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Registration Year</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Verification</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Rating</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {displayedCars.map((car, index) => (
-                <CTableRow key={car.carid} onClick={() => handleCarByIdClick(car)}>
-                <CTableHeaderCell scope="row">
-                  {(currentPage - 1) * limit + index + 1}
-                </CTableHeaderCell>
-                <CTableDataCell>{car.carid || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.hostId || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.carmodel || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.type || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.brand || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.chassisno || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.Rcnumber || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{car.Enginenumber ? car.Enginenumber : ''}</CTableDataCell>
-                <CTableDataCell>{car.Registrationyear || 'N/A'}</CTableDataCell>
-                <CTableDataCell>
-                  <div>
-                    {car.additionalInfo.verification_status === 1 ? (
-                      <>
-                        <span className="m-2" style={{ color: 'orange', display: 'block' }}>Pending</span>
-                        <code className="p-2 border rounded" style={{ color: 'orange', display: 'block' }}>Code-1</code>
-                      </>
-                    ) : car.additionalInfo.verification_status === 2 ? (
-                      <>
-                        <span className="m-2" style={{ color: 'lightgreen', display: 'block' }}>Confirmed</span>
-                        <code className="p-2 border rounded" style={{ color: 'lightgreen', display: 'block' }}>Code-2</code>
-                      </>
-                    ) : car.additionalInfo.verification_status === null ? (
-                      <>
-                        <span className="m-2" style={{ color: 'red', display: 'block' }}>N/A</span>
-                        <code className="p-2 border rounded" style={{ color: 'red', display: 'block' }}>Code-N/A </code>
-                      </>
-                    ) : (
-                      <>
-                        <span className="m-2" style={{ display: 'block' }}>Unknown Status</span>
-                        <code className="p-2 border rounded" style={{ display: 'block' }}>Code-{car.additionalInfo.verification_status}</code>
-                      </>
-                    )}
-                  </div>
-                </CTableDataCell>
-                <CTableDataCell>{car.rating?.toFixed(2) || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{new Date(car.createdAt).toLocaleString()}</CTableDataCell>
-                <CTableDataCell>{new Date(car.updatedAt).toLocaleString()}</CTableDataCell>
-              </CTableRow>
-              
-              ))}
-            </CTableBody>
-          </CTable>
-          </DocsExample>
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-            <CPagination aria-label="Page navigation example">
-              <CPaginationItem disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
-                Previous
-              </CPaginationItem>
-              {getVisiblePages().map((page) => (
-                <CPaginationItem key={page} active={page === currentPage} onClick={() => handlePageChange(page)}>
-                  {page}
-                </CPaginationItem>
-              ))}
-              <CPaginationItem disabled={currentPage === totalPages} onClick={() => handlePageChange(currentPage + 1)}>
-                Next
-              </CPaginationItem>
-            </CPagination>
-          </div>
+          <div className='container-fluid h-fit-content '>
+          <DataTable
+                  columns={columns}
+                  data={displayedCars}
+                  customStyles={customStyles}
+                  responsive={true}
+                  title={'Cars Table'}
+                  highlightOnHover={true}
+                  pointerOnHover={true}
+                  fixedHeader={true}
+                  onRowClicked={(car)=>handleCarByIdClick(car)}
+          />
+        </div>
+          
 
           {/* Modal for Car Details */}
           {carById && (
