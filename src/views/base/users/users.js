@@ -3,15 +3,7 @@ import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
 import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
 import {
-  CTable,
-  CTableBody,
   CButton,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CPagination,
-  CPaginationItem,
   CInputGroup,
   CFormInput,
   CDropdown,
@@ -406,7 +398,6 @@ const Users = () => {
           </CInputGroup>
         </div>
       </div>
-]
       <div className='container-fluid h-fit-content '>
           <DataTable
                   

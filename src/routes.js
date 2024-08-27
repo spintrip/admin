@@ -34,6 +34,8 @@ const Device = React.lazy(() => import('./views/device/device'))
 
 //Notification
 const Notifications = React.lazy(() => import('./views/operations/notifications/notifications'))
+//Notification
+const Payout = React.lazy(() => import('./views/operations/payout/payout'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -55,6 +57,7 @@ const routes = [
   { path: '/base/messages', name: 'Messages', element: Messages },
   { path: '/base/transactions', name: 'Transactions', element: Transactions },
   { path: '/operations/notifications' , name: 'Notifications' , element: Notifications},
+  { path: '/operations/payout' , name: 'Payout' , element: Payout},
 ]
 
 export default routes;

@@ -1,6 +1,10 @@
 import React, { useState , useEffect } from 'react';
 import { getDevice , getAllDevices ,createCarDeviceAssign ,updateCarDeviceAssign , deleteCarDeviceAssign } from '../../api/deviceLocation';
 import {
+  CAccordion,
+  CAccordionItem,
+  CAccordionHeader,
+  CAccordionBody,
   CButton,
   CForm,
   CFormInput,
@@ -49,6 +53,7 @@ const DeviceLocation = () => {
   const [createData, setCreateData] = useState({ deviceid: '', carid: '' });
   const [updateData, setUpdateData] = useState({ deviceid: '', carid: '' });
   const [error, setError] = useState(null);
+  const [isErrorContainer, setIsErrorContainer] = useState(false)
   const [markerLimit, setMarkerLimit] = useState(20);
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
@@ -95,8 +100,18 @@ const DeviceLocation = () => {
     } catch (error) {
       if(error.response?.status == 404){
         setError(error.response.message || 'Device id not present')
+        setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setError('');
+        }, 3000);
       } else {
         setError('An error occured');
+        setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setError('');
+        }, 3000);
       }
     }
   };
@@ -126,6 +141,11 @@ const DeviceLocation = () => {
       setError(null);
     } catch (error) {
       setError('Error refreshing device data');
+      setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setError('');
+        }, 3000);
     }
   };
 
@@ -136,6 +156,11 @@ const DeviceLocation = () => {
       setAllDevices(data);
     } catch (error) {
       setError('Error fetching all devices');
+      setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setError('');
+        }, 3000);
     }
   };
   
@@ -146,6 +171,11 @@ const DeviceLocation = () => {
       setShowDeviceModal(true);
     } catch (error) {
       setError('Error fetching all devices');
+      setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setError('');
+        }, 3000);
     }
   };
   
@@ -186,6 +216,11 @@ const DeviceLocation = () => {
       setShowDeleteModal(true);
     } catch (error) {
       setError('Error fetching all devices');
+      setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setError('');
+        }, 3000);
     }
   };
   
@@ -211,10 +246,36 @@ const DeviceLocation = () => {
   };
   const handleStartDateChange = (e) => {
     setStartDate(parseDateFromInput(e.target.value));
+    console.log('startDate', startDate)
   };
 
   const handleEndDateChange = (e) => {
     setEndDate(parseDateFromInput(e.target.value));
+    console.log('end date', endDate)
+  };
+
+
+  const calculate24hrsTime = (e) => {
+    e.preventDefault();
+
+    try {
+      // Get the current date and time
+      const now = new Date();
+
+      // Ensure 'now' is a valid Date instance
+      if (isNaN(now.getTime())) {
+        throw new Error('Invalid date object');
+      }
+
+      // Calculate the end date by adding 24 hours to the current time
+      const endTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      // Set the start and end dates in the desired format
+      setStartDate(now.toString());
+      setEndDate(endTime.toString());
+    } catch (error) {
+      console.error('Error calculating time:', error.message);
+    }
   };
   // Filter data based on the selected date range
  const filterTime = (startDate, endDate) => {
@@ -239,16 +300,16 @@ const DeviceLocation = () => {
     <div className="container-fluid">
       <CForm className="mb-3">
         <CRow className='d-flex align-items-center justify-content-center'>
-          <CCol className='d-flex align-items-center justify-content-center'>
-            <CInputGroup>
+          <CCol className='d-flex align-items-center justify-content-center '>
+            <CInputGroup className=' '>
             <CFormInput
                 type="text"
                 value={selectedDevice}
                 onChange={handleInputChange}
-                className="mx-2"
+                className="mx-2 border "
                 placeholder="Device Name"
               />
-            <CDropdown className='device-dropdown' onClick={() => handleDropdown()}>
+            <CDropdown color='light' className='border rounded bg-primary' onClick={() => handleDropdown()}>
               <CDropdownToggle className='device-menu'>
                 
               </CDropdownToggle>
@@ -260,6 +321,7 @@ const DeviceLocation = () => {
                 ))}
               </CDropdownMenu>
             </CDropdown>
+          
               <CFormInput
                 type="number"
                 value={markerLimit}
@@ -277,57 +339,92 @@ const DeviceLocation = () => {
           </CCol>
         </CRow>
         <div className='mt-2'>
-            <div className='Tool-color d-flex align-items-center justify-content-between'>
-              <div>
-              {error && <span className="text-danger error-message">{error}</span>} 
+          
+            <div className='row'>
+             
+            <div className='col-12 col-md-6 mt-2'>
+            
+                <CDropdown className='w-100'>
+                  <CDropdownToggle className='py-3' color="light">Device Manager</CDropdownToggle>
+                  <CDropdownMenu className=' p-3 w-100' style={{minWidth: '100px'}}>
+                  <div className='w-100 d-flex flex-column align-items-center justify-content-center'>
+                    <CButton color='primary' className='w-100 my-2 d-flex align-items-center justify-content-center' onClick={handleSeeDevices} >
+                      <svg  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{maxWidth: '30px'}}  className='deviceEdit mx-2'>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                          </svg>
+                          <div> All Devices</div>
+                          
+                     </CButton>
+                <CButton color='light' className='w-100 my-2 d-flex align-items-center justify-content-center' onClick={() => setShowCreateModal(true)}>
+                  <CIcon className='mx-2' icon={cilPlus} size="xl" />
+                  Add Device
+                </CButton>
+                <CButton color='warning' className='w-100 my-2 d-flex align-items-center justify-content-center' onClick={() => setShowUpdateModal(true)}>
+                  <CIcon className='mx-2' icon={cilPencil} size="xl" />
+                  Edit  Device
+                </CButton>
+                <CButton  className='w-100 my-2 d-flex align-items-center justify-content-center' color="danger" onClick={handleDeleteModalOpen}>
+                  <CIcon icon={cilTrash} size="xl"  className='mx-2'/>
+                  Delete Device
+                </CButton>
+                </div>
+   
+  </CDropdownMenu>
+                </CDropdown>
+              
               </div>
-              <div>
-              <span className= "Tool-icons">
-                {showDateTime ?
-                  <svg  onClick={()=>{setShowDateTime(false)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-                  </svg>
+              <div className='col-12 col-md-6 mt-2'>
+              <CAccordion className='w-100 '>
+                <CAccordionItem itemKey={1}>
+                  <CAccordionHeader>{showDateTime ?
+                  <div className='d-flex' onClick={()=>{setShowDateTime(false)}}>
+                    Date Time Filter
+                    <svg className='mx-2'  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  </div>
                   : 
-                  <svg onClick={()=>{setShowDateTime(true)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} >
+                  <div className='d-flex' onClick={()=>{setShowDateTime(true)}}>
+                    Date Time Filter
+                  <svg className='mx-2'  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   </svg>
-                }
-              </span>
-              
-              <span className='Tool-icons'>
-              {showMenu ? 
-              <svg  onClick={()=>{setShowMenu(false)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{width: '20px'}} >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 9.75V10.5" />
-              </svg> 
-              :
-              <svg onClick={()=>{setShowMenu(true)}}  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{width: '20px'}} 
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-              </svg>
-
-              }
-              </span>
-              </div>
-            </div>
-        </div>
-          {showDateTime ?
-                <div className='d-flex align-items-center justify-content-between border px-2 mt-1'>
-                  <label>
+                  </div>
+                }</CAccordionHeader>
+                  <CAccordionBody className='bg-dark'>
+                    {/* <div>
+                      <CButton color='light' onClick={calculate24hrsTime}>24 hrs</CButton>
+                    </div>
+                    <hr/> */}
+                  <div className='d-flex flex-column align-items-center justify-content-between  px-2 mt-1'>
+                  <div className='mt-4 w-100 d-flex'>
+                  <label className='mx-2 font-bold'>
                     Start Date:
                   </label>
                   
-                  <input className='rounded bg-dark p-1 ' type="datetime-local" onChange={handleStartDateChange} value={formatDateForInput(startDate)} />
-                  <label>
+                  <input className='rounded bg-dark p-1 w-100' type="datetime-local" onChange={handleStartDateChange} value={formatDateForInput(startDate)} />
+                  </div>
+                  <div className='mt-4 w-100 d-flex'>
+                  <label className='mx-2 font-bold'>
                     End Date:
                   </label>
-                  <input className='rounded bg-dark p-1  ' type="datetime-local" onChange={handleEndDateChange} value={formatDateForInput(endDate)}  />
-                  <CButton className='border mt-2 mx-3' onClick={() => filterTime(startDate, endDate)}>Go</CButton>
+                  <input className='rounded bg-dark p-1  w-100' type="datetime-local" onChange={handleEndDateChange} value={formatDateForInput(endDate)}  />
+                  </div>
+                  <CButton color='primary' className='border mt-5 mx-3 w-full w-100' onClick={() => filterTime(startDate, endDate)}>Go</CButton>
                 </div>
-                :
-                <>
-                </>
-              } 
+                  </CAccordionBody>
+                </CAccordionItem>
+                </CAccordion>
+              </div>
+              <div>
+              
+              
+              
+              </div>
+            </div>
+        </div>
+           
               {showMenu ? 
                 <div className=' d-flex align-items-center justify-content-center border px-2 m-3'>
                 <svg onClick={handleSeeDevices} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style={{width: '20px'}} className='deviceEdit'>
@@ -514,7 +611,28 @@ const DeviceLocation = () => {
           </CButton>
         </CModalFooter>
       </CModal>
-      
+      <div className='error-container'>
+      {isErrorContainer && (
+        <span className="error-message">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6 mx-2"
+            style={{ maxWidth: '40px' }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+          {error}
+        </span>
+      )}
+    </div>
     </div>
   );
 };
