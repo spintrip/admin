@@ -277,40 +277,42 @@ const DeviceLocation = () => {
           </CCol>
         </CRow>
         <div className='mt-2'>
-          <div className='d-flex align-items-center justify-content-between'>
-            <div className='tool-color'>
+            <div className='Tool-color d-flex align-items-center justify-content-between'>
+              <div>
               {error && <span className="text-danger error-message">{error}</span>} 
-              <span className='px-2 m-2 w-4'>
+              </div>
+              <div>
+              <span className= "Tool-icons">
                 {showDateTime ?
-                  <svg  onClick={()=>{setShowDateTime(false)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} className='deviceEdit'>
+                  <svg  onClick={()=>{setShowDateTime(false)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                   </svg>
                   : 
-                  <svg onClick={()=>{setShowDateTime(true)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} className='cursor-pointer'>
+                  <svg onClick={()=>{setShowDateTime(true)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '20px'}} >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   </svg>
                 }
               </span>
               
-              <span >
+              <span className='Tool-icons'>
               {showMenu ? 
-              <svg  onClick={()=>{setShowMenu(false)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{width: '20px'}} className='deviceEdit'>
+              <svg  onClick={()=>{setShowMenu(false)}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{width: '20px'}} >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 9.75V10.5" />
               </svg> 
               :
-              <svg onClick={()=>{setShowMenu(true)}}  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{width: '20px'}} className='deviceEdit'>
+              <svg onClick={()=>{setShowMenu(true)}}  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style={{width: '20px'}} 
+              >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
               </svg>
 
               }
               </span>
-              
               </div>
             </div>
-          </div>
+        </div>
           {showDateTime ?
-                <div className='d-flex align-items-center justify-content-between border p-1 mt-1'>
+                <div className='d-flex align-items-center justify-content-between border px-2 mt-1'>
                   <label>
                     Start Date:
                   </label>
@@ -327,18 +329,17 @@ const DeviceLocation = () => {
                 </>
               } 
               {showMenu ? 
-                <div className=' d-flex align-items-center justify-content-center border p-2 m-3'>
+                <div className=' d-flex align-items-center justify-content-center border px-2 m-3'>
                 <svg onClick={handleSeeDevices} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style={{width: '20px'}} className='deviceEdit'>
                   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
                 </svg>
-
-                <CButton className="icon-button mx-2 deviceEdit" onClick={() => setShowCreateModal(true)}>
+                <CButton className="icon-button mx-2" onClick={() => setShowCreateModal(true)}>
                   <CIcon icon={cilPlus} size="lg" />
                 </CButton>
-                <CButton className="icon-button mx-2 deviceEdit" onClick={() => setShowUpdateModal(true)}>
+                <CButton className="icon-button mx-2 " onClick={() => setShowUpdateModal(true)}>
                   <CIcon icon={cilPencil} size="lg" />
                 </CButton>
-                <CButton className="icon-button mx-2 deviceEdit" color="danger" onClick={handleDeleteModalOpen}>
+                <CButton className="icon-button mx-2 " color="danger" onClick={handleDeleteModalOpen}>
                   <CIcon icon={cilTrash} size="lg" />
                 </CButton>
                 </div>
@@ -472,8 +473,6 @@ const DeviceLocation = () => {
           <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Close</CButton>
         </CModalFooter>
       </CModal>
-
-
 
       {/* See Devices Modal */}
       <CModal
