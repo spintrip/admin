@@ -383,7 +383,6 @@ const Users = () => {
           </CInputGroup>
         </div>
       </div>
-
       <div className='container-fluid h-fit-content '>
           <DataTable
                   
