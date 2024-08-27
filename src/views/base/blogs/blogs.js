@@ -27,6 +27,7 @@ const Blog = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModal, setUpdateModal] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
+  const [filterData , setFilterData] = useState([]);
   const [formValues, setFormValues] = useState({
     blogName: '',
     blogAuthor: '',
@@ -63,6 +64,12 @@ const Blog = () => {
     }
   };
 
+  useEffect(() => {
+    const filter = [...blogData];
+    filter.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setFilterData(filter);
+    console.log(filterData)
+  }, [blogData , setFilterData])
   const handleCardClick = (blog) => {
     setSelectedBlog(blog);
     setModalVisible(true);
@@ -177,9 +184,9 @@ const Blog = () => {
         <CButton className="fw-bolder bg-light text-black " onClick={() => setVisible(true)}>Create Blog</CButton>
       </div>
 
-      <div className="container-fluid my-4 d-flex flex-wrap align-items-center justify-content-start">
-        {blogData.map((blog, index) => (
-          <div key={blog.blogId} className="blog-card" onClick={() => handleCardClick(blog)}>
+      <div className="container-fluid my-4 d-flex flex-wrap align-items-center justify-content-start mt-2">
+        {filterData.map((blog, index) => (
+          <div key={blog.blogId} className="blog-card " onClick={() => handleCardClick(blog)}>
             <CCard>
               <CCardImage orientation="top" src={blog.blogImage1} style={{ height: '200px', objectFit: 'cover' }} />
               <CCardImage orientation="bottom" src={blog.blogImage2} style={{ height: '200px', objectFit: 'cover'}} />

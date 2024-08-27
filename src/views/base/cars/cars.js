@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getCars, fetchCarById, updateCar } from '../../../api/car';
+import { fetchUserById } from '../../../api/user';
 import DocsExample from '../../../components/DocsExample';
 import {
   CTable,
@@ -27,10 +28,10 @@ import {
   CForm,
   CFormLabel,
   CFormSelect,
-  CImage
+  CImage,
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaMapMarkerAlt } from 'react-icons/fa';
 import '../../../scss/cars.css';
 import DataTable from 'react-data-table-component';
 const customStyles = {
@@ -150,6 +151,7 @@ const Cars = () => {
   const [error , setError] = useState('')
   const [updateAdditionalInfoModalVisible, setUpdateAdditionalInfoModalVisible] = useState(false);
   const [enlargedImage , setEnlargedImage] = useState(null);
+  const [hostData , setHostData] = useState('')
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
@@ -228,8 +230,25 @@ const Cars = () => {
     }
   },[fetchCarById, setCarById, setOriginalCarData, setUpdateCarData, setUpdateAdditionalInfo]);
 
+  const handleHost = useCallback(async (id) => {
+    try {
+      const dataByID = await fetchUserById(id);
+      
+      if (dataByID && dataByID.user) { 
+        setHostData(dataByID.user);
+        console.log(hostData)
+      } else {
+        throw new Error('User data not found');
+      }
+    } catch (error) {
+      console.error('Error fetching user by ID:', error);
+    
+    }
+  }, [fetchUserById, setHostData]);
+
   const handleCarByIdClick = (car) => {
     handleCar(car.carid);
+    handleHost(car.hostId)
     setModalVisible(true);
   };
 
@@ -447,6 +466,10 @@ const Cars = () => {
                     <p><strong>Body Type:</strong> {carById.bodytype || 'N/A'}</p>
                     <p><strong>Rating:</strong> {carById.rating?.toFixed(2) || 'N/A'}</p>
                     <p><strong>Mileage:</strong> {carById.mileage || 'N/A'}</p>
+                    <h3>Host</h3>
+                    <p><strong>Phone:</strong> {hostData.phone || 'N/A'}</p>
+                    <p><strong>Name:</strong> {hostData.additionalInfo?.FullName || 'N/A'}</p>
+                    <p><strong>Email:</strong> {hostData.additionalInfo?.Email || 'N/A'}</p>
                   </CCol>
                   <CCol xs={1} className="d-flex justify-content-center align-items-stretch">
                     <div style={{ borderLeft: '1px solid #dee2e6', height: '100%' }}></div>
@@ -479,8 +502,20 @@ const Cars = () => {
                     <p><strong>Ventilated Front Seat:</strong> {carById.additionalInfo?.ventelatedFrontSeat ? 'Yes' : 'No'}</p>
                     <p><strong>Additional Info:</strong> {carById.additionalInfo?.Additionalinfo || 'N/A'}</p>
                     <p><strong>Address:</strong> {carById.additionalInfo?.address || 'N/A'}</p>
-                    <p><strong>Latitude:</strong> {carById.additionalInfo?.latitude || 'N/A'}</p>
-                    <p><strong>Longitude:</strong> {carById.additionalInfo?.longitude || 'N/A'}</p>
+                    <p>
+                      <strong>Location: </strong>
+                      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <span>{carById.additionalInfo?.latitude}, {carById.additionalInfo?.longitude}</span>
+                        <a 
+                          href={`https://www.google.com/maps?q=${carById.additionalInfo?.latitude},${carById.additionalInfo?.longitude}&hl=es`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ marginLeft: '8px' }}
+                        >
+                          <FaMapMarkerAlt style={{ color: 'orange', cursor: 'pointer' }} />
+                        </a>
+                      </span>
+                    </p>
                   </CCol>
                 </CRow>
                 <hr />
@@ -1108,7 +1143,7 @@ const Cars = () => {
             </CModal>
           )}
           {enlargedImage && (
-            <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
+            <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="xl">
               <CModalBody className="enlarged-image-modal">
                 <div className='image-fit'>
                 <CImage src={enlargedImage} className='responsive-image'/>

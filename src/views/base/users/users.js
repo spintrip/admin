@@ -406,6 +406,7 @@ const Users = () => {
           </CInputGroup>
         </div>
       </div>
+]
       <div className='container-fluid h-fit-content '>
           <DataTable
                   
@@ -420,7 +421,7 @@ const Users = () => {
                   onRowClicked={(user)=>handleuserByIdClick(user)}
           />
         </div>
-      
+    
         {userById && (
           <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
             <CModalHeader>
@@ -432,31 +433,7 @@ const Users = () => {
                 <CCol md={6} className='user-modal basic-info'>
                   <h5>Basic Info</h5>
                   <p><strong>ID:</strong> {userById.id}</p>
-                  <p><strong>Phone:</strong> {userById.phone}</p>
-                  <p>
-                    <strong>Status:</strong>
-                    {userById.status === 1 ? (
-                      <>
-                        <span style={{ color: 'orange' }}> Pending </span>
-                        <code className='p-2 border rounded' style={{ color: 'orange' }}>Code-1</code>
-                      </>
-                    ) : userById.status === 2 ? (
-                      <>
-                        <span style={{ color: 'green' }}> Confirmed </span>
-                        <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
-                      </>
-                    ) : userById.status === null ? (
-                      <>
-                        <span style={{ color: 'red' }}> N/A </span>
-                        <code className='p-2 border rounded' style={{ color: 'red' }}> Code-null</code>
-                      </>
-                    ) : (
-                      <>
-                        <span>Unknown Status</span>
-                        <code className='p-2 border rounded'>Code-{userById.status}</code>
-                      </>
-                    )}
-                  </p>
+                  <p><strong>Phone:</strong> {userById.phone}</p> 
                   <p><strong>Role:</strong> {userById.role || 'N/A'}</p>
                   <p><strong>OTP:</strong> {userById.otp || 'N/A'}</p>
                   <p><strong>Timestamp:</strong> {userById.timestamp || 'N/A'}</p>
@@ -685,7 +662,7 @@ const Users = () => {
                 </CRow>
 
                 {/* Profile Picture URL */}
-                <CRow className="mb-3">
+                {/* <CRow className="mb-3">
                   <CCol>
                     <CFormLabel>Profile Picture URL</CFormLabel>
                     <CFormInput
@@ -694,10 +671,10 @@ const Users = () => {
                       onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, profilepic: e.target.value })}
                     />
                   </CCol>
-                </CRow>
+                </CRow> */}
 
                 {/* DL Image URL */}
-                <CRow className="mb-3">
+                {/* <CRow className="mb-3">
                   <CCol>
                     <CFormLabel>DL Image URL</CFormLabel>
                     <CFormInput
@@ -706,10 +683,10 @@ const Users = () => {
                       onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, dl: e.target.value })}
                     />
                   </CCol>
-                </CRow>
+                </CRow> */}
 
                 {/* Aadhar Image URL */}
-                <CRow className="mb-3">
+                {/* <CRow className="mb-3">
                   <CCol>
                     <CFormLabel>Aadhar Image URL</CFormLabel>
                     <CFormInput
@@ -718,7 +695,7 @@ const Users = () => {
                       onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, aadhar: e.target.value })}
                     />
                   </CCol>
-                </CRow>
+                </CRow> */}
 
                 {/* Created At */}
                 <CRow className="mb-3">
@@ -745,8 +722,9 @@ const Users = () => {
                 </CRow>
                 
                 {/* Verification Status */}
-                <CRow className="mb-3">
+                <CRow className="mb-3">.
                   <CCol>
+                  <CFormLabel>Verification Status</CFormLabel>
                   <CFormSelect
                     value={updateAdditionalInfo.verification_status !== null ? updateAdditionalInfo.verification_status.toString() : ''}
                     onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, verification_status: e.target.value !== 'null' ? e.target.value : null })}
