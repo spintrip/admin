@@ -4,9 +4,10 @@ import {
   cilDescription,
   cilPuzzle,
   cilSpeedometer,
-  cilSend,
+  cilUser,
   cilLocationPin,
   cibElectron,
+  cilCarAlt
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { compose } from 'redux';
@@ -126,11 +127,13 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Car Verification',
+    icon: <CIcon icon={cilCarAlt} customClassName="nav-icon"/>,
     to: '/verification/car-verif'
   },
   {
     component: CNavItem,
     name: 'User Verification',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon"/>,
     to: '/verification/user-verif'
   },
 ]

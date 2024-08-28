@@ -19,6 +19,7 @@ import '../../../scss/message.css';
 import { FaFlag } from 'react-icons/fa'; // Import the flag icon from react-icons
 import DataTable from 'react-data-table-component';
 import UserData from '../controller/userData';
+import { getBooking } from '../../../api/booking';
 
 const customStyles = {
   header: {
@@ -75,18 +76,20 @@ const Messages = () => {
   const [visible, setVisible] = useState(false);
   const [messageData, setMessageData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [selectedSearchOption, setSelectedSearchOption] = useState('');
+  const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [searchInput, setSearchInput] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null); 
   const [messageClasses, setMessageClasses] = useState({});
   const [userMessageId , setUserMessageId] = useState(null);
   const [isAccordionOpen, setAccordionOpen] = useState(false);
   const token = localStorage.getItem('adminToken');
+  const [bookingData , setBookingData] = useState([]);
   const [activeMessage, setActiveMessage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchMessageData();
+    fetchBookingData();
   }, []);
 
   const fetchMessageData = async () => {
@@ -101,12 +104,25 @@ const Messages = () => {
       console.log(error);
     }
   };
+  
+  const fetchBookingData = useCallback(async () => {
+    try {
+      if (!token) {
+        console.log('No token Found');
+        navigate('/login');
+      }
+      const data = await getBooking();
+      setBookingData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  },[setBookingData]);
 
   useEffect(() => {
     const filterMessages = () => {
       let sortedData = [...messageData]
       sortedData.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const groupedBookings = sortedData.reduce((acc, message) => {
+      let groupedBookings = sortedData.reduce((acc, message) => {
         const booking = acc.find((item) => item.bookingId === message.bookingId);
         if (booking) {
           // Update the latest updatedAt and createdAt
@@ -125,15 +141,39 @@ const Messages = () => {
         }
         return acc;
       }, []);
+
+      if (searchInput && selectedSearchOption) {
+        groupedBookings = groupedBookings.filter(booking => {
+          if (selectedSearchOption === 'all') {
+            return Object.values(booking).some(value => {
+              if (typeof value === 'object' && value !== null) {
+                return Object.values(value).some(nestedValue =>
+                  nestedValue && nestedValue.toString().toLowerCase().includes(searchInput.toLowerCase())
+                );
+              }
+              return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+            });
+          }
+          else{
+            const value = booking[selectedSearchOption];
+            if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
+              const formattedDate = new Date(value).toLocaleString();
+              return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
+            }
+            return value && value.toString().toLowerCase().includes(searchInput.toLowerCase());
+          }
+        })
+      }  ;
+
       setFilteredData(groupedBookings);
     };
     filterMessages();
-  }, [messageData]);
+  }, [messageData, searchInput, selectedSearchOption]);
 
   const displayedBookings = filteredData
 
   const handleBookingClick = (bookingId) => {
-    const bookingMessages = messageData.filter((message) => message.bookingId === bookingId);
+    const bookingMessages = messageData.filter((message) => message.bookingId === bookingId );
     setSelectedBooking(bookingMessages);
     setVisible(true);
   };
@@ -160,14 +200,8 @@ const Messages = () => {
   useEffect(() => {
     if (selectedBooking?.length > 0) {
       const classifiedMessages = selectedBooking.map((message, index) => {
-        let messageClass;
-        if (index === 0) {
-          messageClass = message.senderId === 'userId' ? 'left' : 'right'; // Replace 'userId' with actual user ID
-        } else if (message.senderId !== selectedBooking[index - 1].senderId) {
-          messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
-        } else {
-          messageClass = selectedBooking[index - 1].messageClass;
-        }
+        const booking = bookingData.find((b) => b.Bookingid === message.bookingId);
+        const messageClass = booking?.id === message.senderId ? 'left' : 'right';
         return {
           ...message,
           messageClass
@@ -179,7 +213,7 @@ const Messages = () => {
         return acc;
       }, {}));
     }
-  }, [selectedBooking]);
+  }, [selectedBooking , bookingData]);
   
   
   
@@ -231,6 +265,12 @@ const Messages = () => {
     setVisible(false);
   }
   
+  const searchHeaders = [
+    { label: 'All' , value: 'all'},
+    { label: 'Booking Id' , value: 'bookingId'},
+    { label: 'Created At' , value: 'createdAt'},
+    { label: 'Updated At' , value: 'updatedAt'},
+  ]
 
   return (
     <>
@@ -245,12 +285,14 @@ const Messages = () => {
             />
             <CDropdown alignment="end" variant="input-group">
               <CDropdownToggle color="secondary" variant="outline">
-                {selectedSearchOption || 'Select'}
+                {searchHeaders.find(header => header.value == selectedSearchOption)?.label || 'all'}
               </CDropdownToggle>
               <CDropdownMenu>
-                <CDropdownItem onClick={() => setSelectedSearchOption('bookingId')}>Booking ID</CDropdownItem>
-                <CDropdownItem onClick={() => setSelectedSearchOption('createdAt')}>Created At</CDropdownItem>
-                <CDropdownItem onClick={() => setSelectedSearchOption('updatedAt')}>Updated At</CDropdownItem>
+                {searchHeaders.map((header , index) => (
+                  <CDropdownItem className='cursor-pointer' key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                   {header.label}
+                  </CDropdownItem>
+                ))}
               </CDropdownMenu>
             </CDropdown>
           </CInputGroup>
@@ -292,12 +334,14 @@ const Messages = () => {
             .map((message, index) => {
               let messageClass;
               if (index === 0) {
-                messageClass = 'left';
+                const booking = bookingData.find(b => b.Bookingid === message.bookingId);
+                messageClass = booking?.id === message.senderId ? 'left' : 'right';
               } else if (message.senderId !== selectedBooking[index - 1].senderId) {
                 messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
               } else {
                 messageClass = selectedBooking[index - 1].messageClass;
               }
+          
               
           
               message.messageClass = messageClass;
