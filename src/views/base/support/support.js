@@ -24,6 +24,7 @@ import {
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import '../../../scss/support.css';
+import UserData from '../controller/userData';
 
 const Support = () => {
   const [tickets, setTickets] = useState([]);
@@ -35,6 +36,8 @@ const Support = () => {
   const [selectedTicketId, setSelectedTicketId] = useState('');
   const [escalatedTicketId, setEscalatedTicketId] = useState('');
   const [newMessage, setNewMessage] = useState('');
+  const [userData, setUserData] = useState(null);
+  const [isAccordionOpen, setAccordionOpen] = useState(false);
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
   const chatBoxRef = useRef(null);
@@ -117,6 +120,23 @@ const Support = () => {
       });
     }
   }, [selectedChat, chatModalVisible]);
+
+  const handleUserModal = (id) => {
+    if(userData === id){
+      setAccordionOpen(prevState => !prevState);
+    } else {
+      setUserData(id);
+      setAccordionOpen(true);
+    }
+  }
+  const handleChatModal = () => {
+    setChatModalVisible(false);
+    setUserData(null)
+  }
+  const handleAccordionClose = () => {
+    setAccordionOpen(false);
+    setUserData(null);
+  };
 
   return (
     <>
@@ -280,7 +300,7 @@ const Support = () => {
       </div>
 
       {/* Chat Modal */}
-      <CModal visible={chatModalVisible} onClose={() => setChatModalVisible(false)} alignment="center" size="xl">
+      <CModal visible={chatModalVisible} onClose={handleChatModal} alignment="center" size="xl">
         <CModalHeader>
           <CModalTitle className="d-flex align-items-center justify-content-between w-100">
             <h3>Support Chat - Ticket </h3>
@@ -288,11 +308,26 @@ const Support = () => {
           </CModalTitle>
         </CModalHeader>
         <CModalBody>
+        {isAccordionOpen && userData && (
+           <UserData id={userData} onClose={handleAccordionClose} />
+        )}
           <div className="chat-box" ref={chatBoxRef}>
             {selectedChat.map((chat) => (
               <div key={chat.id} className={`chat-message ${chat.adminId === chat.senderId ? 'right' : 'left'}`}>
                 <div className={`chat-bubble ${chat.adminId === chat.senderId ? 'sent' : 'received'}`}>
-                  <strong>{chat.adminId === chat.senderId ? `Admin - (${chat.adminId})` : `User - (${chat.senderId ? chat.senderId : 'Unknown'})`}</strong>
+                <strong className='chat-id' 
+                    onClick={() => {
+                      if (chat.adminId !== chat.senderId) {
+                        handleUserModal(chat.senderId);
+                      } else {
+                        handleUserModal(chat.senderId);
+                      }
+                    }}
+                  >
+                    {chat.adminId === chat.senderId 
+                      ? `Admin - (${chat.adminId})` 
+                      : `User - (${chat.senderId ? chat.senderId : 'Unknown'})`}
+                  </strong>
                   <p>{chat.message}</p>
                   <small>{new Date(chat.createdAt).toLocaleString()}</small>
                 </div>

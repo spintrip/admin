@@ -75,3 +75,8 @@
 .status-support{
   color:black;
 }
+
+.chat-id{
+  cursor: pointer;
+  text-decoration: underline;
+}

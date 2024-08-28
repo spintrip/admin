@@ -18,6 +18,8 @@ import { useNavigate } from 'react-router-dom';
 import '../../../scss/message.css';
 import { FaFlag } from 'react-icons/fa'; // Import the flag icon from react-icons
 import DataTable from 'react-data-table-component';
+import UserData from '../controller/userData';
+
 const customStyles = {
   header: {
     style: {
@@ -76,7 +78,9 @@ const Messages = () => {
   const [selectedSearchOption, setSelectedSearchOption] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null); 
-  const [flagged, setFlagged] = useState(false); 
+  const [messageClasses, setMessageClasses] = useState({});
+  const [userMessageId , setUserMessageId] = useState(null);
+  const [isAccordionOpen, setAccordionOpen] = useState(false);
   const token = localStorage.getItem('adminToken');
   const [activeMessage, setActiveMessage] = useState(null);
   const navigate = useNavigate();
@@ -152,7 +156,80 @@ const Messages = () => {
     }
     
   },[setSelectedBooking]);
+
+  useEffect(() => {
+    if (selectedBooking?.length > 0) {
+      const classifiedMessages = selectedBooking.map((message, index) => {
+        let messageClass;
+        if (index === 0) {
+          messageClass = message.senderId === 'userId' ? 'left' : 'right'; // Replace 'userId' with actual user ID
+        } else if (message.senderId !== selectedBooking[index - 1].senderId) {
+          messageClass = selectedBooking[index - 1].messageClass === 'left' ? 'right' : 'left';
+        } else {
+          messageClass = selectedBooking[index - 1].messageClass;
+        }
+        return {
+          ...message,
+          messageClass
+        };
+      });
   
+      setMessageClasses(classifiedMessages.reduce((acc, msg) => {
+        acc[msg.id] = msg.messageClass;
+        return acc;
+      }, {}));
+    }
+  }, [selectedBooking]);
+  
+  
+  
+  const handleUserClick = () => {
+    const userMessages = Object.keys(messageClasses)
+      .filter(id => messageClasses[id] === 'left') // Get only user messages
+      .map(id => {
+        const message = messageData.find(msg => msg.id === parseInt(id, 10));
+        return message ? message.senderId : null; // Return senderId for user messages
+      });
+  
+    const uniqueUserIds = [...new Set(userMessages)]; // Get unique user IDs
+    console.log('User Sender IDs:', uniqueUserIds[0]);
+    
+    if (userMessageId === uniqueUserIds[0]) {
+      setAccordionOpen(prevState => !prevState);
+    } else {
+        setUserMessageId(uniqueUserIds[0]);
+        setAccordionOpen(true);
+    }
+    };
+  
+  
+  const handleHostClick = () => {
+    const hostMessages = Object.keys(messageClasses)
+      .filter(id => messageClasses[id] === 'right') // Get only host messages
+      .map(id => {
+        const message = messageData.find(msg => msg.id === parseInt(id, 10));
+        return message ? message.senderId : null;
+      });
+
+    const uniqueHostIds = [...new Set(hostMessages)]; 
+    console.log('Host Sender IDs:', uniqueHostIds[0]);
+    if (userMessageId === uniqueHostIds[0]) {
+      setAccordionOpen(prevState => !prevState);
+    } else {
+        setUserMessageId(uniqueHostIds[0]);
+        setAccordionOpen(true);
+    }
+  };
+
+  const handleAccordionClose = () => {
+    setAccordionOpen(false);
+    setUserMessageId(null);
+  };
+  
+  const handleModalClose = () => {
+    setAccordionOpen(false);
+    setVisible(false);
+  }
   
 
   return (
@@ -195,14 +272,24 @@ const Messages = () => {
       
 
       {/* Chat Modal */}
-      <CModal visible={visible} onClose={() => setVisible(false)} alignment="center" size="lg">
+      <CModal visible={visible} onClose={handleModalClose} alignment="center" size="lg">
         <CModalHeader>
           <CModalTitle>Chat Messages</CModalTitle>
         </CModalHeader>
         <CModalBody>
+        <div className='messageUsers'>
+          <div onClick={handleUserClick}>User</div>
+          <div onClick={handleHostClick}>Host</div>
+        </div>
+        {isAccordionOpen && userMessageId && (
+           <UserData id={userMessageId} onClose={handleAccordionClose} />
+        )}
+
         <div className="chat-container">
           {selectedBooking &&
-            selectedBooking.map((message, index) => {
+            selectedBooking
+            .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .map((message, index) => {
               let messageClass;
               if (index === 0) {
                 messageClass = 'left';
@@ -212,6 +299,7 @@ const Messages = () => {
                 messageClass = selectedBooking[index - 1].messageClass;
               }
               
+          
               message.messageClass = messageClass;
 
               return (
@@ -228,7 +316,7 @@ const Messages = () => {
                       <FaFlag onClick={() => handleFlagClick(message.id)} />
                     </div>
                   )}
-                  <div className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</div>
+                  <div className="message-timestamp">{new Date(message.createdAt).toLocaleString()}</div>
                 </div>
               );
             })}
