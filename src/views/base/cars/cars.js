@@ -90,6 +90,40 @@ const columns = [
     sortable: true,
   },
   {
+    name: 'Verification',
+    selector: row => {
+      switch (row.additionalInfo.verification_status) {
+        case 1:
+          return "Pending";
+        case 2:
+          return "Verified";
+        default:
+          return "Not Uploaded";
+      }
+    },
+    sortable: true,
+    cell: row => {
+      let statusText;
+      let className;
+  
+      switch (row.additionalInfo.verification_status) {
+        case 1:
+          statusText = "Pending";
+          className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
+          break;
+        case 2:
+          statusText = "Verified";
+          className = "p-1 rounded border border-success text-white bg-success w-100 text-center";
+          break;
+        default:
+          statusText = "Not Uploaded";
+          className = "p-1 rounded border border-light text-black bg-white w-100 text-center";
+      }
+  
+      return <div key={row.id+row.additionalInfo.verification_status} className={className}>{statusText}</div>;
+    },
+  },
+  {
     name: 'Brand',
     selector: (row) => row.brand, // Assuming 'brand' is the key in your data
     sortable: true,
@@ -114,11 +148,8 @@ const columns = [
     selector: (row) => row.Registrationyear, // Assuming 'registrationYear' is the key in your data
     sortable: true,
   },
-  {
-    name: 'Verification',
-    selector: (row) => row.additionalInfo.verification_status ? row.additionalInfo.verification_status : 'N/A', // Assuming 'verification' is the key in your data
-    sortable: true,
-  },
+
+
   {
     name: 'Rating',
     selector: (row) => row.rating? row.rating : 0, // Assuming 'rating' is the key in your data

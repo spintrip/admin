@@ -181,12 +181,14 @@ const Blog = () => {
   return (
     <>
       <div className='container-fluid d-flex align-items-center '>
-        <CButton className="fw-bolder bg-light text-black " onClick={() => setVisible(true)}>Create Blog</CButton>
+        <CButton color='primary' className="fw-bolder" onClick={() => setVisible(true)}>Create Blog</CButton>
       </div>
 
-      <div className="container-fluid my-4 d-flex flex-wrap align-items-center justify-content-start mt-2">
+      <div className="container-fluid my-5">
+        <div className='row'>
         {filterData.map((blog, index) => (
-          <div key={blog.blogId} className="blog-card " onClick={() => handleCardClick(blog)}>
+          <div className='col-12 col-md-6 '>
+          <div key={blog.blogId} className="blog-card rounded " onClick={() => handleCardClick(blog)}>
             <CCard>
               <CCardImage orientation="top" src={blog.blogImage1} style={{ height: '200px', objectFit: 'cover' }} />
               <CCardImage orientation="bottom" src={blog.blogImage2} style={{ height: '200px', objectFit: 'cover'}} />
@@ -203,7 +205,9 @@ const Blog = () => {
               </CCardBody>
             </CCard>
           </div>
+          </div>
         ))}
+        </div>
       </div>
 
       {selectedBlog && (
@@ -211,12 +215,12 @@ const Blog = () => {
           <CModalHeader>
             <CModalTitle>{selectedBlog.blogName}</CModalTitle>
           </CModalHeader>
-          <CModalBody>
+          <CModalBody >
             <CCardImage orientation="top" src={selectedBlog.blogImage1} style={{ height: '200px', width:'200px', objectFit: 'cover' }} />
             <CCardImage orientation="bottom" src={selectedBlog.blogImage2} style={{ height: '200px', width:'200px', objectFit: 'cover', marginLeft: '10px' }} />
             <p><strong>Author:</strong> {selectedBlog.blogAuthor}</p>
             <p><strong>Description:</strong> {selectedBlog.description}</p>
-            <p><strong>Keywords:</strong> {selectedBlog.keywords}</p>
+            <p><strong>Keywords:</strong> <span className='bg-light rounded text-dark'>{selectedBlog.keywords}</span></p>
             <p><strong>Created At:</strong> {new Date(selectedBlog.createdAt).toLocaleString()}</p>
             <p><strong>Updated At:</strong> {new Date(selectedBlog.updatedAt).toLocaleString()}</p>
           </CModalBody>
