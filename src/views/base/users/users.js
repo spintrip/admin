@@ -90,28 +90,23 @@ const columns = [
     },
     {
       name: 'Rating',
-      selector: (row) => row.additionalInfo?.rating? row.additionalInfo?.rating:'N/A' || row.rating, // Adjusted to check nested 'additionalInfo'
+      selector: (row) => row.rating ? row.rating.toFixed(2) :'N/A' , 
       sortable: true,
     },
-    // {
-    //   name: 'Status',
-    //   selector: (row) => row.status,
-    //   sortable: true,
-    // },
     {
       name: 'Verif-Status',
       selector: (row) =>
-        row.additionalInfo?.verification_status ? 'true' : 'false',
+        row.additionalInfo?.verification_status ? row.additionalInfo.verification_status : 'N/A',
       sortable: true,
     },
     {
       name: 'Created At',
-      selector: (row) => row.createdAt,
+      selector: (row) => new Date(row.createdAt).toLocaleString(),
       sortable: true,
     },
     {
       name: 'Updated At',
-      selector: (row) => row.updatedAt,
+      selector: (row) => new Date(row.updatedAt).toLocaleString(),
       sortable: true,
     },
   ];
@@ -139,8 +134,6 @@ const Users = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const limit = 20;
-  const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
@@ -298,7 +291,6 @@ const Users = () => {
     const filterUsers = () => {
       let sortedData = [...userData];
 
-      // Sort the data by updatedAt field to show the latest data first
       sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
@@ -345,7 +337,7 @@ const Users = () => {
     { label: 'Phone No.', value: 'phone' },
     { label: 'Role', value: 'role' },
     { label: 'Rating', value: 'rating' },
-    { label: 'Status', value: 'status' },
+    { label: 'Verif-Status', value: 'verification_status' },
     { label: 'Created At', value: 'createdAt' },
     { label: 'Updated At', value: 'updatedAt' },
   ]
