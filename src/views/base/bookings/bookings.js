@@ -129,7 +129,7 @@ const columns = [
           break;
         case 5:
           statusText = "Requested";
-          className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
+          className = "p-1 rounded border border-primary text-primary bg-white w-100 text-center";
           break;
         default:
           statusText = "Unknown";
