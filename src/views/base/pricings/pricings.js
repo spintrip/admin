@@ -69,8 +69,11 @@ const columns = [
   },
   {
     name: 'Cost per Hour',
-    selector: row => row.costperhr, // Replace with the actual key for Cost per Hour in your data
+    selector: row => row.costperhr? '₹ '+row.costperhr.toFixed(2) : null, // Replace with the actual key for Cost per Hour in your data
     sortable: true,
+    col: row => {
+      return <div>₹ {row.costperhr}</div>
+    }
   },
   {
     name: 'Created At',

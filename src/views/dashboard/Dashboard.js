@@ -183,8 +183,8 @@ const Dashboard = () => {
         <CCardBody>
           <CRow>
             <CCol sm={5}>
-              <h4 id="traffic" className="card-title mb-0">
-                Traffic
+              <h4 id="bookings" className="card-title mb-0">
+                Bookings
               </h4>
               <div className="small text-body-secondary">January - July 2023</div>
             </CCol>
@@ -198,7 +198,7 @@ const Dashboard = () => {
                     color="outline-secondary"
                     key={value}
                     className="mx-0"
-                    active={value === 'Month'}
+                    
                   >
                     {value}
                   </CButton>

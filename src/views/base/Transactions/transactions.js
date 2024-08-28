@@ -71,6 +71,7 @@ const columns = [
     selector: (row) => row.status? row.status : "N/A", // Replace with the actual key for Status in your data
     sortable: false,
   },
+  
   {
     name: 'Amount',
     selector: (row) => row.amount, // Replace with the actual key for Amount in your data

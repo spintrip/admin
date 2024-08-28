@@ -73,13 +73,131 @@ const tableHeaders = [
   { label: 'Created At', value: 'createdAt' },
   { label: 'Updated At', value: 'updatedAt' },
 ];
+const columns = [
+  {
+    name: 'Booking ID',
+    selector: row => row.Bookingid,
+    sortable: true,
+  },
+  {
+    name: 'Car ID',
+    selector: row => row.carid,
+    sortable: true,
+  },
+  {
+    name: 'User Id',
+    selector: row => row.id,
+    sortable: true,
+  },
+  {
+    name: 'Status',
+    selector: row => {
+      switch (row.status) {
+        case 1:
+          return "Upcoming";
+        case 2:
+          return "Start Ride";
+        case 3:
+          return "Requested";
+        case 4:
+          return "Cancelled";
+        default:
+          return "Unknown";
+      }
+    },
+    sortable: true,
+    cell: row => {
+      let statusText;
+      let className;
+  
+      switch (row.status) {
+        case 1:
+          statusText = "Upcoming";
+          className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
+          break;
+        case 2:
+          statusText = "In Progress";
+          className = "p-1 rounded border border-warning text-white bg-warning w-100 text-center";
+          break;
+        case 3:
+          statusText = "Completed";
+          className = "p-1 rounded border border-success text-black bg-success w-100 text-center";
+          break;
+        case 4:
+          statusText = "Cancelled";
+          className = "p-1 rounded border border-danger text-white bg-danger w-100 text-center";
+          break;
+        case 5:
+          statusText = "Requested";
+          className = "p-1 rounded border border-danger text-white bg-warning w-100 text-center";
+          break;
+        default:
+          statusText = "Unknown";
+          className = "";
+      }
+  
+      return <div key={row.Bookingid} className={className}>{statusText}</div>;
+    },
+  },
+  {
+    name: 'Amount',
+    selector: row => row.amount,
+    sortable: true,
+    cell: row => {return <div className='text-gray' style={{fontWeight:'700'}}>₹ {row.amount.toFixed(2)}</div>}
+  },
+  {
+    name: 'GST Amount',
+    selector: row => row.GSTAmount,
+    sortable: true,
+  },
+  {
+    name: 'Total User Amount',
+    selector: row => row.totalUserAmount,
+    sortable: true,
+  },
+  {
+    name: 'TDS Amount',
+    selector: row => row.TDSAmount,
+    sortable: true,
+  },
+  {
+    name: 'Total Host Amount',
+    selector: row => row.totalHostAmount,
+    sortable: true,
+  },
+  {
+    name: 'Start Trip Date',
+    selector: row => row.startTripDate,
+    sortable: true,
+  },
+  {
+    name: 'End Trip Date',
+    selector: row => row.endTripDate,
+    sortable: true,
+  },
+  {
+    name: 'Start Trip Time',
+    selector: row => row.startTripTime,
+    sortable: true,
+  },
+  {
+    name: 'End Trip Time',
+    selector: row => row.endTripTime,
+    sortable: true,
+  },
+  {
+    name: 'Created At',
+    selector: row => new Date(row.createdAt).toLocaleString(), 
+    sortable: true,
+  },
+  {
+    name: 'Updated At',
+    selector: row => new Date(row.updatedAt).toLocaleString(),
+    sortable: true,
+  },
+];
 
-const columns = tableHeaders.map(header => ({
-  name: header.label,
-  selector: row => row[header.value],
-  sortable: true,
-  cell: (row) => <div key={row.Bookingid}>{row[header.value]}</div>,
-}));
+
 
 const Bookings = () => {
   const [bookingData, setBookingData] = useState([]);
@@ -253,8 +371,7 @@ const Bookings = () => {
         </div>
       </div>
       <div className='container-fluid h-fit-content mt-2 mb-5'>
-
-           <DataTable
+            <DataTable
               columns={columns}
               data={displayedBookings.map((row, index) => ({ ...row, uniqueId: `${row.Bookingid}-${index}` }))}
               customStyles={customStyles}

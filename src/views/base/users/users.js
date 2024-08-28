@@ -23,7 +23,7 @@ import {
 } from '@coreui/react';
 import '../../../scss/user.css';
 import { FaTimesCircle } from 'react-icons/fa';
-
+import { Document } from 'react-pdf'
 
 import DataTable from 'react-data-table-component';
 const customStyles = {
@@ -90,14 +90,43 @@ const columns = [
     },
     {
       name: 'Rating',
-      selector: (row) => row.rating ? row.rating.toFixed(2) :'N/A' , 
+      selector: (row) => row.rating ? row.rating.toFixed(2) :'--' , 
       sortable: true,
     },
+
     {
-      name: 'Verif-Status',
-      selector: (row) =>
-        row.additionalInfo?.verification_status ? row.additionalInfo.verification_status : 'N/A',
+      name: 'Verification',
+      selector: row => {
+        switch (row.additionalInfo.verification_status) {
+          case 1:
+            return "Pending";
+          case 2:
+            return "Verified";
+          default:
+            return "Not Uploaded";
+        }
+      },
       sortable: true,
+      cell: row => {
+        let statusText;
+        let className;
+    
+        switch (row.additionalInfo.verification_status) {
+          case 1:
+            statusText = "Pending";
+            className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
+            break;
+          case 2:
+            statusText = "Verified";
+            className = "p-1 rounded border border-success hover:text-black text-white bg-success w-100 text-center";
+            break;
+          default:
+            statusText = "Not Uploaded";
+            className = "p-1 rounded border border-light text-black bg-white w-100 text-center";
+        }
+    
+        return <div key={row.id+row.additionalInfo.verification_status} className={className}>{statusText}</div>;
+      },
     },
     {
       name: 'Created At',
@@ -463,7 +492,10 @@ const Users = () => {
                   <CCol className="d-flex flex-column align-items-center">
                     <p><strong>Driving License:</strong></p>
                     {userById.additionalInfo.dl ? (
-                      <img src={userById.additionalInfo.dl} alt="DL" className="img-thumbnail"  onClick={() => handleImageClick(userById.additionalInfo.dl)}/>
+                      <>
+                      <Document file={userById.additionalInfo.dl} />
+                      {/* <img src={userById.additionalInfo.dl} alt="DL" className="img-thumbnail"  onClick={() => handleImageClick(userById.additionalInfo.dl)}/> */}
+                      </>
                     ) : (
                       <div className="empty-image-placeholder">
                           <span><FaTimesCircle /> Not Uploaded</span>
