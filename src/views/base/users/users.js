@@ -111,6 +111,17 @@ const columns = [
     },
   ];
 
+  const tableHeaders = [
+    { label: 'All', value: 'all' },
+    { label: 'ID', value: 'id' },
+    { label: 'Full Name', value: 'FullName' },
+    { label: 'Phone No.', value: 'phone' },
+    { label: 'Role', value: 'role' },
+    { label: 'Rating', value: 'rating' },
+    { label: 'Verif-Status', value: 'verification_status' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' },
+  ]
 
 
 const Users = () => {
@@ -330,17 +341,6 @@ const Users = () => {
     setEnlargedImage(imageUrl);
   };
 
-  const tableHeaders = [
-    { label: 'All', value: 'all' },
-    { label: 'ID', value: 'id' },
-    { label: 'Full Name', value: 'FullName' },
-    { label: 'Phone No.', value: 'phone' },
-    { label: 'Role', value: 'role' },
-    { label: 'Rating', value: 'rating' },
-    { label: 'Verif-Status', value: 'verification_status' },
-    { label: 'Created At', value: 'createdAt' },
-    { label: 'Updated At', value: 'updatedAt' },
-  ]
 
   return (
     <div>

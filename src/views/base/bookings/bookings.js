@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getBooking, fetchBookingById, updateBooking } from '../../../api/booking';
-
+import UserData from '../controller/userData';
 import {
 
   CInputGroup,
@@ -90,6 +90,9 @@ const Bookings = () => {
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [bookingById, setBookingById] = useState(null);
   const [originalBookingData, setOriginalBookingData] = useState(null);
+  const [isAccordionOpen, setAccordionOpen] = useState(false);
+
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [updateBookingData, setUpdateBookingData] = useState({
     status: '',
     amount: '',
@@ -122,10 +125,12 @@ const Bookings = () => {
 
   useEffect(() => {
     const filterBookings = () => {
+      let sortedData = [...bookingData];
+      sortedData.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
-        setFilteredData(bookingData);
+        setFilteredData(sortedData);
       } else {
-        const filtered = bookingData.filter((booking) => {
+        const filtered = sortedData.filter((booking) => {
           if (selectedSearchOption === 'all') {
             return Object.values(booking).some(value =>
               value && value.toString().toLowerCase().includes(searchInput.toLowerCase())
@@ -141,6 +146,21 @@ const Bookings = () => {
 
     filterBookings();
   }, [searchInput, selectedSearchOption, bookingData]);
+
+  const handleUserIdClick = (id) => {
+        if (selectedUserId === id) {
+            // If the same ID is clicked again, toggle the accordion
+            setAccordionOpen(prevState => !prevState);
+        } else {
+            setSelectedUserId(id);
+            setAccordionOpen(true);
+        }
+    };
+
+  const handleAccordionClose = () => {
+    setAccordionOpen(false);
+    setSelectedUserId(null);
+  };
 
   const handleBookingByIdClick = async (id) => {
     try {
@@ -271,36 +291,49 @@ const Bookings = () => {
 
       {/* Booking Details Modal */}
       {bookingById && (
-        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
-          <CModalHeader>
-            <CModalTitle>Booking Details</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <CRow>
-              <CCol className='booking-modal'>
-                <p><strong>Booking ID:</strong> {bookingById.Bookingid || 'N/A'}</p>
-                <p><strong>User ID:</strong> {bookingById.id || 'N/A'}</p>
-                <p><strong>Car ID:</strong> {bookingById.carid || 'N/A'}</p>
-                <p><strong>Status:</strong> {bookingById.status || 'N/A'}</p>
-                <p><strong>Amount:</strong> {bookingById.amount || 'N/A'}</p>
-                <p><strong>GST Amount:</strong> {bookingById.GSTAmount || 'N/A'}</p>
-                <p><strong>Total User Amount:</strong> {bookingById.totalUserAmount || 'N/A'}</p>
-                <p><strong>TDS Amount:</strong> {bookingById.TDSAmount || 'N/A'}</p>
-                <p><strong>Total Host Amount:</strong> {bookingById.totalHostAmount || 'N/A'}</p>
-                <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
-                <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
-                <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
-                <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p>
-                <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
-                <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
-              </CCol>
-            </CRow>
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="success" onClick={handleOpenUpdateForm}>Update</CButton>
-          </CModalFooter>
-        </CModal>
-      )}
+          <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
+                <CModalHeader>
+                    <CModalTitle>Booking Details</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <CRow>
+                        <CCol className='booking-modal'>
+                            <p><strong>Booking ID:</strong> {bookingById.Bookingid || 'N/A'}</p>
+                            <p onClick={() => handleUserIdClick(bookingById.id)} >
+                                <span className='text-decoration-underline cursor-pointer'>
+                                    <strong className='mx-2'>User ID:</strong> {bookingById.id || 'N/A'}
+                                </span>
+                                
+                            </p>
+                            {isAccordionOpen && selectedUserId === bookingById.id && (
+                                    <UserData id={selectedUserId} onClose={handleAccordionClose} />
+                                )}
+                            <p><strong>Car ID:</strong> {bookingById.carid || 'N/A'}</p>
+                            <div className='modalstatus'>
+                            <p><strong>Status:</strong> {bookingById.status || 'N/A'}</p>
+                            <p><strong>Amount:</strong> {bookingById.amount || 'N/A'}</p>
+                            <p><strong>GST Amount:</strong> {bookingById.GSTAmount || 'N/A'}</p>
+                            <p><strong>Total User Amount:</strong> {bookingById.totalUserAmount || 'N/A'}</p>
+                            <p><strong>TDS Amount:</strong> {bookingById.TDSAmount || 'N/A'}</p>
+                            <p><strong>Total Host Amount:</strong> {bookingById.totalHostAmount || 'N/A'}</p>
+                            <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
+                            <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
+                            <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
+                            <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p>
+                            <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
+                            <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
+                            </div>
+                        </CCol>
+                    </CRow>
+                    
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="success" onClick={handleOpenUpdateForm}>Update</CButton>
+                </CModalFooter>
+          </CModal>
+        )}
+              
+              
 
       {/* Update Booking Modal */}
         {updateModalVisible && (

@@ -1,0 +1,92 @@
+.accordian{
+   max-width: 100%;
+   width: 100vh;
+   transition: background-color 1.2s ease, color 1.2s ease;
+   border: 2px solid rgb(255, 255, 255);
+}
+
+  .verification-code {
+    padding: 2px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    margin-left: 5px;
+    
+  }
+
+.additionalInfo{
+    background-color: white;
+    color: rgb(6, 4, 4);
+}  
+
+.basicInfo{
+    background-color: rgb(226, 112, 6);
+    color: white;
+}
+.user-modal p {
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #fcf9f9;
+  }
+  
+  .user-modal h5 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: #f18047;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+  }
+  
+  .images-section img {
+    max-width: 100px;
+    max-height: 100px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.25rem;
+    background-color: #f8f9fa;
+  }
+  
+  .images-section p {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .empty-image-placeholder {
+    width: 200px;
+    height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #999;
+    background-color: #f9f9f9;
+  }
+  
+  .empty-image-placeholder p {
+    margin: 0;
+    font-weight: bold;
+  }
+
+  .enlarged-image-modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black; 
+  }
+  
+  .image-fit {
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .responsive-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; 
+  }
+  
