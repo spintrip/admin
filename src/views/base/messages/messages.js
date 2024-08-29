@@ -357,7 +357,7 @@ const Messages = () => {
                   )}
                   {activeMessage === message.id && (
                     <div className={`dropup ${messageClass === 'left' ? 'right-side' : 'left-side'}`}>
-                      <FaFlag onClick={() => handleFlagClick(message.id)} />
+                      <FaFlag onClick={() => handleFlagClick(message.id)} style={{color: 'black'}}/>
                     </div>
                   )}
                   <div className="message-timestamp">{new Date(message.createdAt).toLocaleString()}</div>

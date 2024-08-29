@@ -66,26 +66,65 @@ const columns = [
     selector: (row) => row.Bookingid, // Replace with the actual key for Booking ID in your data
     sortable: false,
   },
+
   {
     name: 'Status',
-    selector: (row) => row.status? row.status : "N/A", // Replace with the actual key for Status in your data
+    selector: row => {
+      switch (row.status) {
+        case 1:
+          return "Upcoming";
+        case 2:
+          return "Start Ride";
+        case 3:
+          return "Requested";
+        
+        default:
+          return "Unknown";
+      }
+    },
     sortable: false,
-  },
+    cell: row => {
+      let statusText;
+      let className;
   
+      switch (row.status) {
+        case 1:
+          statusText = "Initiated";
+          className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
+          break;
+        case 2:
+          statusText = "Payment Processed";
+          className = "p-1 rounded border border-success text-white bg-success w-100 text-center";
+          break;
+        case 3:
+          statusText = "Declined";
+          className = "p-1 rounded border border-danger text-black bg-danger w-100 text-center";
+          break;
+        default:
+          statusText = "Unknown";
+          className = "";
+      }
+  
+      return <div key={row.Bookingid} className={className}>{statusText}</div>;
+    },
+  },
   {
     name: 'Amount',
     selector: (row) => row.amount, // Replace with the actual key for Amount in your data
     sortable: false,
+    cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.amount.toFixed(2)}</div>}
   },
   {
     name: 'GST Amount',
     selector: (row) => row.gstAmount? row.gstAmount : '0', // Replace with the actual key for GST Amount in your data
     sortable: false,
+    cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.gstAmount? row.gstAmount.toFixed(2) : '0.00'}</div>}
   },
   {
     name: 'Total Amount',
     selector: (row) => row.totalAmount, // Replace with the actual key for Total Amount in your data
     sortable: false,
+    cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.totalAmount.toFixed(2)}</div>}
   },
   {
     name: 'Created At',
@@ -157,9 +196,11 @@ const UpdateTransactionModal = () => {
       console.log(error);
     }
   };
+
+  useEffect(() => {
   const filterBooking = () => {
     let sortedData = [...transactionData];
-    sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
       } else {
@@ -181,7 +222,7 @@ const UpdateTransactionModal = () => {
         
       }
     };     
-  useEffect(() => {
+  
     
     filterBooking();
   }, [transactionData ,selectedSearchOption, searchInput  ]);
@@ -242,7 +283,8 @@ const UpdateTransactionModal = () => {
       <div className='container-fluid h-fit-content '>
           <DataTable
                   columns={columns}
-                  data={displayedHosts}
+                  //data={displayedHosts}
+                  data={displayedHosts.map((row, index) => ({ ...row, uniqueId: `${row.Transactionid}-${row.Bookingid}-${index}` }))}
                   customStyles={customStyles}
                   responsive={true}
                   title={'Transactions Table'}
