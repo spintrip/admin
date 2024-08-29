@@ -18,7 +18,11 @@ import {
   CForm,
   CFormLabel,
   CCol,
-  CRow
+  CRow,
+  CAccordion,
+  CAccordionItem,
+  CAccordionBody,
+  CAccordionHeader
 } from '@coreui/react';
 import '../../../scss/booking.css';
 import DataTable from 'react-data-table-component';
@@ -209,7 +213,7 @@ const Bookings = () => {
   const [bookingById, setBookingById] = useState(null);
   const [originalBookingData, setOriginalBookingData] = useState(null);
   const [isAccordionOpen, setAccordionOpen] = useState(false);
-
+  const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [updateBookingData, setUpdateBookingData] = useState({
     status: '',
@@ -226,6 +230,9 @@ const Bookings = () => {
     cancelReason: null,
     features: []
   });
+  const [accordionStatusOpen, setStatusAccordionOpen] = useState(false);
+
+  const handleAccordionToggle = () => setStatusAccordionOpen(!accordionStatusOpen);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -245,6 +252,10 @@ const Bookings = () => {
     const filterBookings = () => {
       let sortedData = [...bookingData];
       sortedData.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      if(selectedStatus !== null) {
+        sortedData = sortedData.filter((status) => status.status === selectedStatus);
+      }
       if (!searchInput) {
         setFilteredData(sortedData);
       } else {
@@ -263,7 +274,7 @@ const Bookings = () => {
     };
 
     filterBookings();
-  }, [searchInput, selectedSearchOption, bookingData]);
+  }, [searchInput, selectedSearchOption, bookingData , selectedStatus]);
 
   const handleUserIdClick = (id) => {
         if (selectedUserId === id) {
@@ -363,12 +374,60 @@ const Bookings = () => {
 
   return (
     <>
-      <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
-        <div className='crud-group d-flex mx-2'>
-          
+      <div className='container-fluid px-4 d-flex flex-column flex-md-row flex-column-reverse align-items-center justify-content-between'>
+        <div className='crud-group mb-2 d-none d-md-flex'>
+          <CButton className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 5 ? 'border-white' : ''}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 5 ? null : 5))}>
+            Requested
+          </CButton>
+          <CButton className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 1 ? 'border-primary' : ''}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 1 ? null : 1))}>
+            Upcoming
+          </CButton>
+          <CButton className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 2 ? 'border-warning' : ''}`} onClick = {() => setSelectedStatus(prevStatus => (prevStatus === 2 ? null : 2))}>
+            Inprogress
+          </CButton>
+          <CButton className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 3 ? 'border-success' : ''}`} onClick = {() => setSelectedStatus(prevStatus => (prevStatus === 3 ? null : 3))}>
+            Completed
+          </CButton>
+          <CButton className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 4 ? 'border-danger' : ''}`} onClick = {() => setSelectedStatus(prevStatus => (prevStatus === 4 ? null : 4))}>
+            Cancelled
+          </CButton>
         </div>
-        <div>
-          <CInputGroup className="mx-2">
+        <div className='d-block w-100 d-md-none'>
+        
+          {accordionStatusOpen ? <></> : 
+        
+        
+        <CAccordion flush className='border rounded mx-2'>
+            <CAccordionItem>
+              <CAccordionHeader>Status</CAccordionHeader>
+              <CAccordionBody>
+                <CButton className={`w-100 mb-2 ${selectedStatus === 5 ? 'bg-white text-dark' : 'border-white'}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 5 ? null : 5))}>
+                  Requested
+                </CButton>
+                <CButton className={`w-100 mb-2 ${selectedStatus === 1 ? 'bg-primary text-white' : 'border-primary'}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 1 ? null : 1))}>
+                  Upcoming
+                </CButton>
+                <CButton className={`w-100 mb-2 ${selectedStatus === 2 ? 'bg-warning text-dark' : 'border-warning'}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 2 ? null : 2))}>
+                  Inprogress
+                </CButton>
+                <CButton className={`w-100 mb-2 ${selectedStatus === 3 ? 'bg-success text-white' : 'border-success'}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 3 ? null : 3))}>
+                  Completed
+                </CButton>
+                <CButton className={`w-100 mb-2 ${selectedStatus === 4 ? 'bg-danger text-white' : 'border-danger'}`} onClick={() => setSelectedStatus(prevStatus => (prevStatus === 4 ? null : 4))}>
+                  Cancelled
+                </CButton>
+              </CAccordionBody>
+            </CAccordionItem>
+          </CAccordion>
+          }
+        
+        
+          
+        
+        </div>
+        <div className='w-100 px-2'>
+          
+          <CInputGroup className="mx-2 my-2 w-100">
             <CFormInput
               aria-label="Text input with dropdown button"
               placeholder='Search'

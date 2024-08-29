@@ -62,11 +62,6 @@ const customStyles = {
 };
 
 const columns = [
-    // {
-    //   name: '#',
-    //   selector: (row) => row.index, // Assuming there's an 'index' property for row numbering
-    //   sortable: true,
-    // },
     {
       name: 'ID',
       selector: (row) => row.id,
@@ -347,6 +342,17 @@ const Users = () => {
             });
           } else if (selectedSearchOption === 'FullName') {
             return user.additionalInfo?.FullName?.toLowerCase().includes(searchInput.toLowerCase());
+          }  else if (selectedSearchOption === 'verification_status') {
+            // Check the verification status number
+            const statusText = user.additionalInfo?.verification_status;
+            switch (statusText) {
+              case 1:
+                return "Pending".toLowerCase().includes(searchInput.toLowerCase());
+              case 2:
+                return "Verified".toLowerCase().includes(searchInput.toLowerCase());
+              default:
+                return "Not Uploaded".toLowerCase().includes(searchInput.toLowerCase());
+            }
           } else {
             const value = user[selectedSearchOption];
             if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
@@ -382,7 +388,7 @@ const Users = () => {
       <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
        
         <div>
-          <CInputGroup className="mx-2">
+          <CInputGroup className="mx-2 mb-4">
             <CFormInput
               aria-label="Text input with dropdown button"
               placeholder='Search'
@@ -395,7 +401,7 @@ const Users = () => {
             </CDropdownToggle>
               <CDropdownMenu>
                 {tableHeaders.map((header, index) => (
-                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)}>
+                  <CDropdownItem key={index} onClick={() => setSelectedSearchOption(header.value)} style={{cursor : 'pointer'}}>
                     {header.label}
                   </CDropdownItem>
                 ))}
