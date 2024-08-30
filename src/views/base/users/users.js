@@ -521,19 +521,28 @@ const Users = () => {
                 </CRow>
               )}
             </CModalBody>
-            <CModalFooter className='d-flex align-items-center justify-content-end'>
+            <CModalFooter className='d-flex align-items-center justify-content-between'>
+              <div>
+              <CButton variant='danger' className=' d-flex align-items-center justify-content-center'>
+                Delete User
+              </CButton>
+              </div>
+              <div>
               <CButton className='btn-interactive basicInfo d-flex align-items-center justify-content-center' onClick={handleOpenUpdateForm}>
                 <span>Update</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{ marginLeft: '5px' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </CButton>
+              </div>
+              <div>
               <CButton className='btn-interactive additionalInfo align-items-center justify-content-center' onClick={handleOpenUpdateAdditionalInfoForm}>
                 <span>Update Additional Info</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{ marginLeft: '5px' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </CButton>
+              </div>
             </CModalFooter>
           </CModal>
         )}
