@@ -1,17 +1,43 @@
-.booking-table{
-    font-size: 14px;
-}
-.booking-modal{
+.booking-modal {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
+    align-items: flex-start; /* Align items to the start */
+    justify-content: flex-start; /* Align content to the start */
+    margin-bottom: 20px; /* Add some margin at the bottom */
 }
 
-.modalstatus{
+.modalstatus {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* Align text to the start */
     justify-content: space-between;
+    width: 100%;
+    padding: 10px; /* Add padding for better spacing */
 }
 
+.modalstatus p {
+    margin-bottom: 8px; /* Adjust the spacing between paragraphs */
+}
+
+.clickable-info {
+    margin: 10px 0;
+    padding: 2px 8px;
+    background-color: #f8f9fa; /* Light gray background */
+    border-radius: 5px;
+    border: 1px solid black;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.clickable-info:hover {
+    background-color: #b8b8b8; /* Slightly darker gray on hover */
+    transform: translateY(-2px); /* Slight lift effect on hover */
+}
+
+.clickable-info span {
+    color: #191a1b;
+}
+
+.clickable-info strong {
+    color: #495057; /* Darker gray for the labels */
+}

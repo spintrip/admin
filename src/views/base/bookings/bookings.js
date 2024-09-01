@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getBooking, fetchBookingById, updateBooking } from '../../../api/booking';
 import UserData from '../controller/userData';
+import CarData from '../controller/carData';
 import {
 
   CInputGroup,
@@ -215,6 +216,8 @@ const Bookings = () => {
   const [isAccordionOpen, setAccordionOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedCarId, setSelectedCarId] = useState(null);
+  const [isCarAccordionOpen, setCarAccordionOpen] = useState(false);
   const [updateBookingData, setUpdateBookingData] = useState({
     status: '',
     amount: '',
@@ -290,6 +293,20 @@ const Bookings = () => {
     setAccordionOpen(false);
     setSelectedUserId(null);
   };
+  const handleCarByIdClick = (id) => {
+    if (selectedCarId === id) {
+        // If the same ID is clicked again, toggle the accordion
+        setCarAccordionOpen(prevState => !prevState);
+    } else {
+        setSelectedCarId(id);
+        setCarAccordionOpen(true);
+    }
+};
+
+const handleCarAccordionClose = () => {
+setCarAccordionOpen(false);
+setSelectedCarId(null);
+};
 
   const handleBookingByIdClick = async (id) => {
     try {
@@ -473,36 +490,79 @@ const Bookings = () => {
                 </CModalHeader>
                 <CModalBody>
                     <CRow>
-                        <CCol className='booking-modal'>
+                        <CCol className='booking-modal d-flex align-items-center justify-content-between'>
                             <p><strong>Booking ID:</strong> {bookingById.Bookingid || 'N/A'}</p>
-                            <p onClick={() => handleUserIdClick(bookingById.id)} >
+                            <p onClick={() => handleUserIdClick(bookingById.id)} className="clickable-info">
                                 <span className='text-decoration-underline cursor-pointer'>
                                     <strong className='mx-2'>User ID:</strong> {bookingById.id || 'N/A'}
                                 </span>
-                                
                             </p>
                             {isAccordionOpen && selectedUserId === bookingById.id && (
-                                    <UserData id={selectedUserId} onClose={handleAccordionClose} />
-                                )}
-                            <p><strong>Car ID:</strong> {bookingById.carid || 'N/A'}</p>
+                                <UserData id={selectedUserId} onClose={handleCarAccordionClose} />
+                            )}
+                            <p onClick={() => handleCarByIdClick(bookingById.carid)} className="clickable-info">
+                                <span className='text-decoration-underline cursor-pointer'>
+                                    <strong>Car ID: </strong> {bookingById.carid || 'N/A'}
+                                </span>
+                            </p>
+                            {isCarAccordionOpen && selectedCarId === bookingById.carid && (
+                                <CarData id={selectedCarId} onClose={handleCarAccordionClose} />
+                            )}
+                        </CCol>
+                    </CRow>
+                    <hr/>
+                    <CRow>
+                        <CCol md={6}>
                             <div className='modalstatus'>
-                            <p><strong>Status:</strong> {bookingById.status || 'N/A'}</p>
-                            <p><strong>Amount:</strong> {bookingById.amount || 'N/A'}</p>
-                            <p><strong>GST Amount:</strong> {bookingById.GSTAmount || 'N/A'}</p>
-                            <p><strong>Total User Amount:</strong> {bookingById.totalUserAmount || 'N/A'}</p>
-                            <p><strong>TDS Amount:</strong> {bookingById.TDSAmount || 'N/A'}</p>
-                            <p><strong>Total Host Amount:</strong> {bookingById.totalHostAmount || 'N/A'}</p>
-                            <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
-                            <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
-                            <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
-                            <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p>
-                            <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
-                            <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
+                                <p><strong>Status:</strong> {bookingById.status || 'N/A'}</p>
+                                <p>
+                                  <strong>Status: </strong>
+                                  {bookingById.status === 1 && (
+                                    <span className="p-1 status-view rounded border border-primary text-white bg-primary w-100 text-center">
+                                      Upcoming
+                                    </span>
+                                  )}
+                                  {bookingById.status === 2 && (
+                                    <span className="p-1 status-view rounded border border-success text-white bg-warning w-100 text-center">
+                                      In Progress
+                                    </span>
+                                  )}
+                                  {(bookingById.status === 3) && (
+                                    <span className="p-1 status-view rounded border border-light text-black bg-success w-100 text-center">
+                                      Completed
+                                    </span>
+                                  )}
+                                  {(bookingById.status === 4) && (
+                                    <span className="p-1 status-view rounded border border-light text-black bg-danger w-100 text-center">
+                                      Cancelled
+                                    </span>
+                                  )}
+                                  {(bookingById.status === 5) && (
+                                    <span className="p-1 status-view rounded border border-light text-black bg-white w-100 text-center">
+                                      Requested
+                                    </span>
+                                  )}
+                                </p>
+                                <p><strong>Amount:</strong> {bookingById.amount || 'N/A'}</p>
+                                <p><strong>GST Amount:</strong> {bookingById.GSTAmount || 'N/A'}</p>
+                                <p><strong>Total User Amount:</strong> {bookingById.totalUserAmount || 'N/A'}</p>
+                                <p><strong>TDS Amount:</strong> {bookingById.TDSAmount || 'N/A'}</p>
+                                <p><strong>Total Host Amount:</strong> {bookingById.totalHostAmount || 'N/A'}</p>
+                            </div>
+                        </CCol>
+                        <CCol md={6}>
+                            <div className='modalstatus'>
+                                <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
+                                <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
+                                <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
+                                <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p>
+                                <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
+                                <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
                             </div>
                         </CCol>
                     </CRow>
-                    
                 </CModalBody>
+
                 <CModalFooter>
                     <CButton color="success" onClick={handleOpenUpdateForm}>Update</CButton>
                 </CModalFooter>
