@@ -288,7 +288,20 @@ const Bookings = () => {
             setAccordionOpen(true);
         }
     };
-
+    function formatDate(dateString) {
+      if (!dateString) return null;
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB'); // 'en-GB' locale formats the date as dd/mm/yyyy
+    }
+    
+    function formatTime(timeString) {
+      if (!timeString) return null;
+      const [hour, minute, second] = timeString.split(':');
+      const date = new Date();
+      date.setHours(hour, minute, second);
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+    
   const handleAccordionClose = () => {
     setAccordionOpen(false);
     setSelectedUserId(null);
@@ -510,6 +523,26 @@ setSelectedCarId(null);
                             )}
                         </CCol>
                     </CRow>
+                    <CRow>
+                        <CCol  className='border rounded col-5'>
+                          <p><strong>Start Trip Date:</strong> {formatDate(bookingById.startTripDate) || 'N/A'}</p>
+                          <p><strong>Start Trip Time:</strong> {formatTime(bookingById.startTripTime) || 'N/A'}</p>
+                        </CCol>
+                        <CCol className='col-2 d-flex align-items-center justify-content-center'>
+                          <div style={{width: '5vw'}}>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style={{maxWidth: '5vw'}}>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+</svg>
+
+                          </div>
+                        </CCol>
+                        <CCol className='border rounded col-5'>
+                        <p><strong>End Trip Date:</strong> {formatDate(bookingById.endTripDate) || 'N/A'}</p>
+
+                          <p><strong>End Trip Time:</strong> {formatTime(bookingById.endTripTime) || 'N/A'}</p>
+                        </CCol>
+                      </CRow>
+
                     <hr/>
                     <CRow>
                         <CCol md={6}>
@@ -552,10 +585,10 @@ setSelectedCarId(null);
                         </CCol>
                         <CCol md={6}>
                             <div className='modalstatus'>
-                                <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
+                                {/* <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
                                 <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
                                 <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
-                                <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p>
+                                <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p> */}
                                 <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
                                 <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
                             </div>

@@ -53,7 +53,7 @@ const CarProfiles = () => {
     }
     try {
       const data = await getCarVerififcation();
-      setCarProfilesData(data);
+      setCarProfilesData(data?data:[]);
       console.log(carProfilesData);
     } catch (error) {
       console.log(error);

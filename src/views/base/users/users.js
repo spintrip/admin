@@ -398,37 +398,37 @@ const Users = () => {
         <>
       <div className='container-fluid px-4 d-flex flex-column flex-md-row flex-column-reverse align-items-center justify-content-between'>
        
-        <div className='crud-group mb-2 d-none d-md-flex user-buttons'>
+        <div className='d-none d-md-flex align-items-center justify-content-center mb-4'>
           <CButton
-            className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'user' ? 'border-white' : ''}`}
+            className={`border border-2  mx-2 ${selectedStatus === 'user' ? 'border-primary bg-primary' : ''}`}
             onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'user' ? null : 'user'))} 
           >
             Users
           </CButton>
 
           <CButton
-            className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'Host' ? 'border-primary' : ''}`}
+            className={`border border-2 mx-2 ${selectedStatus === 'Host' ? 'border-primary bg-primary' : ''}`}
             onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'Host' ? null : 'Host'))} 
           >
             Hosts
           </CButton>
         </div>
-        <div className='d-block w-70 d-md-none'>
+        <div className='w-100 rounded d-md-none'>
         
         {accordionStatusOpen ? null : (
-          <CAccordion flush className='border rounded mx-2' style={{ width: '100%' }}>
+          <CAccordion flush className='rounded mx-2 w-100' style={{ width: '100%' }}>
             <CAccordionItem>
-              <CAccordionHeader className='' style={{ width: '100%' }}>Status</CAccordionHeader>
-                <CAccordionBody className='d-flex flex-column align-items-start'>
+              <CAccordionHeader className='' style={{ width: '100%' }}>Filters</CAccordionHeader>
+                <CAccordionBody className='border d-flex flex-column align-items-center justify-content-center w-100'>
                     <CButton
-                      className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'user' ? 'border-white' : ''}`}
+                      className={`my-2 w-100 border border-2 px-3 py-2 mx-2 ${selectedStatus === 'user' ? 'border-white' : ''}`}
                       onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'user' ? null : 'user'))} 
                     >
                       Users
                     </CButton>
 
                     <CButton
-                      className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'Host' ? 'border-primary' : ''}`}
+                      className={`my-2 w-100 border border-2 px-3 py-2 mx-2 ${selectedStatus === 'Host' ? 'border-primary' : ''}`}
                       onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'Host' ? null : 'Host'))} 
                     >
                       Hosts
