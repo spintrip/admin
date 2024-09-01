@@ -227,6 +227,7 @@ const Cars = () => {
         rating: dataByID.car.rating || '',
       });
       setUpdateAdditionalInfo({
+        verification_status: additionalInfo.verification_status || null,
         HorsePower: additionalInfo.HorsePower || '',
         AC: additionalInfo.AC ? 'Yes' : 'No',
         Musicsystem: additionalInfo.Musicsystem ? 'Yes' : 'No',
@@ -507,6 +508,25 @@ const Cars = () => {
                   </CCol>
                   <CCol xs={5} className="car-modal">
                     <h3>Additional Info: </h3>
+                    <p>
+                      <strong>Status: </strong>
+                      {carById.additionalInfo?.verification_status === 1 && (
+                        <span className="p-1 status-view rounded border border-primary text-white bg-primary w-100 text-center">
+                          Pending
+                        </span>
+                      )}
+                      {carById.additionalInfo?.verification_status === 2 && (
+                        <span className="p-1 status-view rounded border border-success text-white bg-success w-100 text-center">
+                          Verified
+                        </span>
+                      )}
+                      {(carById.additionalInfo?.verification_status !== 1 && carById.additionalInfo?.verification_status !== 2) && (
+                        <span className="p-1 status-view rounded border border-light text-black bg-white w-100 text-center">
+                          Not Uploaded
+                        </span>
+                      )}
+                    </p>
+
                     <p><strong>Horse Power:</strong> {carById.additionalInfo?.HorsePower || 'N/A'}</p>
                     <p><strong>AC:</strong> {carById.additionalInfo?.AC ? 'Yes' : 'No'}</p>
                     <p><strong>Music System:</strong> {carById.additionalInfo?.Musicsystem ? 'Yes' : 'No'}</p>
@@ -809,6 +829,19 @@ const Cars = () => {
               </CModalHeader>
               <CModalBody>
                 <CForm>
+                <CRow className="mb-3">
+                    <CCol>
+                      <CFormLabel>Status</CFormLabel>
+                      <CFormSelect
+                        value={updateAdditionalInfo.verification_status}
+                        onChange={(e) => setUpdateAdditionalInfo({ ...updateAdditionalInfo, verification_status: e.target.value === "null" ? null : parseInt(e.target.value, 10) })}
+                      >
+                        <option value="null">Not Uploaded</option>
+                        <option value="1">Pending</option>
+                        <option value="2">Verified</option>
+                      </CFormSelect>
+                    </CCol>
+                  </CRow>
                   {/* Form Inputs for Additional Info */}
                   <CRow className="mb-3">
                     <CCol>
