@@ -15,17 +15,26 @@ import { CChartBar, CChartLine } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
 import { cilArrowBottom, cilArrowTop, cilOptions } from '@coreui/icons';
 import { fetchUsers } from '../../api/user';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, differenceInWeeks, differenceInMonths, differenceInYears } from 'date-fns';
 
 const WidgetsDropdown = (props) => {
   const widgetChartRef1 = useRef(null);
   const widgetChartRef2 = useRef(null);
   const [userData , setUserData] = useState([]);
+  const [userPercentage , setUserPercentage] = useState('');
+  const [currentUserPeriod, setCurrentUserPeriod] = useState('week');
+  const [timePeriod, setTimePeriod] = useState('week');
+  const [userIncrease, setUserIncrease] = useState(null);
 
-
+  console.log(userPercentage);
   const fetchAllUsers = async() => {
     const data = await fetchUsers();
     setUserData(data);
   }
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, [])
 
   useEffect(() => {
     document.documentElement.addEventListener('ColorSchemeChange', () => {
@@ -43,18 +52,75 @@ const WidgetsDropdown = (props) => {
         })
       }
     })
-  }, [widgetChartRef1, widgetChartRef2])
+  }, [widgetChartRef1, widgetChartRef2]);
+
+  const FormatTotal = (total) => {
+    return total >= 1000 ? (total/1000).toFixed(1) + 'k' : total;
+  }
+
+  useEffect(() => {
+    filterBooking();
+  },[userData , timePeriod]);
+
+  const filterBooking = () => {
+    let sortedData = [...userData];
+    sortedData = sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+    let currentStart, currentEnd, differenceFunction, previousData;
+  
+    if (timePeriod === 'week') {
+      currentStart = startOfWeek(new Date());
+      currentEnd = endOfWeek(new Date());
+      differenceFunction = differenceInWeeks;
+    } else if (timePeriod === 'month') {
+      currentStart = startOfMonth(new Date());
+      currentEnd = endOfMonth(new Date());
+      differenceFunction = differenceInMonths;
+    } else if (timePeriod === 'year') {
+      currentStart = startOfYear(new Date());
+      currentEnd = endOfYear(new Date());
+      differenceFunction = differenceInYears;
+    }
+  
+    const currentPeriodData = sortedData.filter(
+      (user) => new Date(user.createdAt) >= currentStart && new Date(user.createdAt) <= currentEnd
+    );
+  
+    const currentPeriodCount = currentPeriodData.length;
+    setCurrentUserPeriod(currentPeriodCount);
+  
+    previousData = sortedData.filter(
+      (user) => new Date(user.createdAt) < currentStart
+    );
+  
+    const numberOfPreviousPeriods = differenceFunction(new Date(), previousData[previousData.length - 1]?.createdAt || new Date());
+  
+    const previousPeriodCount = previousData.length;
+    const averagePreviousPeriodsCount = numberOfPreviousPeriods ? (previousPeriodCount / numberOfPreviousPeriods) : 0;
+  
+    const percentageDifference = averagePreviousPeriodsCount === 0
+      ? currentPeriodCount > 0 
+        ?  currentPeriodCount + '%'
+        : '0%'
+      : (((currentPeriodCount - averagePreviousPeriodsCount) / averagePreviousPeriodsCount) * 100).toFixed(1) + '%';
+  
+    setUserPercentage(percentageDifference);
+    setUserIncrease(currentPeriodCount > averagePreviousPeriodsCount);
+  };
 
   return (
     <CRow className={props.className} xs={{ gutter: 4 }}>
       <CCol sm={6} xl={4} xxl={3}>
+      <button onClick={() => setTimePeriod('week')}>This Week</button>
+    <button onClick={() => setTimePeriod('month')}>This Month</button>
+    <button onClick={() => setTimePeriod('year')}>This Year</button>
         <CWidgetStatsA
           color="primary"
           value={
             <>
-              26K{' '}
+              {FormatTotal(currentUserPeriod)}{' '}
               <span className="fs-6 fw-normal">
-                (-12.4% <CIcon icon={cilArrowBottom} />)
+                {userIncrease ? '+' : ''}{userPercentage} <CIcon icon={userIncrease ? cilArrowTop : cilArrowBottom} />
               </span>
             </>
           }

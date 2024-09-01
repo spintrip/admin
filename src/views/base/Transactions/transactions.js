@@ -17,6 +17,7 @@ import {
   CDropdownToggle,
   CDropdownMenu,
   CDropdownItem,
+  CFormSelect
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
@@ -59,12 +60,12 @@ const columns = [
   {
     name: 'Transaction ID',
     selector: (row) => row.Transactionid, // Replace with the actual key for Transaction ID in your data
-    sortable: false,
+    sortable: true,
   },
   {
     name: 'Booking ID',
     selector: (row) => row.Bookingid, // Replace with the actual key for Booking ID in your data
-    sortable: false,
+    sortable: true,
   },
 
   {
@@ -82,7 +83,7 @@ const columns = [
           return "Unknown";
       }
     },
-    sortable: false,
+    sortable: true,
     cell: row => {
       let statusText;
       let className;
@@ -111,25 +112,25 @@ const columns = [
   {
     name: 'Amount',
     selector: (row) => row.amount, // Replace with the actual key for Amount in your data
-    sortable: false,
+    sortable: true,
     cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.amount.toFixed(2)}</div>}
   },
   {
     name: 'GST Amount',
     selector: (row) => row.gstAmount? row.gstAmount : '0', // Replace with the actual key for GST Amount in your data
-    sortable: false,
+    sortable: true,
     cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.gstAmount? row.gstAmount.toFixed(2) : '0.00'}</div>}
   },
   {
     name: 'Total Amount',
     selector: (row) => row.totalAmount, // Replace with the actual key for Total Amount in your data
-    sortable: false,
+    sortable: true,
     cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.totalAmount.toFixed(2)}</div>}
   },
   {
     name: 'Created At',
     selector: (row) => new Date(row.createdAt).toLocaleString(), // Converts to a readable date string
-    sortable: false,
+    sortable: true,
   },
   {
     name: 'Updated At',
@@ -192,6 +193,7 @@ const UpdateTransactionModal = () => {
       setTransactionFormValues({
         status: ''
       });
+      fetchTransactionData();
     } catch (error) {
       console.log(error);
     }
@@ -234,6 +236,9 @@ const UpdateTransactionModal = () => {
 
   const handleTransaction = (transaction) => {
     setTransactionId(transaction.Transactionid);
+    setTransactionFormValues({
+      status: transaction.status.toString(), 
+    });
     setTransactionModalVisible(true);
   }
 
@@ -280,18 +285,18 @@ const UpdateTransactionModal = () => {
         </div>
       </div>
 
-      <div className='container-fluid h-fit-content '>
+      <div className='container-fluid h-fit-content mt-4 '>
           <DataTable
-                  columns={columns}
-                  //data={displayedHosts}
-                  data={displayedHosts.map((row, index) => ({ ...row, uniqueId: `${row.Transactionid}-${row.Bookingid}-${index}` }))}
-                  customStyles={customStyles}
-                  responsive={true}
-                  title={'Transactions Table'}
-                  highlightOnHover={true}
-                  pointerOnHover={true}
-                  fixedHeader={true}
-                  onRowClicked={(transaction)=>handleTransaction(transaction)}
+            columns={columns}
+            data={displayedHosts.map((row, index) => ({ ...row, uniqueId: `${row.Transactionid}-${row.Bookingid}-${index}` }))}
+            keyField="uniqueId"
+            customStyles={customStyles}
+            responsive={true}
+            title={'Transactions Table'}
+            highlightOnHover={true}
+            pointerOnHover={true}
+            fixedHeader={true}
+            onRowClicked={(transaction)=>handleTransaction(transaction)}
           />
         </div>
 
@@ -302,10 +307,16 @@ const UpdateTransactionModal = () => {
         </CModalHeader>
         <CModalBody>
           <CForm onSubmit={handleTransactionSubmit}>
-            <CInputGroup className="mb-3">
-              <CFormLabel className='me-3'>Status</CFormLabel>
-              <CFormInput type="text" name="status" value={transactionFormValues.status} onChange={handleTransactionInputChange} required />
-            </CInputGroup>
+            <CFormLabel>Status</CFormLabel>
+              <CFormSelect
+                name="status" 
+                value={transactionFormValues.status}
+                onChange={handleTransactionInputChange}
+              >
+                <option value="1">Initiated</option>
+                <option value="2">Processed</option>
+                <option value="3">Declined</option>
+              </CFormSelect>
             <CModalFooter>
               <CButton color="secondary" onClick={() => setTransactionModalVisible(false)}>Close</CButton>
               <CButton color="primary" type="submit">Upload</CButton>

@@ -19,7 +19,11 @@ import {
   CForm,
   CFormLabel,
   CFormSelect,
-  CImage
+  CImage,
+  CAccordion,
+  CAccordionItem,
+  CAccordionBody,
+  CAccordionHeader
 } from '@coreui/react';
 import '../../../scss/user.css';
 import { FaTimesCircle } from 'react-icons/fa';
@@ -154,6 +158,8 @@ const Users = () => {
   const [error, setError] = useState(null); 
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [originalUserData, setOriginalUserData] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [accordionStatusOpen, setStatusAccordionOpen] = useState(false);
   const [updateUserData , setUpdateUserData ] =  useState({
     phone: '',
     password: '',
@@ -327,6 +333,11 @@ const Users = () => {
       let sortedData = [...userData];
 
       sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (selectedStatus !== null) {
+        sortedData = sortedData.filter(
+          (item) => item.role === selectedStatus
+        );
+      }
       if (!searchInput) {
         setFilteredData(sortedData);
       } else {
@@ -366,7 +377,7 @@ const Users = () => {
       }
     };
     filterUsers();
-  }, [userData, selectedSearchOption, searchInput]);
+  }, [userData, selectedSearchOption, searchInput, selectedStatus]);
   
 
 
@@ -385,9 +396,49 @@ const Users = () => {
       </div>
       ) : (
         <>
-      <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
+      <div className='container-fluid px-4 d-flex flex-column flex-md-row flex-column-reverse align-items-center justify-content-between'>
        
-        <div>
+        <div className='crud-group mb-2 d-none d-md-flex user-buttons'>
+          <CButton
+            className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'user' ? 'border-white' : ''}`}
+            onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'user' ? null : 'user'))} 
+          >
+            Users
+          </CButton>
+
+          <CButton
+            className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'Host' ? 'border-primary' : ''}`}
+            onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'Host' ? null : 'Host'))} 
+          >
+            Hosts
+          </CButton>
+        </div>
+        <div className='d-block w-70 d-md-none'>
+        
+        {accordionStatusOpen ? null : (
+          <CAccordion flush className='border rounded mx-2' style={{ width: '100%' }}>
+            <CAccordionItem>
+              <CAccordionHeader className='' style={{ width: '100%' }}>Status</CAccordionHeader>
+                <CAccordionBody className='d-flex flex-column align-items-start'>
+                    <CButton
+                      className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'user' ? 'border-white' : ''}`}
+                      onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'user' ? null : 'user'))} 
+                    >
+                      Users
+                    </CButton>
+
+                    <CButton
+                      className={`border border-2 px-3 py-2 mx-2 ${selectedStatus === 'Host' ? 'border-primary' : ''}`}
+                      onClick={() => setSelectedStatus(prevStatus => (prevStatus === 'Host' ? null : 'Host'))} 
+                    >
+                      Hosts
+                    </CButton>
+                  </CAccordionBody>
+                </CAccordionItem>
+              </CAccordion>
+            )}
+        </div>
+        <div className='w-100 px-2'>
           <CInputGroup className="mx-2 mb-4">
             <CFormInput
               aria-label="Text input with dropdown button"
@@ -521,19 +572,28 @@ const Users = () => {
                 </CRow>
               )}
             </CModalBody>
-            <CModalFooter className='d-flex align-items-center justify-content-end'>
+            <CModalFooter className='d-flex align-items-center justify-content-between'>
+              <div>
+              <CButton variant='danger' className=' d-flex align-items-center justify-content-center'>
+                Delete User
+              </CButton>
+              </div>
+              <div>
               <CButton className='btn-interactive basicInfo d-flex align-items-center justify-content-center' onClick={handleOpenUpdateForm}>
                 <span>Update</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{ marginLeft: '5px' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </CButton>
+              </div>
+              <div>
               <CButton className='btn-interactive additionalInfo align-items-center justify-content-center' onClick={handleOpenUpdateAdditionalInfoForm}>
                 <span>Update Additional Info</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{ marginLeft: '5px' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </CButton>
+              </div>
             </CModalFooter>
           </CModal>
         )}
