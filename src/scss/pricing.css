@@ -48,4 +48,29 @@
     overflow-y: auto;
     max-height: 200px;
   }
+  .modal-body-styled {
+    background-color: #252b4c;
+    color: #fff; 
+    padding: 20px; 
+    border-radius: 8px; 
+    text-align: center; 
+  }
+  
+  .modal-body-styled h2 {
+    margin-bottom: 10px;
+    font-size: 18px; 
+  }
+  
+  .modal-body-styled span {
+    display: block; 
+    font-size: 22px; 
+    font-weight: bold;
+    color: #f6f3ed; 
+  }
+  
+  .modal-body-styled p {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #ddd; 
+  }
   

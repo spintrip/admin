@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
+import FileDisplay from '../controller/FileDisplay';
 import {
   CButton,
   CInputGroup,
@@ -549,20 +550,17 @@ const Users = () => {
                   <CCol className="d-flex flex-column align-items-center">
                     <p><strong>Driving License:</strong></p>
                     {userById.additionalInfo.dl ? (
-                      <>
-                      <Document file={userById.additionalInfo.dl} />
-                      {/* <img src={userById.additionalInfo.dl} alt="DL" className="img-thumbnail"  onClick={() => handleImageClick(userById.additionalInfo.dl)}/> */}
-                      </>
+                      <FileDisplay fileUrl={userById.additionalInfo.dl} />
                     ) : (
                       <div className="empty-image-placeholder">
-                          <span><FaTimesCircle /> Not Uploaded</span>
+                        <span><FaTimesCircle /> Not Uploaded</span>
                       </div>
                     )}
                   </CCol>
                   <CCol className="d-flex flex-column align-items-center">
                     <p><strong>Aadhaar:</strong></p>
                     {userById.additionalInfo.aadhar ? (
-                      <img src={userById.additionalInfo.aadhar} alt="Aadhar" className="img-thumbnail" onClick={() => handleImageClick(userById.additionalInfo.aadhar)} />
+                      <FileDisplay fileUrl={userById.additionalInfo.aadhar} />
                     ) : (
                       <div className="empty-image-placeholder">
                           <span><FaTimesCircle /> Not Uploaded</span>

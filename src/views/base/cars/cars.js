@@ -169,7 +169,6 @@ const columns = [
 
 const Cars = () => {
   const [carData, setCarData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -182,9 +181,7 @@ const Cars = () => {
   const [error , setError] = useState('')
   const [updateAdditionalInfoModalVisible, setUpdateAdditionalInfoModalVisible] = useState(false);
   const [enlargedImage , setEnlargedImage] = useState(null);
-  const [hostData , setHostData] = useState('')
-  const limit = 20;
-  const visiblePages = 3;
+  const [hostData , setHostData] = useState('');
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
@@ -372,7 +369,6 @@ const Cars = () => {
       sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
-        setCurrentPage(1);
       } else {
         const filtered = sortedData.filter((car) => {
           if (selectedSearchOption === 'all') {
@@ -389,25 +385,16 @@ const Cars = () => {
           }
         });
         setFilteredData(filtered);
-        setCurrentPage(1);
+        
       }
     };
     filterCars();
   }, [carData, selectedSearchOption, searchInput]);
 
-  const totalPages = Math.ceil(filteredData.length / limit);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
 
   const displayedCars = filteredData
-  console.log('dSIPLAYED CARS', displayedCars)
-  const getVisiblePages = () => {
-    const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + visiblePages - 1);
-    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
-  };
+
 
   const handleImageClick = (imageUrl) => {
     setEnlargedImage(imageUrl);

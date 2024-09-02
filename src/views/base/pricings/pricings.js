@@ -95,6 +95,7 @@ const Pricing = () => {
   const [updatedCarId , setUpdatedCarId] = useState({ carid : ''})
   const [updatedAutoData , setUpdateAutoData] = useState([])
   const [showManualModal, setShowManualModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const [updatedManualData , setUpdatedManualData] = useState({ carid : '' , costperhr: ''});
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -157,16 +158,18 @@ const Pricing = () => {
 
   const handleAutoPricing = async() => {
       const trimmedData = {
-        carid: updatedCarId.carid.trim(),
+        carid: updatedCarId.trim(),
       };
       setLoading(true)
       try {
         const data = await autoCarPricing(trimmedData);
         setUpdateAutoData(data);
+        fetchData();
       } catch (error) {
         console.log(error);
       } finally {
         setLoading(false)
+        setShowPricingModal(false);
       }
   }
 
@@ -180,10 +183,17 @@ const Pricing = () => {
     try {
       await manualCarPricing(trimmedData);
       setShowManualModal(false);
+      fetchData();
     } catch (error) {
       console.log(error);
     }
+    setShowPricingModal(false);
 }
+  const handlePricing = (car) =>{
+    setUpdatedCarId(car.carid);
+    setUpdatedManualData(car);
+    setShowPricingModal(true);
+  }
   const tableHeaders = [
     { label: 'Car Id', value: 'carid' },
     { label: 'Cost/Hr', value: 'costperhr' },
@@ -193,11 +203,8 @@ const Pricing = () => {
 
   return (
     <>
-      <div className='container-fluid px-4 d-flex align-items-center justify-content-between'>
-        <div className='crud-group d-flex mx-2'>
-          <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setShowManualModal(true)}>Manual Pricing</CButton>
-          <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setShowAutoModal(true)}>Auto Pricing</CButton>
-        </div>
+      <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
+        
         <div>
           <CInputGroup className="mx-2">
             <CFormInput
@@ -231,44 +238,59 @@ const Pricing = () => {
                   highlightOnHover={true}
                   pointerOnHover={true}
                   fixedHeader={true}
-                  onRowClicked={(car)=>handleCarByIdClick(car)}
+                  onRowClicked={(car)=>handlePricing(car)}
           />
           </div>
-      
-      
 
+          <CModal visible={showPricingModal} onClose={() => setShowPricingModal(false)} className="custom-modal">
+            <CModalHeader className="modal-header-styled">Pricing</CModalHeader>
+            <CModalBody className="modal-body-styled">
+              <div>
+                <h2>Selected Car ID</h2>
+                <span>{updatedCarId}</span>
+                <p>Please select the pricing you need to set.</p>
+              </div>
+              <div className='crud-group d-flex mx-2 justify-content-between'>
+                <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setShowManualModal(true)}>Manual Pricing</CButton>
+                <CButton className="fw-bolder bg-light text-black mx-2" onClick={() => setShowAutoModal(true)}>Auto Pricing</CButton>
+              </div>
+            </CModalBody>
+            <CModalFooter className="modal-footer-styled">
+              
+            </CModalFooter>
+          </CModal>
 
-      <CModal visible={showAutoModal} onClose={() => setShowAutoModal(false)} className="custom-modal">
-          <CModalHeader className="modal-header-styled">Auto Pricing</CModalHeader>
-          <CModalBody className="modal-body-styled">
-            <CForm className="modal-form">
-              <CFormInput
-                type="text"
-                placeholder="Enter Car ID"
-                value={updatedCarId.carid}
-                onChange={(e) => setUpdatedCarId({ ...updatedCarId, carid: e.target.value })}
-                className="modal-input"
-              />
-            </CForm>
-              {loading && (
-                <div className="loader-container">
-                  <div className="loader"></div> 
-                </div>
-              )}
+          <CModal visible={showAutoModal} onClose={() => setShowAutoModal(false)} className="custom-modal">
+            <CModalHeader className="modal-header-styled">Auto Pricing</CModalHeader>
+              <CModalBody className="modal-body-styled">
+                <CForm className="modal-form">
+                  <CFormInput
+                    type="text"
+                    placeholder="Enter Car ID"
+                    value={updatedCarId}
+                    onChange={(e) => setUpdatedCarId(e.target.value)}
+                    className="modal-input"
+                  />
+                </CForm>
+                  {loading && (
+                    <div className="loader-container">
+                      <div className="loader"></div> 
+                    </div>
+                  )}
 
-              {!loading && updatedAutoData && (
-                <div className="received-data-container">
-                  <p><strong>Message:</strong> {updatedAutoData.message}</p>
-                  <p><strong>Car ID:</strong> {updatedAutoData.carid}</p>
-                  <p><strong>Cost per Hour:</strong> ₹{updatedAutoData.costperhr}</p>
-                </div>
-              )}
-          </CModalBody>
-          <CModalFooter className="modal-footer-styled">
-            <CButton color="secondary" onClick={() => setShowAutoModal(false)}>Close</CButton>
-            <CButton color="primary" onClick={handleAutoPricing}>Update</CButton>
-          </CModalFooter>
-        </CModal>
+                {!loading && updatedAutoData && (
+                  <div className="received-data-container">
+                    <p><strong>Message:</strong> {updatedAutoData.message}</p>
+                    <p><strong>Car ID:</strong> {updatedAutoData.carid}</p>
+                    <p><strong>Cost per Hour:</strong> ₹{updatedAutoData.costperhr}</p>
+                  </div>
+                )}
+            </CModalBody>
+            <CModalFooter className="modal-footer-styled">
+              <CButton color="secondary" onClick={() => setShowAutoModal(false)}>Close</CButton>
+              <CButton color="primary" onClick={handleAutoPricing}>Update</CButton>
+            </CModalFooter>
+          </CModal>
 
         <CModal visible={showManualModal} onClose={() => setShowManualModal(false)} className="custom-modal">
           <CModalHeader className="modal-header-styled">Manual Pricing</CModalHeader>

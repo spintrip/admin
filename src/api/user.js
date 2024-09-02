@@ -80,3 +80,16 @@ export const rejectUserVerification = async(userId) => {
     throw error;
   }
 }
+
+export const deleteUser = async(id) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/users/${id}` , {
+      headers : {
+        'token' : token,
+      },
+     });
+     return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
