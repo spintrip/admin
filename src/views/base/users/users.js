@@ -28,7 +28,7 @@ import {
 } from '@coreui/react';
 import '../../../scss/user.css';
 import { FaTimesCircle } from 'react-icons/fa';
-import { Document } from 'react-pdf';
+import { Document } from 'react-pdf'
 
 import DataTable from 'react-data-table-component';
 const customStyles = {
@@ -176,12 +176,8 @@ const Users = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const [deleteModal , setDeleteModal] = useState(false);
-  const [selectedDeleteId , setSelectedDeleteId] = useState('');
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
-  const [isLoading , setisLoading] = useState(false);
-  const [sendError , setSendError] = useState('');
 
   const fetchData = useCallback(async () => {
     if (!token) {
@@ -392,14 +388,6 @@ const Users = () => {
     setEnlargedImage(imageUrl);
   };
 
-  const handleDeleteModal = (id) => {
-    setDeleteModal(true);
-    setSelectedDeleteId(id);
-  } 
-
-  const handleDeleteUser = useCallback(async(id) => {
-    
-  },[]);
 
   return (
     <div>
@@ -584,7 +572,7 @@ const Users = () => {
             </CModalBody>
             <CModalFooter className='d-flex align-items-center justify-content-between'>
               <div>
-              <CButton variant='danger' className=' d-flex align-items-center justify-content-center' onClick={handleDeleteModal(userById.id)}>
+              <CButton variant='danger' className=' d-flex align-items-center justify-content-center'>
                 Delete User
               </CButton>
               </div>
@@ -833,31 +821,6 @@ const Users = () => {
             </CModalFooter>
           </CModal>
         )}
-
-          <CModal visible={deleteModal} onClose={handleCloseConfirm} alignment="center" size="lg">
-            <CModalHeader>
-              <CModalTitle>Delete User</CModalTitle>
-            </CModalHeader>
-            <CModalBody>
-            {sendError ? (
-              <div className='error-message'> {sendError}</div>
-            ) : (
-              
-              <div>
-                <span>Are You sure you want to delete the selected User ?</span>
-              </div>
-            )}
-            </CModalBody>
-            <CModalFooter>
-                <CButton>No</CButton>
-                {isLoading ? (
-                    <div>Loading...</div>
-                ) : (
-                <CButton onClick={handleDeleteUser}>Yes</CButton>
-            )}
-            </CModalFooter>
-          </CModal>
-
         {enlargedImage && (
             <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
               <CModalBody className="enlarged-image-modal">
