@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchUserVerification, approveUserVerification , rejectUserVerification } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
+import FileDisplay from '../../base/controller/FileDisplay';
 import {
   CTable,
   CTableBody,
@@ -233,97 +234,7 @@ const UserVerification = () => {
         </CPagination>
       </div>
       {selectedProfile && (
-        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
-          <CModalHeader>
-            <CModalTitle>Profile Details</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <CRow>
-              <CCol>
-                <p><strong>ID:</strong> {selectedProfile.id}</p>
-                <p><strong>Full Name:</strong> {selectedProfile.FullName ? selectedProfile.FullName  : 'N/A'}</p>
-                <p>
-                  <strong>Verification Status:</strong>
-                  {selectedProfile.verification_status === 1 ? (
-                    <>
-                      <span style={{ color: 'orange' }}> Pending </span>
-                      <code className='p-2 border rounded' style={{ color: 'orange' }}>Code-1</code>
-                    </>
-                  ) : selectedProfile.verification_status === 2 ? (
-                    <>
-                      <span style={{ color: 'green' }}> Confirmed </span>
-                      <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
-                    </>
-                  ) : selectedProfile.verification_status === null ? (
-                    <>
-                      <span style={{ color: 'red' }}> N/A </span>
-                      <code className='p-2 border rounded' style={{ color: 'red' }}>Code-null</code>
-                    </>
-                  ) : (
-                    <>
-                      <span>Unknown Status</span>
-                      <code className='p-2 border rounded'>Code-{selectedProfile.verification_status}</code>
-                    </>
-                  )}
-                </p>
-                <p><strong>Created At:</strong> {new Date(selectedProfile.createdAt).toLocaleString()}</p>
-                <p><strong>Updated At:</strong> {new Date(selectedProfile.updatedAt).toLocaleString()}</p>
-              </CCol>
-            </CRow>
-            <CRow className="mt-4 border rounded p-3">
-              <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
-                <p><strong>Profile Pic:</strong></p>
-                <CImage 
-                  src={selectedProfile.profilepic} 
-                  width={100} 
-                  height={150} 
-                  className='border rounded'
-                  onClick={() => handleImageClick(selectedProfile.profilepic)} 
-                  style={{ cursor: 'pointer', objectFit: 'cover' }} 
-                />
-              </CCol>
-              <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
-                <p><strong>DL:</strong></p>
-                <CImage 
-                  src={selectedProfile.dl} 
-                  width={100} 
-                  height={150} 
-                  className='border rounded'
-                  onClick={() => handleImageClick(selectedProfile.dl)} 
-                  style={{ cursor: 'pointer' , objectFit: 'cover' }} 
-                />
-              </CCol>
-              <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
-                <p><strong>Aadhar:</strong></p>
-                <CImage 
-                  src={selectedProfile.aadhar} 
-                  width={100} 
-                  height={150} 
-                  className='border rounded'
-                  onClick={() => handleImageClick(selectedProfile.aadhar)} 
-                  style={{ cursor: 'pointer', objectFit: 'cover' }} 
-                />
-              </CCol>
-            </CRow>
-          </CModalBody>
-          <CModalFooter className='d-flex align-items-center justify-content-between'>
-            <CButton color="success" onClick={() => handleApprove(selectedProfile.id)} className='d-flex  align-items-center justify-content-center'>
-                <span>Approve</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                </CButton>
-            <CButton color="danger" onClick={() => handleDecline(selectedProfile.id)} className='d-flex  align-items-center justify-content-center'>
-                <span>Decline</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-
-            </CButton>
-          </CModalFooter>
-        </CModal>
-      )}{selectedProfile && (
-        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg" scrollable>
+        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
           <CModalHeader>
             <CModalTitle>Profile Details</CModalTitle>
           </CModalHeader>
@@ -390,14 +301,7 @@ const UserVerification = () => {
               <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
                 <p><strong>DL:</strong></p>
                 {selectedProfile.dl ? (
-                  <CImage 
-                    src={selectedProfile.dl} 
-                    width={100} 
-                    height={150} 
-                    className='border rounded'
-                    onClick={() => handleImageClick(selectedProfile.dl)} 
-                    style={{ cursor: 'pointer' , objectFit: 'cover' }} 
-                  />
+                  <FileDisplay fileUrl={selectedProfile.dl} />
                 ) : (
                   <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
                     <span><FaTimesCircle style={{ color: 'grey' }} /> Not Uploaded</span>
@@ -407,14 +311,7 @@ const UserVerification = () => {
               <CCol xs="4" className='d-flex flex-column align-items-center justify-content-center'>
                 <p><strong>Aadhar:</strong></p>
                 {selectedProfile.aadhar ? (
-                  <CImage 
-                    src={selectedProfile.aadhar} 
-                    width={100} 
-                    height={150} 
-                    className='border rounded'
-                    onClick={() => handleImageClick(selectedProfile.aadhar)} 
-                    style={{ cursor: 'pointer', objectFit: 'cover' }} 
-                  />
+                  <FileDisplay fileUrl={selectedProfile.aadhar} />
                 ) : (
                   <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
                     <span><FaTimesCircle style={{ color: 'grey' }} /> Not Uploaded</span>
@@ -424,16 +321,16 @@ const UserVerification = () => {
             </CRow>
           </CModalBody>
           <CModalFooter className='d-flex align-items-center justify-content-between'>
-            <CButton color="success" onClick={() => handleApprove(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
-              <span>Approve</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-            </CButton>
             <CButton color="danger" onClick={() => handleDecline(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
               <span>Decline</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </CButton>
+            <CButton color="success" onClick={() => handleApprove(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
+              <span>Approve</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
             </CButton>
           </CModalFooter>

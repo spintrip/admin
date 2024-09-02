@@ -1,12 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getBrand, putBrand, updateBrand } from '../../../api/brand';
 import {
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
   CModal,
   CModalBody,
   CModalFooter,
@@ -107,14 +101,14 @@ const Brand = () => {
     fetchBrands();
   }, []);
 
-  const fetchBrands = async () => {
+  const fetchBrands = useCallback(async () => {
     try {
       const data = await getBrand();
       setBrands(data.brands);
     } catch (error) {
       console.log(error);
     }
-  };
+  } ,[setBrands]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

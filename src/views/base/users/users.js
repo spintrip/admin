@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
+import FileDisplay from '../controller/FileDisplay';
+
 import {
   CButton,
   CInputGroup,
@@ -27,7 +29,7 @@ import {
 } from '@coreui/react';
 import '../../../scss/user.css';
 import { FaTimesCircle } from 'react-icons/fa';
-import { Document } from 'react-pdf'
+import { Document } from 'react-pdf';
 
 import DataTable from 'react-data-table-component';
 const customStyles = {
@@ -175,8 +177,12 @@ const Users = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [deleteModal , setDeleteModal] = useState(false);
+  const [selectedDeleteId , setSelectedDeleteId] = useState('');
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
+  const [isLoading , setisLoading] = useState(false);
+  const [sendError , setSendError] = useState('');
 
   const fetchData = useCallback(async () => {
     if (!token) {
@@ -387,6 +393,18 @@ const Users = () => {
     setEnlargedImage(imageUrl);
   };
 
+  const handleDeleteModal = (id) => {
+    setDeleteModal(true);
+    setSelectedDeleteId(id);
+  } 
+
+  const handleDeleteUser = useCallback(async(id) => {
+    try{
+      const response = await delete
+    } catch (error) {
+      throw error;
+    }
+  },[]);
 
   return (
     <div>
@@ -549,20 +567,17 @@ const Users = () => {
                   <CCol className="d-flex flex-column align-items-center">
                     <p><strong>Driving License:</strong></p>
                     {userById.additionalInfo.dl ? (
-                      <>
-                      <Document file={userById.additionalInfo.dl} />
-                      {/* <img src={userById.additionalInfo.dl} alt="DL" className="img-thumbnail"  onClick={() => handleImageClick(userById.additionalInfo.dl)}/> */}
-                      </>
+                      <FileDisplay fileUrl={userById.additionalInfo.dl} />
                     ) : (
                       <div className="empty-image-placeholder">
-                          <span><FaTimesCircle /> Not Uploaded</span>
+                        <span><FaTimesCircle /> Not Uploaded</span>
                       </div>
                     )}
                   </CCol>
                   <CCol className="d-flex flex-column align-items-center">
                     <p><strong>Aadhaar:</strong></p>
                     {userById.additionalInfo.aadhar ? (
-                      <img src={userById.additionalInfo.aadhar} alt="Aadhar" className="img-thumbnail" onClick={() => handleImageClick(userById.additionalInfo.aadhar)} />
+                      <FileDisplay fileUrl={userById.additionalInfo.aadhar} />
                     ) : (
                       <div className="empty-image-placeholder">
                           <span><FaTimesCircle /> Not Uploaded</span>
@@ -574,7 +589,7 @@ const Users = () => {
             </CModalBody>
             <CModalFooter className='d-flex align-items-center justify-content-between'>
               <div>
-              <CButton variant='danger' className=' d-flex align-items-center justify-content-center'>
+              <CButton variant='danger' className=' d-flex align-items-center justify-content-center' onClick={handleDeleteModal(userById.id)}>
                 Delete User
               </CButton>
               </div>
@@ -823,6 +838,31 @@ const Users = () => {
             </CModalFooter>
           </CModal>
         )}
+
+          <CModal visible={deleteModal} onClose={handleCloseConfirm} alignment="center" size="lg">
+            <CModalHeader>
+              <CModalTitle>Delete User</CModalTitle>
+            </CModalHeader>
+            <CModalBody>
+            {sendError ? (
+              <div className='error-message'> {sendError}</div>
+            ) : (
+              
+              <div>
+                <span>Are You sure you want to delete the selected User ?</span>
+              </div>
+            )}
+            </CModalBody>
+            <CModalFooter>
+                <CButton>No</CButton>
+                {isLoading ? (
+                    <div>Loading...</div>
+                ) : (
+                <CButton onClick={handleDeleteUser}>Yes</CButton>
+            )}
+            </CModalFooter>
+          </CModal>
+
         {enlargedImage && (
             <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
               <CModalBody className="enlarged-image-modal">

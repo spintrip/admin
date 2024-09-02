@@ -29,3 +29,16 @@ export const updateTransaction = async(id , data) => {
     throw error;
   }
 }
+
+export const sendPayout = async(data) => {
+  try {
+    const response = await axios.post(`${apiUrl}admin/payouts` , data , {
+      headers : {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error ;
+  }
+}

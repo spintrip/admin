@@ -26,6 +26,7 @@ import {
 }
 from '@coreui/react';
 import { getBooking, fetchBookingById, } from '../../../api/booking';
+import { sendPayout } from '../../../api/transaction';
 
 const customStyles = {
     header: {
@@ -154,9 +155,20 @@ function payout() {
     const [modalVisible, setModalVisible] = useState(false);
     const [specificHost, setSpecificHost] = useState([])
     const [bookingData, setBookingData] = useState([]);
+    const [isLoading , setisLoading] = useState(false);
     const [filteredBookingData, setFilteredBookingData] = useState([]);
+    const [payoutFormValues, setPayoutFormValues] = useState({
+      bookingIds : [],
+      userId: "",
+      date : "",
+      time : "",
+      modeOfPayment : "",
+    });
+    const [modeOfPayment, setModeOfPayment] = useState('');
+    const [proceedModal ,setProceedModal] = useState(false);
     const [selectedRows, setSelectedRows] = React.useState(false);
     const [toggledClearRows, setToggleClearRows] = React.useState(false);
+    const [sendError , setSendError] = useState('');
     const navigate = useNavigate();
     
     const handleHostById = (host) => {
@@ -178,7 +190,7 @@ function payout() {
             
             return (carIds.includes(booking.carid) && booking.status==3)? booking : null
         });
-        console.log('Filtered bookings:', filteredBookings);
+        // console.log('Filtered bookings:', filteredBookings);
         setDisplayBookings(filteredBookings)
         // If you want to save the filtered bookings to state
         setModalVisible(true);
@@ -186,7 +198,7 @@ function payout() {
     };
 
 
-    console.log('finalResult', displayBookings)
+  
     const formatDate = (date) => {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
@@ -218,7 +230,7 @@ function payout() {
           setUsersData(users);
     
           const filteredHosts = filterHosts(users, hosts);
-          console.log('Filtered Hosts', filteredHosts);
+          // console.log('Filtered Hosts', filteredHosts);
           setFilteredData(filteredHosts);
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -234,10 +246,10 @@ function payout() {
         setToggleClearRows(!toggledClearRows);
       }
 
-      useEffect(() => {
-        console.log('selected booking id', selectedRows)
+      // useEffect(() => {
+      //   console.log('selected booking id', selectedRows)
 
-      }, [selectedRows]);
+      // }, [selectedRows]);
 
 
     useEffect(() => {
@@ -269,7 +281,6 @@ function payout() {
     const fetchBookingsData = async () => {
       try {
         const data = await getBooking();
-        console.log(data)
         setBookingData(data);
       } catch (error) {
         console.log(error);
@@ -278,6 +289,66 @@ function payout() {
 
     fetchBookingsData();
   }, []);
+
+
+  const handleModeSelection = (mode) => {
+    setModeOfPayment(mode);
+  };
+
+  
+  const handleSendProceed = () => {
+    const bookingIds = selectedRows.map(booking => booking.Bookingid.toString()); 
+    setPayoutFormValues(prevState => ({
+      ...prevState,
+      bookingIds: [...new Set([...prevState.bookingIds, ...bookingIds])],
+      userId: specificHost.id, 
+      modeOfPayment: modeOfPayment, 
+      date: getCurrentDateTime().split(' ')[0], 
+      time: getCurrentDateTime().split(' ')[1] 
+    }));
+    setProceedModal(true);
+    
+  };
+
+ const handlePayoutSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    setisLoading(true);
+    if (!payoutFormValues.modeOfPayment) {
+      alert("Please fill the mode Of Payment field.");
+      setisLoading(false);
+      return; 
+    }
+    if(!token) {
+        console.log('No token Found');
+        navigate('/login')
+    }
+   try{
+    const trimmedData = payoutFormValues;
+    const data = await sendPayout(trimmedData);
+    console.log(data);
+    setProceedModal(false);
+    setModalVisible(false);
+    setSendError(null);
+   } catch (error) {
+    setSendError(error.message);
+   }
+   setisLoading(false);
+   setSelectedRows(false);  
+   setToggleClearRows(!toggledClearRows); 
+   
+  }, [token , navigate, payoutFormValues, sendPayout]);
+
+
+  const handleCloseConfirm = () => {
+    setProceedModal(false)
+    setSendError(null);
+  }
+
+  const handlePayoutClose = () =>{
+    setModalVisible(false);
+    setSelectedRows(false);
+  }
+
 
   console.log('bookings', bookingData)
   return (
@@ -295,17 +366,17 @@ function payout() {
                   onRowClicked={(host)=>handleHostById(host)}
           />
         
-        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable alignment='center'>
+        <CModal visible={modalVisible} onClose={handlePayoutClose} size="xl" scrollable alignment='center'>
             <CModalHeader>
               <CModalTitle>Host Payout Details <span> </span></CModalTitle>
             </CModalHeader>
             <CModalBody >
             <CDropdown className='w-100'>
-                  <CDropdownToggle className='d-flex align-items-center text-uppercase justify-content-between py-3' color="light" style={{fontWeight: '700'}}>Bank Transfer</CDropdownToggle>
+                  <CDropdownToggle className='d-flex align-items-center text-uppercase justify-content-between py-3' color="light" style={{fontWeight: '700'}}>{modeOfPayment}</CDropdownToggle>
                     <CDropdownMenu className='bg-primary p-3 w-100' style={{minWidth: '100px'}}>
-                        <CDropdownItem>Bank Transfer</CDropdownItem>
-                        <CDropdownItem>UPI</CDropdownItem>
-                    </CDropdownMenu>
+                        <CDropdownItem onClick={() => handleModeSelection('Bank Transfer')}>Bank Transfer</CDropdownItem>
+                        <CDropdownItem onClick={() => handleModeSelection('UPI')}>UPI</CDropdownItem>
+                      </CDropdownMenu>
                 </CDropdown>
 
                 <div className='border rounded p-3 my-4 overflow-y-scroll' style={{minHeight: '50vh'}}>
@@ -316,18 +387,18 @@ function payout() {
                     </div>:
                     <div>
                         <DataTable
-  columns={bookingColumns}
-  data={displayBookings.map((row, index) => ({ ...row, uniqueId: `${row.Bookingid}-${index}` }))}
-  customStyles={customStyles}
-  responsive={true}
-keyField="Bookingid"
-  highlightOnHover={true}
-  pointerOnHover={true}
-  fixedHeader={true}
-  selectableRows
-  onSelectedRowsChange={({ selectedRows }) => addSelectedBooking({ selectedRows })}
-  clearSelectedRows={toggledClearRows}
-/>
+                            columns={bookingColumns}
+                            data={displayBookings.map((row, index) => ({ ...row, uniqueId: `${row.Bookingid}-${index}` }))}
+                            customStyles={customStyles}
+                            responsive={true}
+                          keyField="Bookingid"
+                            highlightOnHover={true}
+                            pointerOnHover={true}
+                            fixedHeader={true}
+                            selectableRows
+                            onSelectedRowsChange={({ selectedRows }) => addSelectedBooking({ selectedRows })}
+                            clearSelectedRows={toggledClearRows}
+                          />
                     </div>
                     }
                 </div>
@@ -335,20 +406,20 @@ keyField="Bookingid"
                 flex-column align-items-center justify-content-between'>
                     {selectedRows?<>
                         {selectedRows.map((booking, index) => {
-  console.log('Booking data:', booking.totalHostAmount); // Check if totalHostAmount is present
-  totalHostAmt+=booking.totalHostAmount
-  return (
-    <div key={index} className='row w-100'>
-      <div className='col'>{booking.Bookingid}</div>
-      
-      <div className='col d-flex align-items-center justify-content-end' style={{fontWeight: '600'}}>+ ₹{String(booking.totalHostAmount)}</div>
-      <hr className='opacity-50'/>
-    </div>
-  );
-})}
-<div className='w-100'>
-<h2 className='w-100 d-flex align-items-center justify-content-end' style={{fontWeight: '700'}}>₹{totalHostAmt}</h2>
-</div>
+                          console.log('Booking data:', booking.totalHostAmount); // Check if totalHostAmount is present
+                          totalHostAmt+=booking.totalHostAmount
+                          return (
+                            <div key={index} className='row w-100'>
+                              <div className='col'>{booking.Bookingid}</div>
+                              
+                              <div className='col d-flex align-items-center justify-content-end' style={{fontWeight: '600'}}>+ ₹{String(booking.totalHostAmount)}</div>
+                              <hr className='opacity-50'/>
+                            </div>
+                          );
+                        })}
+                        <div className='w-100'>
+                        <h2 className='w-100 d-flex align-items-center justify-content-end' style={{fontWeight: '700'}}>₹{totalHostAmt.toFixed(2)}</h2>
+                        </div>
                    </>
                    :<></>
                 }
@@ -359,9 +430,34 @@ keyField="Bookingid"
 
             <CModalFooter className='d-flex align-items-center justify-content-between'>
                <div className='me-3'>{getCurrentDateTime()}</div>
-               <CButton size='xl' color='primary'>
+               <CButton size='xl' color='primary' onClick={handleSendProceed}>
                 Send Payout
                </CButton>
+            </CModalFooter>
+          </CModal>
+
+
+          <CModal visible={proceedModal} onClose={handleCloseConfirm} alignment="center" size="sm">
+            <CModalHeader>
+              <CModalTitle>Send Payout</CModalTitle>
+            </CModalHeader>
+            <CModalBody>
+            {sendError ? (
+              <div className='error-message'> {sendError}</div>
+            ) : (
+              
+              <div>
+                <span>Are You sure?</span>
+              </div>
+            )}
+            </CModalBody>
+            <CModalFooter>
+                <CButton>No</CButton>
+                {isLoading ? (
+                    <div>Loading...</div>
+                ) : (
+                <CButton onClick={handlePayoutSubmit}>Yes</CButton>
+            )}
             </CModalFooter>
           </CModal>
     </div>
