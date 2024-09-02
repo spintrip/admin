@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
 import FileDisplay from '../controller/FileDisplay';
-
 import {
   CButton,
   CInputGroup,
@@ -399,11 +398,7 @@ const Users = () => {
   } 
 
   const handleDeleteUser = useCallback(async(id) => {
-    try{
-      const response = await delete
-    } catch (error) {
-      throw error;
-    }
+    
   },[]);
 
   return (
