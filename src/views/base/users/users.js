@@ -164,6 +164,7 @@ const Users = () => {
   const [originalUserData, setOriginalUserData] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [accordionStatusOpen, setStatusAccordionOpen] = useState(false);
+  const [toggledClearRows, setToggleClearRows] = React.useState(false);
   const [updateUserData , setUpdateUserData ] =  useState({
     phone: '',
     password: '',
@@ -640,7 +641,7 @@ const Users = () => {
                   customStyles={customStyles}
                   selectableRows
                   onSelectedRowsChange={handleRowSelected}
-                  clearSelectedRows={toggleCleared}
+                  clearSelectedRows={toggledClearRows}
                   responsive={true}
                   title={'User Table'}
                   highlightOnHover={true}
