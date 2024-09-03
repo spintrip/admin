@@ -106,3 +106,19 @@
     object-fit: contain; 
   }
   
+  .delete-modal{
+    max-width: 100%;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    background-color: #ebe7e7;
+    color: black;
+
+  }
+  .delete-button{
+    margin-top: 20px;
+    background-color: #000000;
+    color: red;
+    text-decoration: underline;
+    text-decoration-color: #ddd;
+  }

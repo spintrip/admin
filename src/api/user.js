@@ -83,7 +83,20 @@ export const rejectUserVerification = async(userId) => {
 
 export const deleteUser = async(id) => {
   try{
-    const response = await axios.put(`${apiUrl}admin/users/${id}` , {
+    const response = await axios.delete(`${apiUrl}admin/users/${id}` , {
+      headers : {
+        'token' : token,
+      },
+     });
+     return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const deleteHost = async(id) => {
+  try{
+    const response = await axios.delete(`${apiUrl}admin/hosts/${id}` , {
       headers : {
         'token' : token,
       },

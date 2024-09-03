@@ -494,7 +494,6 @@ setSelectedCarId(null);
             />
         </div>
       
-
       {/* Booking Details Modal */}
       {bookingById && (
           <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
@@ -531,8 +530,8 @@ setSelectedCarId(null);
                         <CCol className='col-2 d-flex align-items-center justify-content-center'>
                           <div style={{width: '5vw'}}>
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style={{maxWidth: '5vw'}}>
-  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-</svg>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                          </svg>
 
                           </div>
                         </CCol>
@@ -591,6 +590,7 @@ setSelectedCarId(null);
                                 <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p> */}
                                 <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
                                 <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
+                                <p className='clickable-info'><strong >Transaction Id:</strong><span className='text-black text-xs'> {bookingById.Transactionid || 'N/A'}</span></p>
                             </div>
                         </CCol>
                     </CRow>
