@@ -28,7 +28,8 @@ import {
 } from '@coreui/react';
 import '../../../scss/user.css';
 import { FaTimesCircle } from 'react-icons/fa';
-import { Document } from 'react-pdf'
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 import DataTable from 'react-data-table-component';
 const customStyles = {
@@ -176,6 +177,8 @@ const Users = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [toggleCleared, setToggleCleared] = useState(false);
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
 
@@ -388,6 +391,55 @@ const Users = () => {
     setEnlargedImage(imageUrl);
   };
 
+  const handleRowSelected = (state) => {
+    setSelectedRows(state.selectedRows);
+  };
+
+  const exportSelectedRows = () => {
+    const workbook = XLSX.utils.book_new();
+  
+    // Extract headers from the columns array
+    const headers = columns.map((col) => col.name);
+  
+    // Map the selected rows to match the structure defined in the columns array
+    const dataToExport = selectedRows.map((row) => [
+      row.id, // ID
+      row.additionalInfo?.FullName ? row.additionalInfo?.FullName : '--' || row.FullName, // Full Name
+      row.phone, // Phone
+      row.role, // Role
+      row.rating ? row.rating.toFixed(2) : '--', // Rating
+      (() => {
+        switch (row.additionalInfo.verification_status) {
+          case 1:
+            return "Pending";
+          case 2:
+            return "Verified";
+          default:
+            return "Not Uploaded";
+        }
+      })(), // Verification
+      new Date(row.createdAt).toLocaleString(), // Created At
+      new Date(row.updatedAt).toLocaleString()  // Updated At
+    ]);
+  
+    // Combine headers and data
+    const worksheetData = [headers, ...dataToExport];
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  
+    // Append worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Selected Data');
+  
+    // Generate buffer
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    
+    // Save to file
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(data, 'selected_data.xlsx');
+  };
+  
 
   return (
     <div>
@@ -462,12 +514,26 @@ const Users = () => {
           </CInputGroup>
         </div>
       </div>
+      <div className='container-fluid my-3 d-flex align-items-center justify-content-end'>
+      {selectedRows.length > 0 && (
+        <CButton className='bg-primary d-flex align-items-center justify-content-center' style={{minWidth: '150px'}} onClick={exportSelectedRows}>
+          <span className=''>Export Data</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mx-2" style={{maxWidth: '20px'}}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+          </svg>
+
+          </CButton>
+      )}
+      </div>
       <div className='container-fluid h-fit-content '>
           <DataTable
                   
                   columns={columns}
                   data={displayedUsers}
                   customStyles={customStyles}
+                  selectableRows
+                  onSelectedRowsChange={handleRowSelected}
+                  clearSelectedRows={toggleCleared}
                   responsive={true}
                   title={'User Table'}
                   highlightOnHover={true}
