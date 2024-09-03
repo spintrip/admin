@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { fetchUsers , updateUser , fetchUserById } from '../../../api/user';
+import { fetchUsers , updateUser , fetchUserById, deleteUser, deleteHost } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
 import FileDisplay from '../controller/FileDisplay';
 import {
@@ -28,7 +28,7 @@ import {
 } from '@coreui/react';
 import '../../../scss/user.css';
 import { FaTimesCircle } from 'react-icons/fa';
-import { Document } from 'react-pdf'
+import { Document } from 'react-pdf';
 
 import DataTable from 'react-data-table-component';
 const customStyles = {
@@ -176,8 +176,15 @@ const Users = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [deleteModal , setDeleteModal] = useState(false);
+  const [selectedDeleteId , setSelectedDeleteId] = useState([]);
   const token = localStorage.getItem('adminToken');
   const navigate = useNavigate();
+  const [isLoading , setisLoading] = useState(false);
+  const [sendError , setSendError] = useState('');
+  const [isErrorContainer , setIsErrorContainer] = useState(false);
+  
+  const [confirmModal , setConfirmModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!token) {
@@ -388,6 +395,99 @@ const Users = () => {
     setEnlargedImage(imageUrl);
   };
 
+  const handleDeleteModal = (userById) => {
+    setSelectedDeleteId(userById);
+    setDeleteModal(true);
+  } 
+
+  const handleDeleteUser = () => {
+    setDeleteModal(false);
+    setConfirmModal(true);
+  } 
+  const handleConfirm = async () => {
+    setisLoading(true);
+    if (!token) {
+      console.log('No token Found');
+      navigate('/login');
+      return;
+    }
+    try {
+      const response = await deleteUser(selectedDeleteId.id);
+      console.log("userId", response);
+      setisLoading(false);
+      setConfirmModal(false);
+      setSelectedDeleteId([]);
+      fetchData();
+      setModalVisible(false);
+    } catch (error) {
+      if (error.status === 404) {
+        setSendError(error.message || 'User not present');
+        console.log(error.status);
+        setIsErrorContainer(true);
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setSendError('');
+        }, 3000);
+      } else {
+        setSendError('An error occurred');
+        setIsErrorContainer(true);
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setSendError('');
+        }, 3000);
+      }
+      setisLoading(false);
+    }
+  };
+  
+
+  const handleConfirmHost = async() => {
+    setisLoading(true);
+    if(!token){
+      console.log('No token Found');
+      navigate('/login');
+    }
+    try {
+      const response = await deleteHost(selectedDeleteId.id);
+      console.log("hostId", response);
+      setisLoading(false);
+      setConfirmModal(false);
+      setSelectedDeleteId([]);
+      fetchData();
+      setModalVisible(false);
+    } catch (error) {
+      if(error.status == 404){
+        setSendError(error.message || 'Host not present')
+        setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setSendError('');
+        }, 3000);
+      } else {
+        setSendError('An error occured');
+        setIsErrorContainer(true)
+        setTimeout(() => {
+          setIsErrorContainer(false);
+          setSendError('');
+        }, 3000);
+      }
+      setisLoading(false); 
+    }
+  };
+
+
+  const handleCloseDeleteModal = () =>{
+    setDeleteModal(false);  
+  }
+
+  const handleCloseConfirmModal = () =>{
+    setConfirmModal(false);  
+    setSelectedDeleteId([]);
+  }
+  const handleModalClose = () =>{
+    setModalVisible(false);  
+    setUserById([]);
+  }
 
   return (
     <div>
@@ -463,22 +563,21 @@ const Users = () => {
         </div>
       </div>
       <div className='container-fluid h-fit-content '>
-          <DataTable
-                  
-                  columns={columns}
-                  data={displayedUsers}
-                  customStyles={customStyles}
-                  responsive={true}
-                  title={'User Table'}
-                  highlightOnHover={true}
-                  pointerOnHover={true}
-                  fixedHeader={true}
-                  onRowClicked={(user)=>handleuserByIdClick(user)}
+          <DataTable     
+            columns={columns}
+            data={displayedUsers}
+            customStyles={customStyles}
+            responsive={true}
+            title={'User Table'}
+            highlightOnHover={true}
+            pointerOnHover={true}
+            fixedHeader={true}
+            onRowClicked={(user)=>handleuserByIdClick(user)}
           />
         </div>
     
         {userById && (
-          <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
+          <CModal visible={modalVisible} onClose={handleModalClose} size="xl" scrollable>
             <CModalHeader>
               <CModalTitle>User Details</CModalTitle>
             </CModalHeader>
@@ -572,9 +671,22 @@ const Users = () => {
             </CModalBody>
             <CModalFooter className='d-flex align-items-center justify-content-between'>
               <div>
-              <CButton variant='danger' className=' d-flex align-items-center justify-content-center'>
-                Delete User
-              </CButton>
+              {userById.role && userById.role === 'Host' ? (
+                <CButton style={{minWidth: '150px'}} color='danger'  className='text-white d-flex align-items-center justify-content-center d-flex align-items-center justify-content-center' onClick={() => (handleDeleteModal(userById))}>
+                  <span>Delete Host</span>
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style={{maxWidth: '22px'}} strokeWidth={1.5} stroke="currentColor" className="size-6 mx-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                          </svg>
+
+                </CButton>
+              ) : (
+                <CButton style={{minWidth: '150px'}} color='danger' className='text-white d-flex align-items-center justify-content-center d-flex align-items-center justify-content-center' onClick={() => (handleDeleteModal(userById))}>
+                  <span>Delete User</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style={{maxWidth: '22px'}} strokeWidth={1.5} stroke="currentColor" className="size-6 mx-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                          </svg>
+                </CButton>
+              )}
               </div>
               <div>
               <CButton className='btn-interactive basicInfo d-flex align-items-center justify-content-center' onClick={handleOpenUpdateForm}>
@@ -821,6 +933,87 @@ const Users = () => {
             </CModalFooter>
           </CModal>
         )}
+
+          <CModal visible={deleteModal} onClose={handleCloseDeleteModal} alignment="center">
+            <div className='rounded border border-2 border-primary'>
+              <CModalHeader>
+                {selectedDeleteId.role && selectedDeleteId.role === 'Host' ? (
+                  <CModalTitle>Delete Host</CModalTitle>
+                ) : (
+                  <CModalTitle>Delete User</CModalTitle>
+                )}
+              </CModalHeader>
+              <CModalBody>
+                <>
+                <div>
+                {selectedDeleteId.role && selectedDeleteId.role === 'Host' ? (
+                  <span>Are You sure you want to delete the selected Host ?</span>
+                ) : (
+                  <span>Are You sure you want to delete the selected User ?</span>
+                )}
+                </div>
+                <div className='mt-2'>
+                <p><strong>Name: </strong>{selectedDeleteId.additionalInfo?.FullName || 'N/A'}</p>
+                <p><strong>Phone: </strong>{selectedDeleteId.phone || 'N/A'}</p>
+                <p><strong>Role: </strong>{selectedDeleteId.role || 'N/A'}</p>
+              </div>
+              </>
+              
+              
+              </CModalBody> 
+              <CModalFooter className='d-flex align-items-center justify-content-between '>
+              
+              <CButton color='warning' onClick={handleCloseDeleteModal} >Go Back</CButton>
+                {isLoading ? (
+                      <div>Loading...</div>
+                ) : (
+                  <CButton color='danger' onClick={handleDeleteUser}>Yes Delete</CButton>
+                )}
+              
+              </CModalFooter>
+            </div>
+          </CModal>
+
+          <CModal visible={confirmModal} onClose={handleCloseConfirmModal} alignment="center" >
+            <div className='rounded border border-2 border-danger bg-danger'>
+              <CModalHeader>
+              {selectedDeleteId.role && selectedDeleteId.role === 'Host' ? (
+                  <CModalTitle>Permanently Delete Host?</CModalTitle>
+                ) : (
+                  <CModalTitle>Permanently Delete User?</CModalTitle>
+                )}
+              </CModalHeader>
+              <CModalBody>
+                
+                <>
+                  <div>
+                  {selectedDeleteId.role  && selectedDeleteId.role  === 'Host' ? (
+                  <span>Selected Host will be deleted Permanently , continue?</span>
+                ) : (
+                  <span>Selected User will be deleted Permanently , continue?</span>
+                )}
+                  </div>
+                  
+                </>
+            
+             
+              </CModalBody > 
+              <CModalFooter className='d-flex align-items-center justify-content-between'>
+              <CButton color='dark' onClick={handleCloseConfirmModal}>Reject</CButton>
+                {isLoading ? (
+                      <div>Loading...</div>
+                ) : (
+                  <CButton
+                    className={selectedDeleteId.role && selectedDeleteId.role  === 'Host' ? "bg-danger border border-black text-black fw-bold" : "bg-danger border border-black text-black fw-bold"}
+                    onClick={selectedDeleteId.role  && selectedDeleteId.role  === 'Host' ? handleConfirmHost : handleConfirm}
+                  >
+                  Confirm
+                </CButton>
+                )}
+              </CModalFooter>
+            </div>
+          </CModal>
+
         {enlargedImage && (
             <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">
               <CModalBody className="enlarged-image-modal">
@@ -833,6 +1026,28 @@ const Users = () => {
 
     </>
       )}
+    <div className='error-container'>
+      {isErrorContainer && (
+        <span className="error-message">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6 mx-2"
+            style={{ maxWidth: '40px' }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+          {sendError}
+        </span>
+      )}
+</div>
     </div>
   );
 };
