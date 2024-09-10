@@ -192,13 +192,15 @@ const columns = [
   },
   {
     name: 'Created At',
-    selector: row => new Date(row.createdAt).toLocaleString(), 
+    selector: row => new Date(row.createdAt), // Return the Date object for sorting
     sortable: true,
+    cell: row => new Date(row.createdAt).toLocaleString(), // Display as a formatted string
   },
   {
     name: 'Updated At',
-    selector: row => new Date(row.updatedAt).toLocaleString(),
+    selector: row => new Date(row.updatedAt), // Return the Date object for sorting
     sortable: true,
+    cell: row => new Date(row.updatedAt).toLocaleString(), // Display as a formatted string
   },
 ];
 

@@ -217,7 +217,7 @@ const CarProfiles = () => {
             {displayedCarProfiles.map((profile, index) => (
               <CTableRow key={profile.carid} >
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell className='carId' onClick={() => handleProfileClick(profile) }>{profile.carid}</CTableDataCell>
+                <CTableDataCell className='carId cursor-pointer' onClick={() => handleProfileClick(profile) }>{profile.carid}</CTableDataCell>
                 <CTableDataCell>{profile.car.hostId || 'N/A'}</CTableDataCell>
                 <CTableDataCell>{profile.car.carmodel || 'N/A'}</CTableDataCell>
                 <CTableDataCell>{profile.car.type || 'N/A'}</CTableDataCell>
@@ -307,8 +307,8 @@ const CarProfiles = () => {
                       <h6 className='host-section-title mt-4'>Host</h6>
                           <li className='custom-detail-table'><strong>Host ID:</strong> <span style={{fontSize: '12px'}}>{hostById.additionalInfo?.id || 'N/A'}</span> </li>
                           <li className='custom-detail-table'><strong>Name:</strong> {hostById.additionalInfo?.FullName || 'N/A'}</li>
-                          <li className='custom-detail-table'><strong>Phone:</strong> {hostById.phone || 'N/A'}</li>
-                          <li className='custom-detail-table'><strong>Email:</strong> {hostById.additionalInfo?.Email || 'N/A'}</li>
+                          <li className='custom-detail-table'><strong>Phone:</strong> <a href={'tel:'+hostById.phone}>{hostById.phone || 'N/A'}</a></li>
+                          <li className='custom-detail-table'><strong>Email:</strong><a className='text-secondary' href={'mailto:'+hostById.additionalInfo?.Email}> {hostById.additionalInfo?.Email || 'N/A'}</a></li>
                         
                     </ul>
                   </CCol>
