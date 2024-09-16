@@ -63,7 +63,7 @@ const UserVerification = () => {
   useEffect(() => {
     const filterUserVerif = () =>{
       if(!searchInput){
-        setFilteredData(userProfilesData)
+        setFilteredData(userProfilesData ? userProfilesData : [])
         setCurrentPage(1);
       } else {
         const filtered = userProfilesData.filter((user) => {
@@ -109,7 +109,7 @@ const UserVerification = () => {
         await approveUserVerification(userId);
         setModalVisible(false);
         fetchData();
-    } catch(error){
+    }catch (error) {
         console.log(error);
     }
     
@@ -247,11 +247,6 @@ const UserVerification = () => {
                 <p><strong>DL Verification:</strong> {selectedProfile.Dlverification || 'N/A'}</p>
                 <p><strong>Aadhar Verification ID:</strong> {selectedProfile.AadharVfid || 'N/A'}</p>
                 <p><strong>Address:</strong> {selectedProfile.Address || 'N/A'}</p>
-                <p><strong>Phone:</strong> {selectedProfile.user.phone || 'N/A'}</p>
-                <p><strong>Password:</strong> {selectedProfile.user.password || 'N/A'}</p>
-                <p><strong>Otp:</strong> {selectedProfile.user.otp || 'N/A'}</p>
-                <p><strong>User Role:</strong> {selectedProfile.user.role || 'N/A'}</p>
-                <p><strong>Status:</strong> {selectedProfile.user.status === 1 ? 'Active' : 'Inactive'}</p>
                 <p>
                   <strong>Verification Status:</strong>
                   {selectedProfile.verification_status === 1 ? (

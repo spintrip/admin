@@ -54,6 +54,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   animation: easeIn 1s ease-in;
+  z-index: 10000;
 }
 
 .error-message {
