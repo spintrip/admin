@@ -4,23 +4,23 @@ import serverApiUrl from "../env";
 const apiUrl = serverApiUrl;
 const token = localStorage.getItem('adminToken');
 
-export const getPricing = async () => {
+export const fetchVehicleTypes = async () => {
   try {
-    const response = await axios.get(`${apiUrl}admin/pricing`, {
+    const response = await axios.get(`${apiUrl}admin/vehicle-types`, {
       headers: {
         token: token,
       },
     });
-    return response.data.pricing; 
+    return response.data.vehicleTypes; 
   } catch (error) {
     throw error;
   }
 };
 
-export const manualvehiclePricing = async(data) => {
+export const createVehicleType = async(data) => {
   try{
-    const response = await axios.put(`${apiUrl}admin/pricing` , data , {
-      headers: {
+    const response = await axios.post(`${apiUrl}admin/vehicle-types`, data, {
+      headers : {
         'token' : token,
       },
     });
@@ -30,10 +30,10 @@ export const manualvehiclePricing = async(data) => {
   }
 }
 
-export const autovehiclePricing = async(vehicleid) => {
+export const deleteVehicleType = async(id) => {
   try{
-    const response = await axios.put(`${apiUrl}admin/auto-pricing` ,  vehicleid  , {
-      headers: {
+    const response = await axios.delete(`${apiUrl}admin/vehicle-types/${id}`, {
+      headers : {
         'token' : token,
       },
     });

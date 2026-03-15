@@ -66,7 +66,7 @@ const WidgetsBrand = (props) => {
             { title: 'feeds', value: '459' },
           ]}
           style={{
-            '--cui-card-cap-bg': '#3b5998',
+            '--cui-vehicled-cap-bg': '#3b5998',
           }}
         />
       </CCol>
@@ -100,7 +100,7 @@ const WidgetsBrand = (props) => {
             { title: 'tweets', value: '1.792' },
           ]}
           style={{
-            '--cui-card-cap-bg': '#00aced',
+            '--cui-vehicled-cap-bg': '#00aced',
           }}
         />
       </CCol>
@@ -134,7 +134,7 @@ const WidgetsBrand = (props) => {
             { title: 'feeds', value: '1.292' },
           ]}
           style={{
-            '--cui-card-cap-bg': '#4875b4',
+            '--cui-vehicled-cap-bg': '#4875b4',
           }}
         />
       </CCol>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getCarVerififcation , approveCarVerification, rejectCarVerification } from '../../../api/car';
+import { getvehicleVerififcation , approvevehicleVerification, rejectvehicleVerification } from '../../../api/vehicle';
 import DocsExample from '../../../components/DocsExample';
 import { fetchUserById } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
@@ -31,15 +31,15 @@ import {
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import '../../../scss/verif.css';
 
-const CarProfiles = () => {
-  const [carProfilesData, setCarProfilesData] = useState([]);
+const vehicleProfiles = () => {
+  const [vehicleProfilesData, setvehicleProfilesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [filteredData , setFilteredData] = useState([]);
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [hostById, setHostById] = useState([]);
-  const [selectedSearchOption, setSelectedSearchOption] = useState('carid');
+  const [selectedSearchOption, setSelectedSearchOption] = useState('vehicleid');
   const [searchInput, setSearchInput] = useState('');
   const limit = 20;
   const visiblePages = 3;
@@ -52,9 +52,9 @@ const CarProfiles = () => {
       navigate('/login');
     }
     try {
-      const data = await getCarVerififcation();
-      setCarProfilesData(data?data:[]);
-      console.log(carProfilesData);
+      const data = await getvehicleVerififcation();
+      setvehicleProfilesData(data?data:[]);
+      console.log(vehicleProfilesData);
     } catch (error) {
       console.log(error);
     }
@@ -81,8 +81,8 @@ const CarProfiles = () => {
   }, [fetchUserById, setHostById]);
 
   useEffect(() => {
-    const filterCarVerif = () =>{
-      let sortedData = [...carProfilesData];
+    const filtervehicleVerif = () =>{
+      let sortedData = [...vehicleProfilesData];
 
       // Sort the data by updatedAt field to show the latest data first
       sortedData.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
@@ -102,16 +102,16 @@ const CarProfiles = () => {
         setCurrentPage(1);
       }
     };
-    filterCarVerif();
-  }, [carProfilesData , selectedSearchOption, searchInput] )
+    filtervehicleVerif();
+  }, [vehicleProfilesData , selectedSearchOption, searchInput] )
 
-  const totalPages = Math.ceil((carProfilesData?.length || 0) / limit);
+  const totalPages = Math.ceil((vehicleProfilesData?.length || 0) / limit);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const displayedCarProfiles = (filteredData || []).slice((currentPage - 1) * limit, currentPage * limit);
+  const displayedvehicleProfiles = (filteredData || []).slice((currentPage - 1) * limit, currentPage * limit);
 
   const getVisiblePages = () => {
     const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
@@ -122,12 +122,12 @@ const CarProfiles = () => {
   const handleProfileClick = (profile) => {
     setSelectedProfile(profile);
     setModalVisible(true);
-    handleHost(profile.car.hostId);
+    handleHost(profile.vehicle.hostId);
   };
 
-  const handleApprove = async(carId) => {
+  const handleApprove = async(vehicleid) => {
     try{
-        await approveCarVerification(carId);
+        await approvevehicleVerification(vehicleid);
         setModalVisible(false);
         fetchData();
     } catch (error){
@@ -135,9 +135,9 @@ const CarProfiles = () => {
     }
   };
 
-  const handleDecline = async(carId) => {
+  const handleDecline = async(vehicleid) => {
     try{
-      await rejectCarVerification(carId);
+      await rejectvehicleVerification(vehicleid);
       setModalVisible(false);
       fetchData();
   } catch (error){
@@ -155,9 +155,9 @@ const CarProfiles = () => {
   };
 
   const tableHeaders = [
-    { label: 'Car Id', value: 'carid' },
+    { label: 'vehicle Id', value: 'vehicleid' },
     { label: 'Host Id', value: 'hostId' },
-    { label: 'Car Model', value: 'carmodel'},
+    { label: 'vehicle Model', value: 'vehiclemodel'},
     { label: 'Type', value: 'type' },
     { label: 'Verif. Status', value: 'verification_status' },
     { label: 'Latitude', value: 'latitude' },
@@ -197,13 +197,13 @@ const CarProfiles = () => {
         </div>
       </div>
       <DocsExample href="components/table#hoverable-rows">
-        <CTable color="dark" hover className='carVerif-table'>
+        <CTable color="dark" hover className='vehicleVerif-table'>
           <CTableHead>
             <CTableRow className = "row-style">
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Car ID</CTableHeaderCell>
+              <CTableHeaderCell scope="col">vehicle Id</CTableHeaderCell>
               <CTableHeaderCell scope="col">Host ID</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Car Model</CTableHeaderCell>
+              <CTableHeaderCell scope="col">vehicle Model</CTableHeaderCell>
               <CTableHeaderCell scope="col">Type</CTableHeaderCell>
               <CTableHeaderCell scope="col">Brand</CTableHeaderCell>
               <CTableHeaderCell scope="col">Verification Status</CTableHeaderCell>
@@ -214,14 +214,14 @@ const CarProfiles = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {displayedCarProfiles.map((profile, index) => (
-              <CTableRow key={profile.carid} >
+            {displayedvehicleProfiles.map((profile, index) => (
+              <CTableRow key={profile.vehicleid} >
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
-                <CTableDataCell className='carId cursor-pointer' onClick={() => handleProfileClick(profile) }>{profile.carid}</CTableDataCell>
-                <CTableDataCell>{profile.car.hostId || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{profile.car.carmodel || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{profile.car.type || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{profile.car.brand || 'N/A'}</CTableDataCell>
+                <CTableDataCell className='vehicleid cursor-pointer' onClick={() => handleProfileClick(profile) }>{profile.vehicleid}</CTableDataCell>
+                <CTableDataCell>{profile.vehicle.hostId || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{profile.vehicle.vehiclemodel || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{profile.vehicle.type || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{profile.vehicle.brand || 'N/A'}</CTableDataCell>
                 <CTableDataCell className ="verification-status">
                   {profile.verification_status === 1 ? (
                     <>
@@ -283,27 +283,27 @@ const CarProfiles = () => {
             <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
               <CModalHeader>
                 <CModalTitle className='d-flex align-items-center justify-content-between w-100'>
-                  <h3>Car Details</h3>
-                  <span className='rounded p-1 bg-light text-black mx-2'>{selectedProfile.carid}</span> 
+                  <h3>vehicle Details</h3>
+                  <span className='rounded p-1 bg-light text-black mx-2'>{selectedProfile.vehicleid}</span> 
                 </CModalTitle>
               </CModalHeader>
               <CModalBody>
                 <CRow>
-                  {/* Left Column - Car Details */}
+                  {/* Left Column - vehicle Details */}
                   <CCol md={6} className='d-flex flex-column align-items-start'>
-                    <h5>Car Details</h5>
+                    <h5>vehicle Details</h5>
                     <ul className='list-unstyled'>
-                      <li className='custom-detail-table'><strong>Model:</strong> <span>{selectedProfile.car.carmodel}</span> </li>
-                      <li className='custom-detail-table'><strong>Brand:</strong> {selectedProfile.car.brand}</li>
-                      <li className='custom-detail-table'><strong>Type:</strong> {selectedProfile.car.type}</li>
-                      <li className='custom-detail-table'><strong>Variant:</strong> {selectedProfile.car.variant}</li>
-                      <li className='custom-detail-table'><strong>Color:</strong> {selectedProfile.car.color}</li>
-                      <li className='custom-detail-table'><strong>Chassis No:</strong> {selectedProfile.car.chassisno}</li>
-                      <li className='custom-detail-table'><strong>RC Number:</strong> {selectedProfile.car.Rcnumber}</li>
-                      <li className='custom-detail-table'><strong>Engine Number:</strong> {selectedProfile.car.Enginenumber}</li>
-                      <li className='custom-detail-table'><strong>Year:</strong> {new Date(selectedProfile.car.Registrationyear).toLocaleDateString()}</li>
-                      <li className='custom-detail-table'><strong>Body Type:</strong> {selectedProfile.car.bodytype}</li>
-                      <li className='custom-detail-table'><strong>Rating:</strong> {selectedProfile.car.rating || 'N/A'}</li>
+                      <li className='custom-detail-table'><strong>Model:</strong> <span>{selectedProfile.vehicle.vehiclemodel}</span> </li>
+                      <li className='custom-detail-table'><strong>Brand:</strong> {selectedProfile.vehicle.brand}</li>
+                      <li className='custom-detail-table'><strong>Type:</strong> {selectedProfile.vehicle.type}</li>
+                      <li className='custom-detail-table'><strong>Variant:</strong> {selectedProfile.vehicle.variant}</li>
+                      <li className='custom-detail-table'><strong>Color:</strong> {selectedProfile.vehicle.color}</li>
+                      <li className='custom-detail-table'><strong>Chassis No:</strong> {selectedProfile.vehicle.chassisno}</li>
+                      <li className='custom-detail-table'><strong>RC Number:</strong> {selectedProfile.vehicle.Rcnumber}</li>
+                      <li className='custom-detail-table'><strong>Engine Number:</strong> {selectedProfile.vehicle.Enginenumber}</li>
+                      <li className='custom-detail-table'><strong>Year:</strong> {new Date(selectedProfile.vehicle.Registrationyear).toLocaleDateString()}</li>
+                      <li className='custom-detail-table'><strong>Body Type:</strong> {selectedProfile.vehicle.bodytype}</li>
+                      <li className='custom-detail-table'><strong>Rating:</strong> {selectedProfile.vehicle.rating || 'N/A'}</li>
                       <h6 className='host-section-title mt-4'>Host</h6>
                           <li className='custom-detail-table'><strong>Host ID:</strong> <span style={{fontSize: '12px'}}>{hostById.additionalInfo?.id || 'N/A'}</span> </li>
                           <li className='custom-detail-table'><strong>Name:</strong> {hostById.additionalInfo?.FullName || 'N/A'}</li>
@@ -358,15 +358,15 @@ const CarProfiles = () => {
                 <CRow className="mt-4 border rounded p-3">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <CCol key={index} xs="6" className='d-flex flex-column align-items-center justify-content-center mb-3'>
-                      <p><strong>{`Car Image ${index + 1}:`}</strong></p>
-                      {selectedProfile[`carimage${index + 1}`] ? (
+                      <p><strong>{`vehicle Image ${index + 1}:`}</strong></p>
+                      {selectedProfile[`vehicleimage${index + 1}`] ? (
                         <CImage
                           className='border rounded'
-                          src={selectedProfile[`carimage${index + 1}`]}
+                          src={selectedProfile[`vehicleimage${index + 1}`]}
                           width={200}
                           height={150}
                           style={{ cursor: 'pointer', objectFit: 'cover' }}
-                          onClick={() => handleImageClick(selectedProfile[`carimage${index + 1}`])} 
+                          onClick={() => handleImageClick(selectedProfile[`vehicleimage${index + 1}`])} 
                         />
                       ) : (
                         <div className="empty-image-placeholder d-flex flex-column align-items-center justify-content-center">
@@ -388,13 +388,13 @@ const CarProfiles = () => {
                 </CRow>
               </CModalBody>
               <CModalFooter className='d-flex align-items-center justify-content-between'>
-                <CButton color="danger" onClick={() => handleDecline(selectedProfile.carid)} className='d-flex align-items-center justify-content-center'>
+                <CButton color="danger" onClick={() => handleDecline(selectedProfile.vehicleid)} className='d-flex align-items-center justify-content-center'>
                   <span>Decline</span>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 </CButton>
-                <CButton color="success" onClick={() => handleApprove(selectedProfile.carid)} className='d-flex align-items-center justify-content-center'>
+                <CButton color="success" onClick={() => handleApprove(selectedProfile.vehicleid)} className='d-flex align-items-center justify-content-center'>
                   <span>Approve</span>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -418,4 +418,4 @@ const CarProfiles = () => {
   );
 };
 
-export default CarProfiles;
+export default vehicleProfiles;

@@ -1,5 +1,5 @@
 import React, { useState , useEffect } from 'react';
-import { getDevice , getAllDevices ,createCarDeviceAssign ,updateCarDeviceAssign , deleteCarDeviceAssign } from '../../api/deviceLocation';
+import { getDevice , getAllDevices ,createvehicleDeviceAssign ,updatevehicleDeviceAssign , deletevehicleDeviceAssign } from '../../api/deviceLocation';
 import {
   CAccordion,
   CAccordionItem,
@@ -50,8 +50,8 @@ const DeviceLocation = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState(null);
-  const [createData, setCreateData] = useState({ deviceid: '', carid: '' });
-  const [updateData, setUpdateData] = useState({ deviceid: '', carid: '' });
+  const [createData, setCreateData] = useState({ deviceid: '', vehicleid: '' });
+  const [updateData, setUpdateData] = useState({ deviceid: '', vehicleid: '' });
   const [error, setError] = useState(null);
   const [isErrorContainer, setIsErrorContainer] = useState(false)
   const [markerLimit, setMarkerLimit] = useState(20);
@@ -183,11 +183,11 @@ const DeviceLocation = () => {
   const handleCreateSubmit = async () => {
     const trimmedData = {
       deviceid: createData.deviceid.trim(),
-      carid: createData.carid.trim(),
+      vehicleid: createData.vehicleid.trim(),
     };
   
     try {
-      await createCarDeviceAssign(trimmedData);
+      await createvehicleDeviceAssign(trimmedData);
       setShowCreateModal(false); 
     } catch (error) {
       console.log(error);
@@ -198,11 +198,11 @@ const DeviceLocation = () => {
   const handleUpdateSubmit = async () => {
     const trimmedData = {
       deviceid: updateData.deviceid.trim(),
-      carid: updateData.carid.trim(),
+      vehicleid: updateData.vehicleid.trim(),
     };
   
     try {
-      await updateCarDeviceAssign(trimmedData);
+      await updatevehicleDeviceAssign(trimmedData);
       setShowUpdateModal(false);
     } catch (error) {
       console.log(error);
@@ -227,7 +227,7 @@ const DeviceLocation = () => {
   
   const handleDeleteSubmit = async (id) => {
     try {
-      await deleteCarDeviceAssign(id);
+      await deletevehicleDeviceAssign(id);
       setAllDevices(prevDevices => prevDevices.filter(device => device.deviceid !== id));
     } catch (error) {
       console.log(error);
@@ -489,9 +489,9 @@ const DeviceLocation = () => {
             />
             <CFormInput
               type="text"
-              placeholder="Enter Car ID"
-              value={createData.carid}
-              onChange={(e) => setCreateData({ ...createData, carid: e.target.value })}
+              placeholder="Enter vehicle Id"
+              value={createData.vehicleid}
+              onChange={(e) => setCreateData({ ...createData, vehicleid: e.target.value })}
               className="modal-input"
             />
           </CForm>
@@ -516,9 +516,9 @@ const DeviceLocation = () => {
               />
               <CFormInput
                 type="text"
-                placeholder="Enter Car ID"
-                value={updateData.carid}
-                onChange={(e) => setUpdateData({ ...updateData, carid: e.target.value })}
+                placeholder="Enter vehicle Id"
+                value={updateData.vehicleid}
+                onChange={(e) => setUpdateData({ ...updateData, vehicleid: e.target.value })}
                 className="modal-input"
               />
             </CForm>
@@ -539,7 +539,7 @@ const DeviceLocation = () => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell>Device ID</CTableHeaderCell>
-                    <CTableHeaderCell>Car ID</CTableHeaderCell>
+                    <CTableHeaderCell>vehicle Id</CTableHeaderCell>
                     <CTableHeaderCell>Created At</CTableHeaderCell>
                     <CTableHeaderCell>Delete</CTableHeaderCell>
                   </CTableRow>
@@ -548,7 +548,7 @@ const DeviceLocation = () => {
                   {allDevices.map((device) => (
                     <CTableRow key={device.deviceid}>
                       <CTableDataCell>{device.deviceid}</CTableDataCell>
-                      <CTableDataCell>{device.carid}</CTableDataCell>
+                      <CTableDataCell>{device.vehicleid}</CTableDataCell>
                       <CTableDataCell>{new Date(device.createdAt).toLocaleString()}</CTableDataCell>
                       <CTableDataCell>
                         <CButton
@@ -586,7 +586,7 @@ const DeviceLocation = () => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell>Device ID</CTableHeaderCell>
-                    <CTableHeaderCell>Car ID</CTableHeaderCell>
+                    <CTableHeaderCell>vehicle Id</CTableHeaderCell>
                     <CTableHeaderCell>Created At</CTableHeaderCell>
                     <CTableHeaderCell>Updated At</CTableHeaderCell>
                   </CTableRow>
@@ -595,7 +595,7 @@ const DeviceLocation = () => {
                   {allDevices.map((device) => (
                     <CTableRow key={device.deviceid}>
                       <CTableDataCell>{device.deviceid}</CTableDataCell>
-                      <CTableDataCell>{device.carid}</CTableDataCell>
+                      <CTableDataCell>{device.vehicleid}</CTableDataCell>
                       <CTableDataCell>{new Date(device.createdAt).toLocaleString()}</CTableDataCell>
                       <CTableDataCell>{new Date(device.updatedAt).toLocaleString()}</CTableDataCell>
                     </CTableRow>

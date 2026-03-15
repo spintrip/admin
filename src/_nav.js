@@ -44,8 +44,28 @@ const _nav = [
       // },
       {
         component: CNavItem,
-        name: 'Cars',
-        to: '/base/cars'
+        name: 'Drivers',
+        to: '/base/drivers',
+      },
+      {
+        component: CNavItem,
+        name: 'Cabs',
+        to: '/base/cabs',
+      },
+      {
+        component: CNavItem,
+        name: 'Feedbacks',
+        to: '/base/feedbacks',
+      },
+      {
+        component: CNavItem,
+        name: 'Vehicle Types',
+        to: '/base/vehicle-types',
+      },
+      {
+        component: CNavItem,
+        name: 'vehicles',
+        to: '/base/vehicles'
       },
       {
         component: CNavItem,
@@ -128,15 +148,27 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Car Verification',
+    name: 'Vehicle Verification',
     icon: <CIcon icon={cilCarAlt} customClassName="nav-icon"/>,
-    to: '/verification/car-verif'
+    to: '/verification/vehicle-verif'
+  },
+  {
+    component: CNavItem,
+    name: 'Cab Verification',
+    icon: <CIcon icon={cilCarAlt} customClassName="nav-icon"/>,
+    to: '/verification/cab-verif'
   },
   {
     component: CNavItem,
     name: 'User Verification',
     icon: <CIcon icon={cilUser} customClassName="nav-icon"/>,
     to: '/verification/user-verif'
+  },
+  {
+    component: CNavItem,
+    name: 'Driver Verification',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon"/>,
+    to: '/verification/driver-verif'
   },
 ]
 

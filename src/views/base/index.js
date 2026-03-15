@@ -1,6 +1,6 @@
 import Breadcrumbs from './Breadcrumbs'
-import Cards from './Cards'
-import Carousels from './Carousels'
+import vehicleds from './vehicleds'
+import vehicleousels from './vehicleousels'
 import Collapses from './Collapses'
 import Dropdowns from './Dropdowns'
 import Jumbotrons from './Jumbotrons'
@@ -15,8 +15,8 @@ import Tooltips from './Tooltips'
 
 export {
   Breadcrumbs,
-  Cards,
-  Carousels,
+  vehicleds,
+  vehicleousels,
   Collapses,
   Dropdowns,
   Jumbotrons,

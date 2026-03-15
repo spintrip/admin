@@ -1,0 +1,113 @@
+import React, { useEffect, useState } from 'react';
+import { fetchVehicleTypes, createVehicleType, deleteVehicleType } from '../../../api/vehicleType';
+import { useNavigate } from 'react-router-dom';
+import DataTable from 'react-data-table-component';
+import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CFormInput, CFormLabel } from '@coreui/react';
+
+const customStyles = {
+  header: { style: { backgroundColor: 'transparent', color: '#ffffff' } },
+  headRow: { style: { backgroundColor: '#212631', color: '#ffffff' } },
+  headCells: { style: { color: '#ffffff' } },
+  rows: { style: { backgroundColor: '#282D37', color: '#ffffff', '&:hover': { backgroundColor: 'black' } } },
+  pagination: { style: { backgroundColor: '#343a40', color: '#ffffff' } },
+};
+
+const VehicleTypes = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [typeName, setTypeName] = useState('');
+  const navigate = useNavigate();
+  const token = localStorage.getItem('adminToken');
+
+  const getData = async () => {
+    setLoading(true);
+    if (!token) { navigate('/login'); return; }
+    try {
+      const res = await fetchVehicleTypes();
+      setData(res || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, [token, navigate]);
+
+  const handleDelete = async (id) => {
+    if(window.confirm('Delete this vehicle type?')){
+      try{
+        await deleteVehicleType(id);
+        getData();
+      }catch(err){
+        console.error('Delete error', err);
+      }
+    }
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    try{
+      await createVehicleType({ name: typeName });
+      setModalVisible(false);
+      setTypeName('');
+      getData();
+    }catch(err){
+      console.error('Create error', err);
+    }
+  };
+
+  const columns = [
+    { name: 'ID', selector: row => row.id, sortable: true },
+    { name: 'Type Name', selector: row => row.name || '--', sortable: true },
+    { name: 'Created At', selector: row => new Date(row.createdAt).toLocaleDateString(), sortable: true },
+    { 
+      name: 'Actions',
+      cell: row => (
+        <CButton color="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</CButton>
+      )
+    }
+  ];
+
+  return (
+    <div className='container-fluid'>
+      <div className="d-flex justify-content-end mb-3">
+        <CButton color="primary" onClick={() => setModalVisible(true)}>Add Vehicle Type</CButton>
+      </div>
+
+      <DataTable
+        title="Vehicle Types"
+        columns={columns}
+        data={data}
+        customStyles={customStyles}
+        pagination
+        responsive
+        highlightOnHover
+        progressPending={loading}
+      />
+
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+        <CModalHeader>
+          <CModalTitle>Create Vehicle Type</CModalTitle>
+        </CModalHeader>
+        <CForm onSubmit={handleCreate}>
+          <CModalBody>
+            <div className="mb-3">
+              <CFormLabel>Type Name</CFormLabel>
+              <CFormInput type="text" value={typeName} onChange={(e) => setTypeName(e.target.value)} required />
+            </div>
+          </CModalBody>
+          <CModalFooter>
+             <CButton color="secondary" onClick={() => setModalVisible(false)}>Cancel</CButton>
+             <CButton color="primary" type="submit">Create</CButton>
+          </CModalFooter>
+        </CForm>
+      </CModal>
+
+    </div>
+  );
+};
+export default VehicleTypes;

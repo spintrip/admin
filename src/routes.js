@@ -9,7 +9,7 @@ const Login = React.lazy(() => import('./views/pages/login/Login'))
 // Base
 const Users = React.lazy(() => import('./views/base/users/users'))
 const Hosts = React.lazy(() => import('./views/base/hosts/hosts'))
-const Cars = React.lazy(() => import('./views/base/cars/cars'))
+const vehicles = React.lazy(() => import('./views/base/vehicles/vehicles'))
 const Bookings = React.lazy(() => import('./views/base/bookings/bookings'))
 const Pricings = React.lazy(() => import('./views/base/pricings/pricings'))
 const Features = React.lazy(() => import('./views/base/features/features'))
@@ -17,10 +17,16 @@ const Tax = React.lazy(() => import('./views/base/tax_data/tax_data'))
 const Brands = React.lazy(() => import('./views/base/brands/brands'))
 const Messages = React.lazy(() => import('./views/base/messages/messages'))
 const Transactions = React.lazy(() => import('./views/base/Transactions/transactions'))
+const Drivers = React.lazy(() => import('./views/base/drivers/drivers'))
+const Cabs = React.lazy(() => import('./views/base/cabs/cabs'))
+const Feedbacks = React.lazy(() => import('./views/base/feedbacks/feedbacks'))
+const VehicleTypes = React.lazy(() => import('./views/base/vehicle-types/vehicle-types'))
 
 //Verification
 const UserVerification = React.lazy(() => import('./views/verification/user-verif/user-verif'))
-const CarVerification = React.lazy(() => import('./views/verification/car-verif/car-verif'))
+const vehicleVerification = React.lazy(() => import('./views/verification/vehicle-verif/vehicle-verif'))
+const DriverVerification = React.lazy(() => import('./views/verification/driver-verif/driver-verif'))
+const CabVerification = React.lazy(() => import('./views/verification/cab-verif/cab-verif'))
  
 
 //Blog
@@ -43,12 +49,18 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/base/users', name: 'Users', element: Users },
   { path: '/base/hosts', name: 'Hosts', element: Hosts },
-  { path: '/base/cars', name: 'Cars', element: Cars },
+  { path: '/base/vehicles', name: 'vehicles', element: vehicles },
   { path: '/base/pricings', name: 'Pricings', element: Pricings },
   { path: '/base/bookings', name: 'Bookings', element: Bookings },
+  { path: '/base/drivers', name: 'Drivers', element: Drivers },
+  { path: '/base/cabs', name: 'Cabs', element: Cabs },
+  { path: '/base/feedbacks', name: 'Feedbacks', element: Feedbacks },
+  { path: '/base/vehicle-types', name: 'Vehicle Types', element: VehicleTypes },
   { path: '/device', name: 'Device', element: Device },
-  { path: '/verification/car-verif', name: 'CarVerification', element: CarVerification },
+  { path: '/verification/vehicle-verif', name: 'vehicleVerification', element: vehicleVerification },
+  { path: '/verification/cab-verif', name: 'CabVerification', element: CabVerification },
   { path: '/verification/user-verif', name: 'UserVerification', element: UserVerification },
+  { path: '/verification/driver-verif', name: 'DriverVerification', element: DriverVerification },
   { path: '/base/blogs', name: 'Blogs', element: Blogs },
   { path: '/base/features', name: 'Features', element: Features },
   { path: '/base/tax_data', name: 'Tax', element: Tax },

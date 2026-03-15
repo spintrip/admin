@@ -4,21 +4,21 @@ import serverApiUrl from "../env";
 const apiUrl = serverApiUrl;
 const token = localStorage.getItem('adminToken');
 
-export const getCars = async () => {
+export const getvehicles = async () => {
   try {
-    const response = await axios.get(`${apiUrl}admin/cars`, {
+    const response = await axios.get(`${apiUrl}admin/vehicles`, {
       headers: {
         token: token,
       },
     });
-    return response.data.cars; 
+    return response.data.vehicles; 
   } catch (error) {
     throw error;
   }
 };
-export const fetchCarById = async(id) => {
+export const fetchvehicleById = async(id) => {
   try{
-    const response = await axios.get(`${apiUrl}admin/cars/${id}`, {
+    const response = await axios.get(`${apiUrl}admin/vehicles/${id}`, {
       headers : {
         'token' : token,
       },
@@ -29,9 +29,9 @@ export const fetchCarById = async(id) => {
   }
 }
 
-export const updateCar = async(id , data) => {
+export const updatevehicle = async(id , data) => {
   try{
-    const response = await axios.put(`${apiUrl}admin/cars/${id}`, data , {
+    const response = await axios.put(`${apiUrl}admin/vehicles/${id}`, data , {
       headers : {
         'token' : token,
       },
@@ -43,9 +43,9 @@ export const updateCar = async(id , data) => {
 }
 
 
-export const getCarVerififcation = async () => {
+export const getvehicleVerififcation = async () => {
     try {
-      const response = await axios.get(`${apiUrl}admin/pending-carprofile`, {
+      const response = await axios.get(`${apiUrl}admin/pending-vehicleprofile`, {
         headers: {
           token: token,
         },
@@ -57,10 +57,10 @@ export const getCarVerififcation = async () => {
   };
 
   
-export const approveCarVerification = async(carId) => {
+export const approvevehicleVerification = async(vehicleid) => {
 
   try{
-    const response = await axios.put(`${apiUrl}admin/approve-carprofile` , { carId } , {
+    const response = await axios.put(`${apiUrl}admin/approve-vehicleprofile` , { vehicleid } , {
       headers : {
         'token' : token,
       },
@@ -72,9 +72,9 @@ export const approveCarVerification = async(carId) => {
 
 }
 
-export const rejectCarVerification = async(carId) => {
+export const rejectvehicleVerification = async(vehicleid) => {
   try{
-    const response = await axios.put(`${apiUrl}admin/reject-carprofile` , { carId } , {
+    const response = await axios.put(`${apiUrl}admin/reject-vehicleprofile` , { vehicleid } , {
       headers :{
         'token':token,
       },

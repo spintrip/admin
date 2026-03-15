@@ -20,7 +20,7 @@
     justify-content: space-evenly;
   }
   
-  .blog-card .card {
+  .blog-vehicled .vehicled {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -29,14 +29,14 @@
   }
   
   @media (max-width: 768px) {
-    .blog-card {
+    .blog-vehicled {
       flex: 0 0 calc(50% - 20px);
       max-width: calc(50% - 20px);
     }
   }
   
   @media (max-width: 576px) {
-    .blog-card {
+    .blog-vehicled {
       flex: 0 0 100%;
       max-width: 100%;
     }

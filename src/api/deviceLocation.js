@@ -17,9 +17,9 @@ export const getDevice = async(id, limit) => {
     }
 }
 
-export const createCarDeviceAssign = async(data) => {
+export const createvehicleDeviceAssign = async(data) => {
     try{
-        const response = await axios.post(`${apiUrl}admin/car-device` ,  data , {
+        const response = await axios.post(`${apiUrl}admin/vehicle-device` ,  data , {
             headers:{
                 'token' : token,
             },
@@ -31,9 +31,9 @@ export const createCarDeviceAssign = async(data) => {
 
 }
 
-export const updateCarDeviceAssign = async(data) => {
+export const updatevehicleDeviceAssign = async(data) => {
     try{
-        const response = await axios.put(`${apiUrl}admin/car-device` , data , {
+        const response = await axios.put(`${apiUrl}admin/vehicle-device` , data , {
             headers : {
                 'token' : token,
             },
@@ -45,9 +45,9 @@ export const updateCarDeviceAssign = async(data) => {
     
 }
 
-export const deleteCarDeviceAssign = async(id) => {
+export const deletevehicleDeviceAssign = async(id) => {
     try{
-        const response = await axios.delete(`${apiUrl}admin/car-device/${id}`, {
+        const response = await axios.delete(`${apiUrl}admin/vehicle-device/${id}`, {
             headers: {
                 'token' : token,
             },
@@ -60,7 +60,7 @@ export const deleteCarDeviceAssign = async(id) => {
 
 export const getAllDevices = async() => {
     try{
-        const response = await axios.get(`${apiUrl}admin/car-device` , {
+        const response = await axios.get(`${apiUrl}admin/vehicle-device` , {
             headers : {
                 'token' : token,
             },

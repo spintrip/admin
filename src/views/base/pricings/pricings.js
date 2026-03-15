@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getPricing , autoCarPricing , manualCarPricing } from '../../../api/pricing';
+import { getPricing , autovehiclePricing , manualvehiclePricing } from '../../../api/pricing';
 import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -63,8 +63,8 @@ const customStyles = {
 const columns = [
 
   {
-    name: 'Car ID',
-    selector: row => row.carid, // Replace with the actual key for Car ID in your data
+    name: 'vehicle Id',
+    selector: row => row.vehicleid, // Replace with the actual key for vehicle Id in your data
     sortable: true,
   },
   {
@@ -92,13 +92,13 @@ const Pricing = () => {
   const [pricingData, setPricingData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredData , setFilteredData] = useState([]);
-  const [selectedSearchOption, setSelectedSearchOption] = useState('carid');
+  const [selectedSearchOption, setSelectedSearchOption] = useState('vehicleid');
   const [showAutoModal, setShowAutoModal] = useState(false);
-  const [updatedCarId , setUpdatedCarId] = useState({ carid : ''})
+  const [updatedvehicleid , setUpdatedvehicleid] = useState({ vehicleid : ''})
   const [updatedAutoData , setUpdateAutoData] = useState([])
   const [showManualModal, setShowManualModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [updatedManualData , setUpdatedManualData] = useState({ carid : '' , costperhr: ''});
+  const [updatedManualData , setUpdatedManualData] = useState({ vehicleid : '' , costperhr: ''});
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const limit = 20;
@@ -160,11 +160,11 @@ const Pricing = () => {
 
   const handleAutoPricing = async() => {
       const trimmedData = {
-        carid: updatedCarId.trim(),
+        vehicleid: updatedvehicleid.trim(),
       };
       setLoading(true)
       try {
-        const data = await autoCarPricing(trimmedData);
+        const data = await autovehiclePricing(trimmedData);
         setUpdateAutoData(data);
         fetchData();
       } catch (error) {
@@ -177,13 +177,13 @@ const Pricing = () => {
 
   const handleManualPricing = async() => {
     const trimmedData = {
-      carid: updatedManualData.carid.trim(),
+      vehicleid: updatedManualData.vehicleid.trim(),
       costperhr: updatedManualData.costperhr.trim(),
     };
-    console.log(updatedManualData.carid);
+    console.log(updatedManualData.vehicleid);
   
     try {
-      await manualCarPricing(trimmedData);
+      await manualvehiclePricing(trimmedData);
       setShowManualModal(false);
       fetchData();
     } catch (error) {
@@ -191,13 +191,13 @@ const Pricing = () => {
     }
     setShowPricingModal(false);
 }
-  const handlePricing = (car) =>{
-    setUpdatedCarId(car.carid);
-    setUpdatedManualData(car);
+  const handlePricing = (vehicle) =>{
+    setUpdatedvehicleid(vehicle.vehicleid);
+    setUpdatedManualData(vehicle);
     setShowPricingModal(true);
   }
   const tableHeaders = [
-    { label: 'Car Id', value: 'carid' },
+    { label: 'vehicle Id', value: 'vehicleid' },
     { label: 'Cost/Hr', value: 'costperhr' },
     { label: 'Create Date', value: 'createdAt' },
     { label: 'Update Date', value: 'updatedAt' },
@@ -240,7 +240,7 @@ const Pricing = () => {
                   highlightOnHover={true}
                   pointerOnHover={true}
                   fixedHeader={true}
-                  onRowClicked={(car)=>handlePricing(car)}
+                  onRowClicked={(vehicle)=>handlePricing(vehicle)}
           />
           </div>
 
@@ -248,8 +248,8 @@ const Pricing = () => {
             <CModalHeader className="modal-header-styled">Pricing</CModalHeader>
             <CModalBody className="modal-body-styled">
               <div>
-                <h2>Selected Car ID</h2>
-                <span>{updatedCarId}</span>
+                <h2>Selected vehicle Id</h2>
+                <span>{updatedvehicleid}</span>
                 <p>Please select the pricing you need to set.</p>
               </div>
               <div className='crud-group d-flex mx-2 justify-content-between'>
@@ -268,9 +268,9 @@ const Pricing = () => {
                 <CForm className="modal-form">
                   <CFormInput
                     type="text"
-                    placeholder="Enter Car ID"
-                    value={updatedCarId}
-                    onChange={(e) => setUpdatedCarId(e.target.value)}
+                    placeholder="Enter vehicle Id"
+                    value={updatedvehicleid}
+                    onChange={(e) => setUpdatedvehicleid(e.target.value)}
                     className="modal-input"
                   />
                 </CForm>
@@ -283,7 +283,7 @@ const Pricing = () => {
                 {!loading && updatedAutoData && (
                   <div className="received-data-container">
                     <p><strong>Message:</strong> {updatedAutoData.message}</p>
-                    <p><strong>Car ID:</strong> {updatedAutoData.carid}</p>
+                    <p><strong>vehicle Id:</strong> {updatedAutoData.vehicleid}</p>
                     <p><strong>Cost per Hour:</strong> ₹{updatedAutoData.costperhr}</p>
                   </div>
                 )}
@@ -300,9 +300,9 @@ const Pricing = () => {
             <CForm className="modal-form">
               <CFormInput
                 type="text"
-                placeholder="Enter Car ID"
-                value={updatedManualData.carid}
-                onChange={(e) => setUpdatedManualData({ ...updatedManualData, carid: e.target.value })}
+                placeholder="Enter vehicle Id"
+                value={updatedManualData.vehicleid}
+                onChange={(e) => setUpdatedManualData({ ...updatedManualData, vehicleid: e.target.value })}
                 className="modal-input"
               />
             </CForm>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getBooking, fetchBookingById, updateBooking } from '../../../api/booking';
 import UserData from '../controller/userData';
-import CarData from '../controller/carData';
+import vehicleData from '../controller/vehicleData';
 import {
 
   CInputGroup,
@@ -63,7 +63,7 @@ const customStyles = {
 };
 const tableHeaders = [
   { label: 'Booking ID', value: 'Bookingid' },
-  { label: 'Car ID', value: 'carid' },
+  { label: 'vehicle Id', value: 'vehicleid' },
   { label: 'User Id', value: 'id' },
   { label: 'Status', value: 'status' },
   { label: 'Amount', value: 'amount' },
@@ -85,8 +85,8 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'Car ID',
-    selector: row => row.carid,
+    name: 'vehicle Id',
+    selector: row => row.vehicleid,
     sortable: true,
   },
   {
@@ -218,8 +218,8 @@ const Bookings = () => {
   const [isAccordionOpen, setAccordionOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [selectedCarId, setSelectedCarId] = useState(null);
-  const [isCarAccordionOpen, setCarAccordionOpen] = useState(false);
+  const [selectedvehicleid, setSelectedvehicleid] = useState(null);
+  const [isvehicleAccordionOpen, setvehicleAccordionOpen] = useState(false);
   const [updateBookingData, setUpdateBookingData] = useState({
     status: '',
     amount: '',
@@ -308,19 +308,19 @@ const Bookings = () => {
     setAccordionOpen(false);
     setSelectedUserId(null);
   };
-  const handleCarByIdClick = (id) => {
-    if (selectedCarId === id) {
+  const handlevehicleByIdClick = (id) => {
+    if (selectedvehicleid === id) {
         // If the same ID is clicked again, toggle the accordion
-        setCarAccordionOpen(prevState => !prevState);
+        setvehicleAccordionOpen(prevState => !prevState);
     } else {
-        setSelectedCarId(id);
-        setCarAccordionOpen(true);
+        setSelectedvehicleid(id);
+        setvehicleAccordionOpen(true);
     }
 };
 
-const handleCarAccordionClose = () => {
-setCarAccordionOpen(false);
-setSelectedCarId(null);
+const handlevehicleAccordionClose = () => {
+setvehicleAccordionOpen(false);
+setSelectedvehicleid(null);
 };
 
   const handleBookingByIdClick = async (id) => {
@@ -512,15 +512,15 @@ setSelectedCarId(null);
                                 </span>
                             </p>
                             {isAccordionOpen && selectedUserId === bookingById.id && (
-                                <UserData id={selectedUserId} onClose={handleCarAccordionClose} />
+                                <UserData id={selectedUserId} onClose={handlevehicleAccordionClose} />
                             )}
-                            <p onClick={() => handleCarByIdClick(bookingById.carid)} className="clickable-info">
+                            <p onClick={() => handlevehicleByIdClick(bookingById.vehicleid)} className="clickable-info">
                                 <span className='text-decoration-underline cursor-pointer'>
-                                    <strong>Car ID: </strong> {bookingById.carid || 'N/A'}
+                                    <strong>vehicle Id: </strong> {bookingById.vehicleid || 'N/A'}
                                 </span>
                             </p>
-                            {isCarAccordionOpen && selectedCarId === bookingById.carid && (
-                                <CarData id={selectedCarId} onClose={handleCarAccordionClose} />
+                            {isvehicleAccordionOpen && selectedvehicleid === bookingById.vehicleid && (
+                                <vehicleData id={selectedvehicleid} onClose={handlevehicleAccordionClose} />
                             )}
                         </CCol>
                     </CRow>

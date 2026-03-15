@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getCars, fetchCarById, updateCar } from '../../../api/car';
+import { getvehicles, fetchvehicleById, updatevehicle } from '../../../api/vehicle';
 import { fetchUserById } from '../../../api/user';
 import DocsExample from '../../../components/DocsExample';
 import {
@@ -32,7 +32,7 @@ import {
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaTimesCircle, FaMapMarkerAlt } from 'react-icons/fa';
-import '../../../scss/cars.css';
+import '../../../scss/vehicles.css';
 import DataTable from 'react-data-table-component';
 const customStyles = {
   header: {
@@ -70,8 +70,8 @@ const customStyles = {
 };
 const columns = [
   {
-    name: 'Car ID',
-    selector: (row) => row.carid, // Assuming 'carId' is the key in your data
+    name: 'vehicle Id',
+    selector: (row) => row.vehicleid, // Assuming 'vehicleid' is the key in your data
     sortable: true,
   },
   {
@@ -79,20 +79,20 @@ const columns = [
     selector: (row) => row.hostId, // Assuming 'hostId' is the key in your data
     sortable: true,
   },
-  {
-    name: 'Car Model',
-    selector: (row) => row.carmodel, // Assuming 'carModel' is the key in your data
-    sortable: true,
-  },
+  // {
+  //   name: 'Vehicle Model',
+  //   selector: (row) => row.vehiclemodel, // Assuming 'vehicleModel' is the key in your data
+  //   sortable: true,
+  // },
   {
     name: 'Type',
-    selector: (row) => row.type, // Assuming 'type' is the key in your data
+    selector: (row) => row.vehicletype, // Assuming 'type' is the key in your data
     sortable: true,
   },
   {
     name: 'Verification',
     selector: row => {
-      switch (row.additionalInfo.verification_status) {
+      switch (row.additionalInfo?.verification_status) {
         case 1:
           return "Pending";
         case 2:
@@ -106,7 +106,7 @@ const columns = [
       let statusText;
       let className;
   
-      switch (row.additionalInfo.verification_status) {
+      switch (row.additionalInfo?.verification_status) {
         case 1:
           statusText = "Pending";
           className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
@@ -169,15 +169,15 @@ const columns = [
   },
 ];
 
-const Cars = () => {
-  const [carData, setCarData] = useState([]);
+const vehicles = () => {
+  const [vehicleData, setvehicleData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [searchInput, setSearchInput] = useState('');
-  const [originalCarData, setOriginalCarData] = useState(null);
-  const [updateCarData, setUpdateCarData] = useState({});
+  const [originalvehicleData, setOriginalvehicleData] = useState(null);
+  const [updatevehicleData, setUpdatevehicleData] = useState({});
   const [updateAdditionalInfo, setUpdateAdditionalInfo] = useState({});
-  const [carById, setCarById] = useState(null);
+  const [vehicleById, setvehicleById] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [error , setError] = useState('')
@@ -193,8 +193,8 @@ const Cars = () => {
       navigate('/login');
     }
     try {
-      const data = await getCars();
-      setCarData(data);
+      const data = await getvehicles();
+      setvehicleData(data);
       setFilteredData(data);
     } catch (error) {
       setError(error.message);
@@ -205,25 +205,25 @@ const Cars = () => {
     fetchData();
   }, []);
 
-  const handleCar = useCallback(async (id) => {
+  const handlevehicle = useCallback(async (id) => {
     try {
-      const dataByID = await fetchCarById(id);
-      setCarById(dataByID.car);
-      setOriginalCarData(dataByID.car);
-      const additionalInfo = dataByID.car.additionalInfo || {};
-      setUpdateCarData({
-        carmodel: dataByID.car.carmodel || '',
-        type: dataByID.car.type || '',
-        brand: dataByID.car.brand || '',
-        variant: dataByID.car.variant || '',
-        color: dataByID.car.color || '',
-        chassisno: dataByID.car.chassisno || '',
-        Rcnumber: dataByID.car.Rcnumber || '',
-        mileage: dataByID.car.mileage || '',
-        Enginenumber: dataByID.car.Enginenumber || '',
-        Registrationyear: dataByID.car.Registrationyear || '',
-        bodytype: dataByID.car.bodytype || '',
-        rating: dataByID.car.rating || '',
+      const dataByID = await fetchvehicleById(id);
+      setvehicleById(dataByID.vehicle);
+      setOriginalvehicleData(dataByID.vehicle);
+      const additionalInfo = dataByID.vehicle.additionalInfo || {};
+      setUpdatevehicleData({
+        vehiclemodel: dataByID.vehicle.vehiclemodel || '',
+        type: dataByID.vehicle.type || '',
+        brand: dataByID.vehicle.brand || '',
+        variant: dataByID.vehicle.variant || '',
+        color: dataByID.vehicle.color || '',
+        chassisno: dataByID.vehicle.chassisno || '',
+        Rcnumber: dataByID.vehicle.Rcnumber || '',
+        mileage: dataByID.vehicle.mileage || '',
+        Enginenumber: dataByID.vehicle.Enginenumber || '',
+        Registrationyear: dataByID.vehicle.Registrationyear || '',
+        bodytype: dataByID.vehicle.bodytype || '',
+        rating: dataByID.vehicle.rating || '',
       });
       setUpdateAdditionalInfo({
         verification_status: additionalInfo.verification_status || null,
@@ -259,7 +259,7 @@ const Cars = () => {
     } catch (error) {
       setError(error.message);
     }
-  },[fetchCarById, setCarById, setOriginalCarData, setUpdateCarData, setUpdateAdditionalInfo]);
+  },[fetchvehicleById, setvehicleById, setOriginalvehicleData, setUpdatevehicleData, setUpdateAdditionalInfo]);
 
   const handleHost = useCallback(async (id) => {
     try {
@@ -267,7 +267,6 @@ const Cars = () => {
       
       if (dataByID && dataByID.user) { 
         setHostData(dataByID.user);
-        console.log(hostData)
       } else {
         throw new Error('User data not found');
       }
@@ -277,9 +276,9 @@ const Cars = () => {
     }
   }, [fetchUserById, setHostData]);
 
-  const handleCarByIdClick = (car) => {
-    handleCar(car.carid);
-    handleHost(car.hostId)
+  const handlevehicleByIdClick = (vehicle) => {
+    handlevehicle(vehicle.vehicleid);
+    handleHost(vehicle.hostId)
     setModalVisible(true);
   };
 
@@ -293,13 +292,13 @@ const Cars = () => {
     setModalVisible(false);
   };
 
-  const handleUpdateCar = useCallback(async (e) => {
+  const handleUpdatevehicle = useCallback(async (e) => {
     e.preventDefault();
 
     const updatedFields = {};
-    for (let key in updateCarData) {
-      const originalValue = originalCarData[key];
-      const updatedValue = updateCarData[key];
+    for (let key in updatevehicleData) {
+      const originalValue = originalvehicleData[key];
+      const updatedValue = updatevehicleData[key];
   
       // Check for changes and avoid sending unchanged or empty fields
       if (
@@ -321,7 +320,7 @@ const Cars = () => {
 
     if (Object.keys(updatedFields).length > 0) {
       try {
-        await updateCar(carById.carid, updatedFields);
+        await updatevehicle(vehicleById.vehicleid, updatedFields);
         setUpdateModalVisible(false);
         fetchData();
         setError(''); 
@@ -332,14 +331,14 @@ const Cars = () => {
       console.log('No changes detected');
       setUpdateModalVisible(false);
     }
-  },[updateCarData , originalCarData , fetchData]);
+  },[updatevehicleData , originalvehicleData , fetchData]);
 
   const handleUpdateAdditionalInfo = useCallback(async (e) => {
     e.preventDefault();
 
     const updatedAdditionalFields = {};
     for (let key in updateAdditionalInfo) {
-      const originalValue = carById.additionalInfo[key];
+      const originalValue = vehicleById.additionalInfo[key];
       let updatedValue = updateAdditionalInfo[key];
 
       if (typeof originalValue === 'boolean') {
@@ -353,7 +352,7 @@ const Cars = () => {
 
     if (Object.keys(updatedAdditionalFields).length > 0) {
       try {
-        await updateCar(carById.carid, { additionalInfo: updatedAdditionalFields });
+        await updatevehicle(vehicleById.vehicleid, { additionalInfo: updatedAdditionalFields });
         setUpdateAdditionalInfoModalVisible(false);
         fetchData();
         setError(null);
@@ -363,22 +362,22 @@ const Cars = () => {
     } else {
       setUpdateAdditionalInfoModalVisible(false);
     }
-  } , [updateAdditionalInfo ,carById, fetchData]);
+  } , [updateAdditionalInfo ,vehicleById, fetchData]);
 
   useEffect(() => {
-    const filterCars = () => {
-      let sortedData = [...carData];
+    const filtervehicles = () => {
+      let sortedData = [...vehicleData];
       sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       if (!searchInput) {
         setFilteredData(sortedData);
       } else {
-        const filtered = sortedData.filter((car) => {
+        const filtered = sortedData.filter((vehicle) => {
           if (selectedSearchOption === 'all') {
-            return Object.values(car).some(value =>
+            return Object.values(vehicle).some(value =>
               value && value.toString().toLowerCase().includes(searchInput.toLowerCase())
             );
           } else {
-            const value = car[selectedSearchOption];
+            const value = vehicle[selectedSearchOption];
             if (selectedSearchOption === 'createdAt' || selectedSearchOption === 'updatedAt') {
               const formattedDate = new Date(value).toLocaleString();
               return formattedDate && formattedDate.toLowerCase().includes(searchInput.toLowerCase());
@@ -390,12 +389,12 @@ const Cars = () => {
         
       }
     };
-    filterCars();
-  }, [carData, selectedSearchOption, searchInput]);
+    filtervehicles();
+  }, [vehicleData, selectedSearchOption, searchInput]);
 
 
 
-  const displayedCars = filteredData
+  const displayedvehicles = filteredData
 
 
   const handleImageClick = (imageUrl) => {
@@ -404,7 +403,7 @@ const Cars = () => {
 
   const tableHeaders = [
     { label: 'All', value: 'all' },
-    { label: 'Car Model', value: 'carmodel' },
+    { label: 'Vehicle Model', value: 'vehiclemodel' },
     { label: 'Type', value: 'type' },
     { label: 'Brand', value: 'brand' },
     { label: 'Chassis No', value: 'chassisno' },
@@ -412,7 +411,7 @@ const Cars = () => {
     { label: 'Engine Number', value: 'Enginenumber' },
     { label: 'Registration Year', value: 'Registrationyear' },
     { label: 'Body Type', value: 'bodytype' },
-    { label: 'Car ID', value: 'carid' },
+    { label: 'Vehicle ID', value: 'vehicleid' },
     { label: 'Rating', value: 'rating' },
     { label: 'Host ID', value: 'hostId' },
     { label: 'Created At', value: 'createdAt' },
@@ -452,41 +451,41 @@ const Cars = () => {
           <div className='container-fluid h-fit-content '>
           <DataTable
                   columns={columns}
-                  data={displayedCars}
+                  data={displayedvehicles}
                   customStyles={customStyles}
                   responsive={true}
-                  title={'Cars Table'}
+                  title={'Vehicles Table'}
                   highlightOnHover={true}
                   pointerOnHover={true}
                   fixedHeader={true}
-                  onRowClicked={(car)=>handleCarByIdClick(car)}
+                  onRowClicked={(vehicle)=>handlevehicleByIdClick(vehicle)}
           />
         </div>
           
 
-          {/* Modal for Car Details */}
-          {carById && (
+          {/* Modal for vehicle Details */}
+          {vehicleById && (
             <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
               <CModalHeader>
-                <CModalTitle>Car Details</CModalTitle>
+                <CModalTitle>Vehicles Details</CModalTitle>
               </CModalHeader>
               <CModalBody>
                 <CRow>
-                  <CCol xs={5} className="car-modal">
-                    <p><strong>Car Id:</strong> {carById.carid || 'N/A'}</p>
-                    <p><strong>Host Id:</strong> {carById.hostId || 'N/A'}</p>
-                    <p><strong>Car Model:</strong> {carById.carmodel || 'N/A'}</p>
-                    <p><strong>Type:</strong> {carById.type || 'N/A'}</p>
-                    <p><strong>Brand:</strong> {carById.brand || 'N/A'}</p>
-                    <p><strong>Variant:</strong> {carById.variant || 'N/A'}</p>
-                    <p><strong>Color:</strong> {carById.color || 'N/A'}</p>
-                    <p><strong>Chassis No:</strong> {carById.chassisno || 'N/A'}</p>
-                    <p><strong>RC Number:</strong> {carById.Rcnumber || 'N/A'}</p>
-                    <p><strong>Engine Number:</strong> {carById.Enginenumber || 'N/A'}</p>
-                    <p><strong>Registration Year:</strong> {carById.Registrationyear || 'N/A'}</p>
-                    <p><strong>Body Type:</strong> {carById.bodytype || 'N/A'}</p>
-                    <p><strong>Rating:</strong> {carById.rating?.toFixed(2) || 'N/A'}</p>
-                    <p><strong>Mileage:</strong> {carById.mileage || 'N/A'}</p>
+                  <CCol xs={5} className="vehicle-modal">
+                    <p><strong>Vehicle Id:</strong> {vehicleById.vehicleid || 'N/A'}</p>
+                    <p><strong>Host Id:</strong> {vehicleById.hostId || 'N/A'}</p>
+                    <p><strong>vehicle Model:</strong> {vehicleById.vehiclemodel || 'N/A'}</p>
+                    <p><strong>Type:</strong> {vehicleById.type || 'N/A'}</p>
+                    <p><strong>Brand:</strong> {vehicleById.brand || 'N/A'}</p>
+                    <p><strong>Variant:</strong> {vehicleById.variant || 'N/A'}</p>
+                    <p><strong>Color:</strong> {vehicleById.color || 'N/A'}</p>
+                    <p><strong>Chassis No:</strong> {vehicleById.chassisno || 'N/A'}</p>
+                    <p><strong>RC Number:</strong> {vehicleById.Rcnumber || 'N/A'}</p>
+                    <p><strong>Engine Number:</strong> {vehicleById.Enginenumber || 'N/A'}</p>
+                    <p><strong>Registration Year:</strong> {vehicleById.Registrationyear || 'N/A'}</p>
+                    <p><strong>Body Type:</strong> {vehicleById.bodytype || 'N/A'}</p>
+                    <p><strong>Rating:</strong> {vehicleById.rating?.toFixed(2) || 'N/A'}</p>
+                    <p><strong>Mileage:</strong> {vehicleById.mileage || 'N/A'}</p>
                     <h3>Host</h3>
                     <p><strong>Phone:</strong> {hostData.phone || 'N/A'}</p>
                     <p><strong>Name:</strong> {hostData.additionalInfo?.FullName || 'N/A'}</p>
@@ -495,59 +494,59 @@ const Cars = () => {
                   <CCol xs={1} className="d-flex justify-content-center align-items-stretch">
                     <div style={{ borderLeft: '1px solid #dee2e6', height: '100%' }}></div>
                   </CCol>
-                  <CCol xs={5} className="car-modal">
+                  <CCol xs={5} className="vehicle-modal">
                     <h3>Additional Info: </h3>
                     <p>
                       <strong>Status: </strong>
-                      {carById.additionalInfo?.verification_status === 1 && (
+                      {vehicleById.additionalInfo?.verification_status === 1 && (
                         <span className="p-1 status-view rounded border border-primary text-white bg-primary w-100 text-center">
                           Pending
                         </span>
                       )}
-                      {carById.additionalInfo?.verification_status === 2 && (
+                      {vehicleById.additionalInfo?.verification_status === 2 && (
                         <span className="p-1 status-view rounded border border-success text-white bg-success w-100 text-center">
                           Verified
                         </span>
                       )}
-                      {(carById.additionalInfo?.verification_status !== 1 && carById.additionalInfo?.verification_status !== 2) && (
+                      {(vehicleById.additionalInfo?.verification_status !== 1 && vehicleById.additionalInfo?.verification_status !== 2) && (
                         <span className="p-1 status-view rounded border border-light text-black bg-white w-100 text-center">
                           Not Uploaded
                         </span>
                       )}
                     </p>
 
-                    <p><strong>Horse Power:</strong> {carById.additionalInfo?.HorsePower || 'N/A'}</p>
-                    <p><strong>AC:</strong> {carById.additionalInfo?.AC ? 'Yes' : 'No'}</p>
-                    <p><strong>Music System:</strong> {carById.additionalInfo?.Musicsystem ? 'Yes' : 'No'}</p>
-                    <p><strong>Autowindow:</strong> {carById.additionalInfo?.Autowindow ? 'Yes' : 'No'}</p>
-                    <p><strong>Sunroof:</strong> {carById.additionalInfo?.Sunroof ? 'Yes' : 'No'}</p>
-                    <p><strong>Touchscreen:</strong> {carById.additionalInfo?.Touchscreen ? 'Yes' : 'No'}</p>
-                    <p><strong>Sevenseater:</strong> {carById.additionalInfo?.Sevenseater ? 'Yes' : 'No'}</p>
-                    <p><strong>Reverse Camera:</strong> {carById.additionalInfo?.Reversecamera ? 'Yes' : 'No'}</p>
-                    <p><strong>Transmission:</strong> {carById.additionalInfo?.Transmission ? 'Yes' : 'No'}</p>
-                    <p><strong>Airbags:</strong> {carById.additionalInfo?.Airbags ? 'Yes' : 'No'}</p>
-                    <p><strong>Fuel Type:</strong> {carById.additionalInfo?.FuelType ? 'Yes' : 'No'}</p>
-                    <p><strong>Pet Friendly:</strong> {carById.additionalInfo?.PetFriendly ? 'Yes' : 'No'}</p>
-                    <p><strong>Power Steering:</strong> {carById.additionalInfo?.PowerSteering ? 'Yes' : 'No'}</p>
-                    <p><strong>ABS:</strong> {carById.additionalInfo?.ABS ? 'Yes' : 'No'}</p>
-                    <p><strong>Traction Control:</strong> {carById.additionalInfo?.tractionControl ? 'Yes' : 'No'}</p>
-                    <p><strong>Full Boot Space:</strong> {carById.additionalInfo?.fullBootSpace ? 'Yes' : 'No'}</p>
-                    <p><strong>Keyless Entry:</strong> {carById.additionalInfo?.KeylessEntry ? 'Yes' : 'No'}</p>
-                    <p><strong>Air Purifier:</strong> {carById.additionalInfo?.airPurifier ? 'Yes' : 'No'}</p>
-                    <p><strong>Cruise Control:</strong> {carById.additionalInfo?.cruiseControl ? 'Yes' : 'No'}</p>
-                    <p><strong>Voice Control:</strong> {carById.additionalInfo?.voiceControl ? 'Yes' : 'No'}</p>
-                    <p><strong>USB Charger:</strong> {carById.additionalInfo?.usbCharger ? 'Yes' : 'No'}</p>
-                    <p><strong>Bluetooth:</strong> {carById.additionalInfo?.bluetooth ? 'Yes' : 'No'}</p>
-                    <p><strong>Air Freshner:</strong> {carById.additionalInfo?.airFreshner ? 'Yes' : 'No'}</p>
-                    <p><strong>Ventilated Front Seat:</strong> {carById.additionalInfo?.ventelatedFrontSeat ? 'Yes' : 'No'}</p>
-                    <p><strong>Additional Info:</strong> {carById.additionalInfo?.Additionalinfo || 'N/A'}</p>
-                    <p><strong>Address:</strong> {carById.additionalInfo?.address || 'N/A'}</p>
+                    <p><strong>Horse Power:</strong> {vehicleById.additionalInfo?.HorsePower || 'N/A'}</p>
+                    <p><strong>AC:</strong> {vehicleById.additionalInfo?.AC ? 'Yes' : 'No'}</p>
+                    <p><strong>Music System:</strong> {vehicleById.additionalInfo?.Musicsystem ? 'Yes' : 'No'}</p>
+                    <p><strong>Autowindow:</strong> {vehicleById.additionalInfo?.Autowindow ? 'Yes' : 'No'}</p>
+                    <p><strong>Sunroof:</strong> {vehicleById.additionalInfo?.Sunroof ? 'Yes' : 'No'}</p>
+                    <p><strong>Touchscreen:</strong> {vehicleById.additionalInfo?.Touchscreen ? 'Yes' : 'No'}</p>
+                    <p><strong>Sevenseater:</strong> {vehicleById.additionalInfo?.Sevenseater ? 'Yes' : 'No'}</p>
+                    <p><strong>Reverse Camera:</strong> {vehicleById.additionalInfo?.Reversecamera ? 'Yes' : 'No'}</p>
+                    <p><strong>Transmission:</strong> {vehicleById.additionalInfo?.Transmission ? 'Yes' : 'No'}</p>
+                    <p><strong>Airbags:</strong> {vehicleById.additionalInfo?.Airbags ? 'Yes' : 'No'}</p>
+                    <p><strong>Fuel Type:</strong> {vehicleById.additionalInfo?.FuelType ? 'Yes' : 'No'}</p>
+                    <p><strong>Pet Friendly:</strong> {vehicleById.additionalInfo?.PetFriendly ? 'Yes' : 'No'}</p>
+                    <p><strong>Power Steering:</strong> {vehicleById.additionalInfo?.PowerSteering ? 'Yes' : 'No'}</p>
+                    <p><strong>ABS:</strong> {vehicleById.additionalInfo?.ABS ? 'Yes' : 'No'}</p>
+                    <p><strong>Traction Control:</strong> {vehicleById.additionalInfo?.tractionControl ? 'Yes' : 'No'}</p>
+                    <p><strong>Full Boot Space:</strong> {vehicleById.additionalInfo?.fullBootSpace ? 'Yes' : 'No'}</p>
+                    <p><strong>Keyless Entry:</strong> {vehicleById.additionalInfo?.KeylessEntry ? 'Yes' : 'No'}</p>
+                    <p><strong>Air Purifier:</strong> {vehicleById.additionalInfo?.airPurifier ? 'Yes' : 'No'}</p>
+                    <p><strong>Cruise Control:</strong> {vehicleById.additionalInfo?.cruiseControl ? 'Yes' : 'No'}</p>
+                    <p><strong>Voice Control:</strong> {vehicleById.additionalInfo?.voiceControl ? 'Yes' : 'No'}</p>
+                    <p><strong>USB Charger:</strong> {vehicleById.additionalInfo?.usbCharger ? 'Yes' : 'No'}</p>
+                    <p><strong>Bluetooth:</strong> {vehicleById.additionalInfo?.bluetooth ? 'Yes' : 'No'}</p>
+                    <p><strong>Air Freshner:</strong> {vehicleById.additionalInfo?.airFreshner ? 'Yes' : 'No'}</p>
+                    <p><strong>Ventilated Front Seat:</strong> {vehicleById.additionalInfo?.ventelatedFrontSeat ? 'Yes' : 'No'}</p>
+                    <p><strong>Additional Info:</strong> {vehicleById.additionalInfo?.Additionalinfo || 'N/A'}</p>
+                    <p><strong>Address:</strong> {vehicleById.additionalInfo?.address || 'N/A'}</p>
                     <p>
                       <strong>Location: </strong>
                       <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <span>{carById.additionalInfo?.latitude}, {carById.additionalInfo?.longitude}</span>
+                        <span>{vehicleById.additionalInfo?.latitude}, {vehicleById.additionalInfo?.longitude}</span>
                         <a 
-                          href={`https://www.google.com/maps?q=${carById.additionalInfo?.latitude},${carById.additionalInfo?.longitude}&hl=es`} 
+                          href={`https://www.google.com/maps?q=${vehicleById.additionalInfo?.latitude},${vehicleById.additionalInfo?.longitude}&hl=es`} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           style={{ marginLeft: '8px' }}
@@ -562,14 +561,14 @@ const Cars = () => {
                 <CRow>
                   <CCol xs={6} className="d-flex justify-content-center">
                     <div className="image-container mt-2">
-                      <p><strong>Car Image 1:</strong></p>
-                      {carById.additionalInfo?.carimage1 ? (
+                      <p><strong>vehicle Image 1:</strong></p>
+                      {vehicleById.additionalInfo?.vehicleimage1 ? (
                         <CImage
                           className="border rounded img-interactive"
-                          src={carById.additionalInfo.carimage1}
+                          src={vehicleById.additionalInfo.vehicleimage1}
                           width={200}
                           height={150}
-                          onClick={() => handleImageClick(carById.additionalInfo.carimage1)}
+                          onClick={() => handleImageClick(vehicleById.additionalInfo.vehicleimage1)}
                         />
                       ) : (
                         <div className="empty-image-placeholder">
@@ -580,52 +579,14 @@ const Cars = () => {
                   </CCol>
                   <CCol xs={6} className="d-flex justify-content-center">
                     <div className="image-container mt-2">
-                      <p><strong>Car Image 2:</strong></p>
-                      {carById.additionalInfo?.carimage2 ? (
+                      <p><strong>vehicle Image 2:</strong></p>
+                      {vehicleById.additionalInfo?.vehicleimage2 ? (
                         <CImage
                           className="border rounded img-interactive"
-                          src={carById.additionalInfo.carimage2}
+                          src={vehicleById.additionalInfo.vehicleimage2}
                           width={200}
                           height={150}
-                          onClick={() => handleImageClick(carById.additionalInfo.carimage2)}
-                        />
-                      ) : (
-                        <div className="empty-image-placeholder">
-                          <span><FaTimesCircle /> Not Uploaded</span>
-                        </div>
-                      )}
-                    </div>
-                  </CCol>
-                </CRow>
-                <CRow>
-                  <CCol xs={6} className="d-flex justify-content-center">
-                    <div className="image-container mt-2">
-                      <p><strong>Car Image 3:</strong></p>
-                      {carById.additionalInfo?.carimage3 ? (
-                        <CImage
-                          className="border rounded img-interactive"
-                          src={carById.additionalInfo.carimage3}
-                          width={200}
-                          height={150}
-                          onClick={() => handleImageClick(carById.additionalInfo.carimage3)}
-                        />
-                      ) : (
-                        <div className="empty-image-placeholder">
-                          <span><FaTimesCircle /> Not Uploaded</span>
-                        </div>
-                      )}
-                    </div>
-                  </CCol>
-                  <CCol xs={6} className="d-flex justify-content-center">
-                    <div className="image-container mt-2">
-                      <p><strong>Car Image 4:</strong></p>
-                      {carById.additionalInfo?.carimage4 ? (
-                        <CImage
-                          className="border rounded img-interactive"
-                          src={carById.additionalInfo.carimage4}
-                          width={200}
-                          height={150}
-                          onClick={() => handleImageClick(carById.additionalInfo.carimage4)}
+                          onClick={() => handleImageClick(vehicleById.additionalInfo.vehicleimage2)}
                         />
                       ) : (
                         <div className="empty-image-placeholder">
@@ -638,14 +599,52 @@ const Cars = () => {
                 <CRow>
                   <CCol xs={6} className="d-flex justify-content-center">
                     <div className="image-container mt-2">
-                      <p><strong>Car Image 5:</strong></p>
-                      {carById.additionalInfo?.carimage5 ? (
+                      <p><strong>vehicle Image 3:</strong></p>
+                      {vehicleById.additionalInfo?.vehicleimage3 ? (
                         <CImage
                           className="border rounded img-interactive"
-                          src={carById.additionalInfo.carimage5}
+                          src={vehicleById.additionalInfo.vehicleimage3}
                           width={200}
                           height={150}
-                          onClick={() => handleImageClick(carById.additionalInfo.carimage5)}
+                          onClick={() => handleImageClick(vehicleById.additionalInfo.vehicleimage3)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
+                    </div>
+                  </CCol>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>vehicle Image 4:</strong></p>
+                      {vehicleById.additionalInfo?.vehicleimage4 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={vehicleById.additionalInfo.vehicleimage4}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(vehicleById.additionalInfo.vehicleimage4)}
+                        />
+                      ) : (
+                        <div className="empty-image-placeholder">
+                          <span><FaTimesCircle /> Not Uploaded</span>
+                        </div>
+                      )}
+                    </div>
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol xs={6} className="d-flex justify-content-center">
+                    <div className="image-container mt-2">
+                      <p><strong>vehicle Image 5:</strong></p>
+                      {vehicleById.additionalInfo?.vehicleimage5 ? (
+                        <CImage
+                          className="border rounded img-interactive"
+                          src={vehicleById.additionalInfo.vehicleimage5}
+                          width={200}
+                          height={150}
+                          onClick={() => handleImageClick(vehicleById.additionalInfo.vehicleimage5)}
                         />
                       ) : (
                         <div className="empty-image-placeholder">
@@ -667,21 +666,21 @@ const Cars = () => {
             </CModal>
           )}
 
-          {/* Modal for Updating Car Basic Info */}
+          {/* Modal for Updating vehicle Basic Info */}
           {updateModalVisible && (
             <CModal visible={updateModalVisible} onClose={() => setUpdateModalVisible(false)}>
               <CModalHeader>
-                <CModalTitle>Update Car Info</CModalTitle>
+                <CModalTitle>Update vehicle Info</CModalTitle>
               </CModalHeader>
               <CModalBody>
                 <CForm>
                   <CRow className="mb-3">
                     <CCol>
-                      <CFormLabel>Car Model</CFormLabel>
+                      <CFormLabel>vehicle Model</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.carmodel}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, carmodel: e.target.value })}
+                        value={updatevehicleData.vehiclemodel}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, vehiclemodel: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -689,8 +688,8 @@ const Cars = () => {
                     <CCol>
                       <CFormLabel>Type</CFormLabel>
                       <CFormSelect
-                        value={updateCarData.type}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, type: e.target.value })}
+                        value={updatevehicleData.type}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, type: e.target.value })}
                       >
                         <option value="Compact SUV">Compact SUV</option>
                         <option value="Sedan">Sedan</option>
@@ -705,8 +704,8 @@ const Cars = () => {
                       <CFormLabel>Brand</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.brand}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, brand: e.target.value })}
+                        value={updatevehicleData.brand}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, brand: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -715,8 +714,8 @@ const Cars = () => {
                       <CFormLabel>Variant</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.variant}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, variant: e.target.value })}
+                        value={updatevehicleData.variant}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, variant: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -725,8 +724,8 @@ const Cars = () => {
                       <CFormLabel>Color</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.color}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, color: e.target.value })}
+                        value={updatevehicleData.color}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, color: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -735,8 +734,8 @@ const Cars = () => {
                       <CFormLabel>Chassis No</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.chassisno}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, chassisno: e.target.value })}
+                        value={updatevehicleData.chassisno}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, chassisno: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -745,8 +744,8 @@ const Cars = () => {
                       <CFormLabel>RC Number</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.Rcnumber}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, Rcnumber: e.target.value })}
+                        value={updatevehicleData.Rcnumber}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, Rcnumber: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -755,8 +754,8 @@ const Cars = () => {
                       <CFormLabel>Mileage</CFormLabel>
                       <CFormInput
                         type="number"
-                        value={updateCarData.mileage || ''}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, mileage: e.target.value })}
+                        value={updatevehicleData.mileage || ''}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, mileage: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -765,8 +764,8 @@ const Cars = () => {
                       <CFormLabel>Engine Number</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.Enginenumber}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, Enginenumber: e.target.value })}
+                        value={updatevehicleData.Enginenumber}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, Enginenumber: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -775,8 +774,8 @@ const Cars = () => {
                       <CFormLabel>Registration Year</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.Registrationyear || ''}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, Registrationyear: e.target.value })}
+                        value={updatevehicleData.Registrationyear || ''}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, Registrationyear: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -785,8 +784,8 @@ const Cars = () => {
                       <CFormLabel>Body Type</CFormLabel>
                       <CFormInput
                         type="text"
-                        value={updateCarData.bodytype}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, bodytype: e.target.value })}
+                        value={updatevehicleData.bodytype}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, bodytype: e.target.value })}
                       />
                     </CCol>
                   </CRow>
@@ -795,22 +794,22 @@ const Cars = () => {
                       <CFormLabel>Rating</CFormLabel>
                       <CFormInput
                         type="number"
-                        value={updateCarData.rating || ''}
-                        onChange={(e) => setUpdateCarData({ ...updateCarData, rating: e.target.value })}
+                        value={updatevehicleData.rating || ''}
+                        onChange={(e) => setUpdatevehicleData({ ...updatevehicleData, rating: e.target.value })}
                       />
                     </CCol>
                   </CRow>
                 </CForm>
               </CModalBody>
               <CModalFooter>
-                <CButton color="success" onClick={handleUpdateCar}>
+                <CButton color="success" onClick={handleUpdatevehicle}>
                   Update Data
                 </CButton>
               </CModalFooter>
             </CModal>
           )}
 
-          {/* Modal for Updating Car Additional Info */}
+          {/* Modal for Updating vehicle Additional Info */}
           {updateAdditionalInfoModalVisible && (
             <CModal visible={updateAdditionalInfoModalVisible} onClose={() => setUpdateAdditionalInfoModalVisible(false)}>
               <CModalHeader>
@@ -1210,4 +1209,4 @@ const Cars = () => {
   );
 };
 
-export default Cars;
+export default vehicles;

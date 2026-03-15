@@ -64,10 +64,10 @@
 .profileid{
   font-size: 12px;
 }
-.carVerif-table{
+.vehicleVerif-table{
   font-size: 14px;
 }
-.carId{
+.vehicleid{
   color: rgb(228, 246, 244) !important;
   text-decoration: underline;
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;

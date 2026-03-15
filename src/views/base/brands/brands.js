@@ -90,7 +90,7 @@ const Brand = () => {
   const [newBrand, setNewBrand] = useState({
     type: 'Compact suv',
     brand: '',
-    carmodel: '',
+    vehiclemodel: '',
     brand_value: '',
     base_price: '',
   });
@@ -187,8 +187,8 @@ const Brand = () => {
               <CFormInput id="brand" name="brand" value={newBrand.brand} onChange={handleInputChange} />
             </div>
             <div className="mb-3">
-              <CFormLabel htmlFor="carmodel">Car Model</CFormLabel>
-              <CFormInput id="carmodel" name="carmodel" value={newBrand.carmodel} onChange={handleInputChange} />
+              <CFormLabel htmlFor="vehiclemodel">vehicle Model</CFormLabel>
+              <CFormInput id="vehiclemodel" name="vehiclemodel" value={newBrand.vehiclemodel} onChange={handleInputChange} />
             </div>
             <div className="mb-3">
               <CFormLabel htmlFor="brand_value">Brand Value</CFormLabel>

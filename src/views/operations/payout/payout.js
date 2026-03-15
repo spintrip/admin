@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react'
 import {fetchHosts} from '../../../api/host'
 import DataTable from 'react-data-table-component';
 import { useNavigate } from 'react-router-dom';
-import {getCars} from '../../../api/car'
+import {getvehicles} from '../../../api/vehicle'
 import { fetchUsers } from '../../../api/user';
 import {
     CButton,
@@ -123,7 +123,7 @@ const customStyles = {
 
     const tableHeaders = [
         { label: 'Booking ID', value: 'Bookingid' },
-        { label: 'Car ID', value: 'carid' },
+        { label: 'vehicle Id', value: 'vehicleid' },
         
         { label: 'Amount', value: 'amount' },
         { label: 'GST Amount', value: 'GSTAmount' },
@@ -149,8 +149,8 @@ function payout() {
     const token = localStorage.getItem('adminToken');
     const [userData, setUsersData] = useState([]);
     const [hostData, setHostData] = useState([]);
-    const [carData, setCarData] = useState([]);
-    const [filteredCarData, setFilteredCarData] = useState([])
+    const [vehicleData, setvehicleData] = useState([]);
+    const [filteredvehicleData, setFilteredvehicleData] = useState([])
     const [filteredData , setFilteredData] = useState([]);
     const [displayBookings, setDisplayBookings] = useState([])
     const [isFinalBookingLoading, setIsFinalBookingLoading] = useState(true)
@@ -177,20 +177,20 @@ function payout() {
         setSpecificHost(host);
         console.log('Selected host ID:', host.id);
     
-        const filteredCars = carData.filter((car) => {
+        const filteredvehicles = vehicleData.filter((vehicle) => {
             
-            return String(car.hostId) === String(host.id);
+            return String(vehicle.hostId) === String(host.id);
         });
     
-        setFilteredCarData(filteredCars);
+        setFilteredvehicleData(filteredvehicles);
     
-        // Step 1: Extract car IDs from filteredCars
-        const carIds = filteredCars.map(car => car.carid);
+        // Step 1: Extract vehicle Ids from filteredvehicles
+        const vehicleids = filteredvehicles.map(vehicle => vehicle.vehicleid);
         
-        // Step 2: Filter bookings based on car IDs
+        // Step 2: Filter bookings based on vehicle Ids
         const filteredBookings = bookingData.filter((booking) => {
             
-            return (carIds.includes(booking.carid) && booking.status==3)? booking : null
+            return (vehicleids.includes(booking.vehicleid) && booking.status==3)? booking : null
         });
         // console.log('Filtered bookings:', filteredBookings);
         setDisplayBookings(filteredBookings)
@@ -259,24 +259,24 @@ function payout() {
     }, []);
 
 
-    const fetchCarData = useCallback(async () => {
+    const fetchvehicleData = useCallback(async () => {
         if (!token) {
           console.log('No token Found');
           navigate('/login');
         }
         try {
-          const data = await getCars();
-          setCarData(data);
+          const data = await getvehicles();
+          setvehicleData(data);
           
         } catch (error) {
           setError(error.message);
         }
       } , [token , navigate]);
 
-    console.log('Cars data', carData)
+    console.log('vehicles data', vehicleData)
 
       useEffect(() => {
-        fetchCarData();
+        fetchvehicleData();
       }, []);
 
   useEffect(() => {

@@ -93,6 +93,7 @@ const Hosts = () => {
   const tableHeaders = [
     { label: 'All', value: 'all' },
     { label: 'Id', value: 'id' },
+    { label: 'Parent Host ID', value: 'parentHostId' },
     { label: 'Created At', value: 'createdAt' },
     { label: 'Updated At', value: 'updatedAt' },
   ]
@@ -134,6 +135,8 @@ const Hosts = () => {
               <CTableHeaderCell scope="col">#</CTableHeaderCell>
               <CTableHeaderCell scope="col">ID</CTableHeaderCell>
               <CTableHeaderCell scope="col">User ID</CTableHeaderCell>
+              <CTableHeaderCell scope="col">Type</CTableHeaderCell>
+              <CTableHeaderCell scope="col">Parent Host ID</CTableHeaderCell>
               <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
               <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
             </CTableRow>
@@ -144,6 +147,10 @@ const Hosts = () => {
                 <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
                 <CTableDataCell style={{ fontSize: '12px' }} >{host.id}</CTableDataCell>
                 <CTableDataCell style={{ fontSize: '12px' }} >{host.UserId ? host.UserId : 'N/A'}</CTableDataCell>
+                <CTableDataCell>
+                    {host.parentHostId ? <span className="badge bg-secondary">Vendor</span> : <span className="badge bg-primary">Superhost</span>}
+                </CTableDataCell>
+                <CTableDataCell style={{ fontSize: '12px' }}>{host.parentHostId || 'N/A'}</CTableDataCell>
                 <CTableDataCell>{new Date(host.createdAt).toLocaleString()}</CTableDataCell>
                 <CTableDataCell>{new Date(host.updatedAt).toLocaleString()}</CTableDataCell>
               </CTableRow>

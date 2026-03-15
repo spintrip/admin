@@ -33,8 +33,8 @@ const Blog = () => {
     blogAuthor: '',
     description: '',
     keywords: '',
-    carImage1: null,
-    carImage2: null,
+    vehicleImage1: null,
+    vehicleImage2: null,
     blobId: '',
   });
   const [updateFormValues, setUpdateFormValues] = useState({
@@ -43,8 +43,8 @@ const Blog = () => {
     blogAuthor: '',
     description: '',
     keywords: '',
-    carImage1: null,
-    carImage2: null,
+    vehicleImage1: null,
+    vehicleImage2: null,
   });
   const [blogData, setBlogData] = useState([]);
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -101,8 +101,8 @@ const Blog = () => {
     formData.append('blogAuthor', formValues.blogAuthor);
     formData.append('description', formValues.description);
     formData.append('keywords', formValues.keywords);
-    formData.append('blogImage_1', formValues.carImage1);
-    formData.append('blogImage_2', formValues.carImage2);
+    formData.append('blogImage_1', formValues.vehicleImage1);
+    formData.append('blogImage_2', formValues.vehicleImage2);
     formData.append('blobId', formValues.blobId);
 
     try {
@@ -141,8 +141,8 @@ const Blog = () => {
     formData.append('blogAuthor', updateFormValues.blogAuthor);
     formData.append('description', updateFormValues.description);
     formData.append('keywords', updateFormValues.keywords);
-    formData.append('blogImage_1', updateFormValues.carImage1);
-    formData.append('blogImage_2', updateFormValues.carImage2);
+    formData.append('blogImage_1', updateFormValues.vehicleImage1);
+    formData.append('blogImage_2', updateFormValues.vehicleImage2);
 
     try {
       await updateBlog(formData);
@@ -171,8 +171,8 @@ const Blog = () => {
       blogAuthor: selectedBlog.blogAuthor,
       description: selectedBlog.description,
       keywords: selectedBlog.keywords,
-      carImage1: null,
-      carImage2: null,
+      vehicleImage1: null,
+      vehicleImage2: null,
     });
     setUpdateModal(true);
     setModalVisible(false);
@@ -264,12 +264,12 @@ const Blog = () => {
               <CFormInput type="text" name="keywords" value={updateFormValues.keywords} onChange={handleUpdateInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
-              <CFormLabel className='me-3'>Car Image 1</CFormLabel>
-              <CFormInput type="file" name="carImage1" onChange={handleUpdateInputChange} />
+              <CFormLabel className='me-3'>vehicle Image 1</CFormLabel>
+              <CFormInput type="file" name="vehicleImage1" onChange={handleUpdateInputChange} />
             </CInputGroup>
             <CInputGroup className="mb-3">
-              <CFormLabel className='me-3'>Car Image 2</CFormLabel>
-              <CFormInput type="file" name="carImage2" onChange={handleUpdateInputChange} />
+              <CFormLabel className='me-3'>vehicle Image 2</CFormLabel>
+              <CFormInput type="file" name="vehicleImage2" onChange={handleUpdateInputChange} />
             </CInputGroup>
             <CModalFooter>
               <CButton color="secondary" onClick={() => setUpdateModal(false)}>Close</CButton>
@@ -305,11 +305,11 @@ const Blog = () => {
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Blog Image 1</CFormLabel>
-              <CFormInput className='border rounded' type="file" name="carImage1" onChange={handleInputChange} required />
+              <CFormInput className='border rounded' type="file" name="vehicleImage1" onChange={handleInputChange} required />
             </CInputGroup>
             <CInputGroup className="mb-3">
               <CFormLabel className='me-3'>Blog Image 2</CFormLabel>
-              <CFormInput className='border rounded' type="file" name="carImage2" onChange={handleInputChange} required />
+              <CFormInput className='border rounded' type="file" name="vehicleImage2" onChange={handleInputChange} required />
             </CInputGroup>
             <CModalFooter>
               <CButton color="secondary" onClick={() => setVisible(false)}>Close</CButton>
