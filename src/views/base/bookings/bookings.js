@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { getBooking, fetchBookingById, updateBooking } from '../../../api/booking';
+import { fetchCabs } from '../../../api/cab';
+import { fetchDrivers } from '../../../api/driver';
 import UserData from '../controller/userData';
 import vehicleData from '../controller/vehicleData';
 import {
 
   CInputGroup,
   CFormInput,
+  CFormSelect,
   CDropdown,
   CDropdownToggle,
   CDropdownMenu,
@@ -27,6 +30,19 @@ import {
 } from '@coreui/react';
 import '../../../scss/booking.css';
 import DataTable from 'react-data-table-component';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import { Google_Maps_Api_key } from '../../../env';
+
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return (R * c).toFixed(1);
+};
+
 const customStyles = {
   header: {
     style: {
@@ -71,6 +87,8 @@ const tableHeaders = [
   { label: 'Total User Amount', value: 'totalUserAmount' },
   { label: 'TDS Amount', value: 'TDSAmount' },
   { label: 'Total Host Amount', value: 'totalHostAmount' },
+  { label: 'Pick-Up Location', value: 'pickUpLocation' },
+  { label: 'Drop-Off Location', value: 'dropOffLocation' },
   { label: 'Start Trip Date', value: 'startTripDate' },
   { label: 'End Trip Date', value: 'endTripDate' },
   { label: 'Start Trip Time', value: 'startTripTime' },
@@ -148,7 +166,7 @@ const columns = [
     name: 'Amount',
     selector: row => row.amount,
     sortable: true,
-    cell: row => {return <div className='text-gray' style={{fontWeight:'700'}}>₹ {row.amount.toFixed(2)}</div>}
+    cell: row => {return <div className='text-gray' style={{fontWeight:'700'}}>Rs. {row && typeof row.amount === 'number' ? row.amount.toFixed(2) : (row && row.amount ? Number(row.amount).toFixed(2) : '0.00')}</div>}
   },
   {
     name: 'GST Amount',
@@ -171,24 +189,50 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'Start Trip Date',
-    selector: row => row.startTripDate,
+    name: 'Pick-Up Location',
+    selector: row => row.pickUpLocation || 'N/A',
     sortable: true,
+  },
+  {
+    name: 'Drop-Off Location',
+    selector: row => row.dropOffLocation || 'N/A',
+    sortable: true,
+  },
+  {
+    name: 'Start Trip Date',
+    selector: row => row.startTripDate || row.pointAToBDate || row.Date || row.date || 'N/A',
+    sortable: true,
+    cell: row => <div>{row.startTripDate || row.pointAToBDate || row.Date || row.date || 'N/A'}</div>
   },
   {
     name: 'End Trip Date',
-    selector: row => row.endTripDate,
+    selector: row => row.endTripDate || 'N/A',
     sortable: true,
+    cell: row => <div>{row.endTripDate || 'N/A'}</div>
   },
   {
     name: 'Start Trip Time',
-    selector: row => row.startTripTime,
+    selector: row => row.startTripTime || row.pointAToBTime || row.time,
     sortable: true,
+    cell: row => {
+       const timeStr = row.startTripTime || row.pointAToBTime || row.time;
+       if (!timeStr) return <div>N/A</div>;
+       if (timeStr.includes('T')) {
+          const d = new Date(timeStr);
+          const parsed = Number.isNaN(d.getTime()) ? timeStr.substring(0, 5) : d.toTimeString().substring(0, 5);
+          return <div>{parsed}</div>;
+       }
+       return <div>{timeStr.substring(0, 5)}</div>;
+    }
   },
   {
     name: 'End Trip Time',
-    selector: row => row.endTripTime,
+    selector: row => row.endTripTime || 'N/A',
     sortable: true,
+    cell: row => {
+       if (!row.endTripTime) return <div>N/A</div>;
+       return <div>{row.endTripTime.substring(0, 5)}</div>;
+    }
   },
   {
     name: 'Created At',
@@ -208,6 +252,8 @@ const columns = [
 
 const Bookings = () => {
   const [bookingData, setBookingData] = useState([]);
+  const [cabs, setCabs] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -223,6 +269,8 @@ const Bookings = () => {
   const [updateBookingData, setUpdateBookingData] = useState({
     status: '',
     amount: '',
+    vehicleid: '',
+    driverid: '',
     GSTAmount: '',
     totalUserAmount: '',
     TDSAmount: '',
@@ -233,18 +281,30 @@ const Bookings = () => {
     endTripTime: '',
     cancelDate: null,
     cancelReason: null,
-    features: []
+    features: [],
+    pickUpLocation: '',
+    dropOffLocation: '',
+    distance: '',
+    carname: '',
+    paymentMethod: '',
+    isCab: false
   });
   const [accordionStatusOpen, setStatusAccordionOpen] = useState(false);
+  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: Google_Maps_Api_key });
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [activeDriverWindow, setActiveDriverWindow] = useState(null);
+  const defaultCenter = { lat: 20.5937, lng: 78.9629 };
 
   const handleAccordionToggle = () => setStatusAccordionOpen(!accordionStatusOpen);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getBooking();
+        const [data, cabsData, driversData] = await Promise.all([getBooking(), fetchCabs(), fetchDrivers()]);
         setBookingData(data);
         setFilteredData(data);
+        setCabs(cabsData || []);
+        setDrivers(driversData || []);
       } catch (error) {
         console.log(error);
       }
@@ -298,7 +358,14 @@ const Bookings = () => {
     
     function formatTime(timeString) {
       if (!timeString) return null;
-      const [hour, minute, second] = timeString.split(':');
+      if (typeof timeString === 'string' && timeString.includes('T')) {
+          const d = new Date(timeString);
+          if (!Number.isNaN(d.getTime())) return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
+      const parts = String(timeString).split(':');
+      const hour = parseInt(parts[0], 10) || 0;
+      const minute = parseInt(parts[1], 10) || 0;
+      const second = parts.length > 2 ? parseInt(parts[2], 10) || 0 : 0;
       const date = new Date();
       date.setHours(hour, minute, second);
       return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -326,23 +393,43 @@ setSelectedvehicleid(null);
   const handleBookingByIdClick = async (id) => {
     try {
       const data = await fetchBookingById(id);
+      
+      const extractTime = (timeStr) => {
+        if (!timeStr) return '';
+        if (timeStr.includes('T')) {
+          const d = new Date(timeStr);
+          return Number.isNaN(d.getTime()) ? timeStr.substring(0, 5) : d.toTimeString().substring(0, 5);
+        }
+        return timeStr.substring(0, 5);
+      };
+
       setBookingById(data.booking);
       setOriginalBookingData(data.booking);
       setUpdateBookingData({
         status: data.booking.status || '',
         amount: data.booking.amount || '',
+        vehicleid: data.booking.vehicleid || '',
+        driverid: data.booking.driverid || '',
         GSTAmount: data.booking.GSTAmount || '',
         totalUserAmount: data.booking.totalUserAmount || '',
         TDSAmount: data.booking.TDSAmount || '',
         totalHostAmount: data.booking.totalHostAmount || '',
         Transactionid: data.booking.Transactionid || '',
-        startTripDate: data.booking.startTripDate || '',
+        startTripDate: data.booking.startTripDate || data.booking.pointAToBDate || data.booking.Date || data.booking.date || '',
         endTripDate: data.booking.endTripDate || '',
-        startTripTime: data.booking.startTripTime || '',
-        endTripTime: data.booking.endTripTime || '',
+        startTripTime: extractTime(data.booking.startTripTime || data.booking.pointAToBTime || data.booking.time),
+        endTripTime: extractTime(data.booking.endTripTime),
         cancelDate: data.booking.cancelDate || null,
         cancelReason: data.booking.cancelReason || null,
-        features: data.booking.features || []
+        features: data.booking.features || [],
+        pickUpLocation: data.booking.pickUpLocation || '',
+        dropOffLocation: data.booking.dropOffLocation || '',
+        pickUpLat: data.booking.pickUpLat || null,
+        pickUpLng: data.booking.pickUpLng || null,
+        distance: data.booking.distance || '',
+        carname: data.booking.carname || '',
+        paymentMethod: data.booking.paymentMethod || '',
+        isCab: data.booking.isCab || false
       });
       setModalVisible(true);
     } catch (error) {
@@ -398,6 +485,18 @@ setSelectedvehicleid(null);
     }
   };
  
+  const handleAssignDriver = async (driverId) => {
+    try {
+      await updateBooking(bookingById.Bookingid, { driverid: driverId, status: 1 });
+      setMapModalVisible(false);
+      setModalVisible(false);
+      const updatedData = await getBooking();
+      setBookingData(updatedData);
+      setFilteredData(updatedData);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const displayedBookings = filteredData
 
@@ -526,8 +625,8 @@ setSelectedvehicleid(null);
                     </CRow>
                     <CRow>
                         <CCol  className='border rounded col-5'>
-                          <p><strong>Start Trip Date:</strong> {formatDate(bookingById.startTripDate) || 'N/A'}</p>
-                          <p><strong>Start Trip Time:</strong> {formatTime(bookingById.startTripTime) || 'N/A'}</p>
+                          <p><strong>Start Trip Date:</strong> {formatDate(bookingById.startTripDate) || formatDate(bookingById.pointAToBDate) || 'N/A'}</p>
+                          <p><strong>Start Trip Time:</strong> {formatTime(bookingById.startTripTime) || formatTime(bookingById.pointAToBTime) || 'N/A'}</p>
                         </CCol>
                         <CCol className='col-2 d-flex align-items-center justify-content-center'>
                           <div style={{width: '5vw'}}>
@@ -586,6 +685,15 @@ setSelectedvehicleid(null);
                         </CCol>
                         <CCol md={6}>
                             <div className='modalstatus'>
+                                {bookingById.isCab && (
+                                  <>
+                                    <p><strong>Pick-Up Location:</strong> {bookingById.pickUpLocation || 'N/A'}</p>
+                                    <p><strong>Drop-Off Location:</strong> {bookingById.dropOffLocation || 'N/A'}</p>
+                                    <p><strong>Requested Car Model:</strong> {bookingById.carname || 'N/A'}</p>
+                                    <p><strong>Est. Distance:</strong> {bookingById.distance || 'N/A'}</p>
+                                    <hr className='my-2'/>
+                                  </>
+                                )}
                                 {/* <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
                                 <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
                                 <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
@@ -599,6 +707,10 @@ setSelectedvehicleid(null);
                 </CModalBody>
 
                 <CModalFooter>
+                    {bookingById?.status === 5 && bookingById?.isCab && bookingById?.pickUpLat && (
+                      <CButton color="info" className="text-white" onClick={() => setMapModalVisible(true)}> Assign via Map </CButton>
+                    )}
+                    <CButton color="secondary" onClick={() => setModalVisible(false)}>Close</CButton>
                     <CButton color="success" onClick={handleOpenUpdateForm}>Update</CButton>
                 </CModalFooter>
           </CModal>
@@ -608,8 +720,8 @@ setSelectedvehicleid(null);
 
       {/* Update Booking Modal */}
         {updateModalVisible && (
-          <CModal visible={updateModalVisible} onClose={() => setUpdateModalVisible(false)} size="lg">
-            <CModalHeader>
+          <CModal backdrop="static" visible={updateModalVisible} onClose={() => setUpdateModalVisible(false)} size="lg">
+            <CModalHeader closeButton>
               <CModalTitle>Update Booking</CModalTitle>
             </CModalHeader>
             <CModalBody>
@@ -679,8 +791,76 @@ setSelectedvehicleid(null);
                     <CFormLabel>Transaction ID</CFormLabel>
                     <CFormInput
                       type="text"
-                      value={updateBookingData.Transactionid}
+                      value={updateBookingData.Transactionid || ''}
+                      onChange={(e) => setUpdateBookingData({ ...updateBookingData, Transactionid: e.target.value })}
                     />
+                  </CCol>
+                </CRow>
+                {updateBookingData.isCab && (
+                  <>
+                    <CRow className="mb-3">
+                      <CCol>
+                        <CFormLabel>Pick-Up Location</CFormLabel>
+                        <CFormInput type="text" value={updateBookingData.pickUpLocation} readOnly disabled />
+                      </CCol>
+                    </CRow>
+                    <CRow className="mb-3">
+                      <CCol>
+                        <CFormLabel>Drop-Off Location</CFormLabel>
+                        <CFormInput type="text" value={updateBookingData.dropOffLocation} readOnly disabled />
+                      </CCol>
+                    </CRow>
+                    <CRow className="mb-3">
+                      <CCol>
+                        <CFormLabel>Requested Car Model</CFormLabel>
+                        <CFormInput type="text" value={updateBookingData.carname} readOnly disabled />
+                      </CCol>
+                      <CCol>
+                        <CFormLabel>Est. Distance</CFormLabel>
+                        <CFormInput type="text" value={updateBookingData.distance} readOnly disabled />
+                      </CCol>
+                    </CRow>
+                  </>
+                )}
+                <CRow className="mb-3">
+                  <CCol>
+                    <CFormLabel>Assign Cab (Vehicle ID)</CFormLabel>
+                    <CFormSelect
+                      value={updateBookingData.vehicleid || ''}
+                      onChange={(e) => setUpdateBookingData({ ...updateBookingData, vehicleid: e.target.value })}
+                    >
+                      <option value="">Select a Cab...</option>
+                      {cabs.map(cab => (
+                        <option key={cab.vehicleid} value={cab.vehicleid}>
+                          {cab.brand} {cab.variant} ({cab.Vehicle?.Rcnumber || 'No RC'})
+                        </option>
+                      ))}
+                    </CFormSelect>
+                  </CCol>
+                </CRow>
+                <CRow className="mb-3">
+                  <CCol>
+                    <CFormLabel>Assign Driver</CFormLabel>
+                    <CFormSelect
+                      value={updateBookingData.driverid || ''}
+                      onChange={(e) => {
+                         const selectedDriverId = e.target.value;
+                         const associatedCab = cabs.find(cab => String(cab.driverId || cab.driverid) === String(selectedDriverId));
+                         setUpdateBookingData({ 
+                             ...updateBookingData, 
+                             driverid: selectedDriverId,
+                             vehicleid: associatedCab ? associatedCab.vehicleid : updateBookingData.vehicleid,
+                             status: 1 // Auto-progress Cab status to 'Upcoming' (Accepted) on Driver Assignment
+                         });
+                      }}
+                    >
+                      <option value="">Select a Driver...</option>
+                      {drivers.map(driver => (
+                        <option key={driver.id} value={driver.id}>
+                          {driver.DriverAdditional?.FullName || driver.name || 'Unknown'} (Ph: {driver.User?.phone || 'N/A'})
+                        </option>
+                      ))}
+                    </CFormSelect>
                   </CCol>
                 </CRow>
                 <CRow className="mb-3">
@@ -726,10 +906,46 @@ setSelectedvehicleid(null);
               </CForm>
             </CModalBody>
             <CModalFooter>
+              <CButton color="secondary" onClick={() => setUpdateModalVisible(false)}>Close</CButton>
+              {bookingById?.status === 5 && bookingById?.isCab && bookingById?.pickUpLat && (
+                <CButton color="info" className="text-white" onClick={() => setMapModalVisible(true)}> Assign via Map </CButton>
+              )}
               <CButton color="primary" onClick={handleUpdateBooking}>Save changes</CButton>
             </CModalFooter>
           </CModal>
         )}
+
+      {/* Map Assignment Modal */}
+      {mapModalVisible && isLoaded && (
+        <CModal backdrop="static" visible={mapModalVisible} onClose={() => { setMapModalVisible(false); setActiveDriverWindow(null); }} size="xl">
+          <CModalHeader closeButton><CModalTitle>Assign Online Driver via Map</CModalTitle></CModalHeader>
+          <CModalBody style={{ height: '600px', padding: 0 }}>
+            <GoogleMap mapContainerStyle={{ width: '100%', height: '100%' }} zoom={12} center={bookingById?.pickUpLat ? { lat: parseFloat(bookingById.pickUpLat), lng: parseFloat(bookingById.pickUpLng) } : defaultCenter}>
+              {bookingById?.pickUpLat && (
+                <Marker position={{ lat: parseFloat(bookingById.pickUpLat), lng: parseFloat(bookingById.pickUpLng) }} icon={{ url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png" }} title="Pickup Location" />
+              )}
+              {drivers.filter(d => Boolean(d.isActive) && d.latitude !== null).map((driver) => {
+                const dist = calculateDistance(bookingById?.pickUpLat, bookingById?.pickUpLng, driver.latitude, driver.longitude);
+                return (
+                  <Marker key={driver.id} position={{ lat: parseFloat(driver.latitude), lng: parseFloat(driver.longitude) }} icon={{ url: "https://maps.google.com/mapfiles/kml/shapes/cabs.png", scaledSize: new window.google.maps.Size(32, 32) }} onClick={() => setActiveDriverWindow(driver.id)}>
+                    {activeDriverWindow === driver.id && (
+                      <InfoWindow onCloseClick={() => setActiveDriverWindow(null)}>
+                        <div style={{ color: 'black', padding: '5px' }}>
+                          <h6 className='m-0 p-0 mb-1 fw-bold'>{driver.name || 'Unknown Driver'}</h6>
+                          <p className='m-0 p-0 text-muted'>Distance: {dist ? dist + ' km' : 'Unknown'}</p>
+                          <CButton size="sm" color="info" className="text-white mt-2 w-100" onClick={() => handleAssignDriver(driver.id)}>
+                            Assign
+                          </CButton>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </Marker>
+                );
+              })}
+            </GoogleMap>
+          </CModalBody>
+        </CModal>
+      )}
 
     </>
   );

@@ -20,7 +20,11 @@ export const createBlog = async (formData) => {
 
 export const getBlog = async() => {
     try{
-        const response = await axios.get(`${apiUrl}admin/getallblogs`, );
+        const response = await axios.get(`${apiUrl}admin/getAllBlogs`, {
+            headers: {
+                'token': token,
+            },
+        });
         return response.data;
     } catch(error){
         throw error;

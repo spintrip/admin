@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getPricing , autovehiclePricing , manualvehiclePricing } from '../../../api/pricing';
+import axios from 'axios';
+import serverApiUrl from '../../../env';
 import DocsExample from '../../../components/DocsExample';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -69,10 +71,10 @@ const columns = [
   },
   {
     name: 'Cost per Hour',
-    selector: row => row.costperhr? '₹ '+row.costperhr.toFixed(2) : null, // Replace with the actual key for Cost per Hour in your data
+    selector: row => row.costperhr ? 'Rs. ' + Number(row.costperhr).toFixed(2) : null, // Replace with the actual key for Cost per Hour in your data
     sortable: true,
     col: row => {
-      return <div>₹ {row.costperhr}</div>
+      return <div>Rs. {row.costperhr}</div>
     }
   },
   {
@@ -88,6 +90,21 @@ const columns = [
     cell: row => new Date(row.updatedAt).toLocaleString(), // Display as a formatted string
   },
 ];
+
+const cabRateColumns = [
+  { name: 'City', selector: row => row.city || '--', sortable: true },
+  { name: 'Cab Type', selector: row => row.cabType || '--', sortable: true },
+  { name: 'Airport T.', selector: row => row.airportTransferPrice ? 'Rs. ' + row.airportTransferPrice : 'N/A' },
+  { name: 'Half Day', selector: row => row.halfDayPrice ? 'Rs. ' + row.halfDayPrice : 'N/A' },
+  { name: 'Full Day', selector: row => row.fullDayPrice ? 'Rs. ' + row.fullDayPrice : 'N/A' },
+  { name: 'Extra Hr', selector: row => row.extraHourRate ? 'Rs. ' + row.extraHourRate : 'N/A' },
+  { name: 'Extra Km', selector: row => row.extraKmRate ? 'Rs. ' + row.extraKmRate : 'N/A' },
+  { name: 'Outstation', selector: row => row.outstationPerKmPrice ? 'Rs. ' + row.outstationPerKmPrice : 'N/A' },
+  { name: 'D/A', selector: row => row.driverAllowancePerDay ? 'Rs. ' + row.driverAllowancePerDay : 'N/A' },
+  { name: 'Toll (Rs. )', selector: row => row.tollCharges ? 'Rs. ' + row.tollCharges : 'Rs. 0' },
+  { name: 'Surge', selector: row => row.surgeMultiplier ? row.surgeMultiplier + 'x' : '1x' },
+  { name: 'Offers', selector: row => row.offers ? row.offers : '--' },
+];
 const Pricing = () => {
   const [pricingData, setPricingData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -101,9 +118,21 @@ const Pricing = () => {
   const [updatedManualData , setUpdatedManualData] = useState({ vehicleid : '' , costperhr: ''});
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  
+  // Cab Admin Cab Rate States
+  const [cabRates, setCabRates] = useState([]);
+  const [cabTypes, setCabTypes] = useState([]); // Dynamic vehicle types
+  const [showAddRateModal, setShowAddRateModal] = useState(false);
+  const [rateForm, setRateForm] = useState({
+    city: '', cabType: '', airportTransferPrice: '', halfDayPrice: '', fullDayPrice: '', extraHourRate: '', extraKmRate: '', outstationPerKmPrice: '', driverAllowancePerDay: '', hostId: '', surgeMultiplier: '1.0', tollCharges: '0', offers: ''
+  });
+  const [submittingRate, setSubmittingRate] = useState(false);
+
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
+  const role = localStorage.getItem('adminRole') || 'SUPER_ADMIN';
+  const adminId = localStorage.getItem('adminuser_id'); // Ensure this is set on login for host associations
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -114,6 +143,22 @@ const Pricing = () => {
     try {
       const data = await getPricing();
       setPricingData(data);
+      if (role === 'cabadmin' || role === 'SUPER_ADMIN') {
+        const rateData = await axios.get(`${serverApiUrl}admin/crud/hostcabratecard`, { headers: { token } });
+        setCabRates(rateData.data?.data || []);
+        
+        try {
+          const typeData = await axios.get(`${serverApiUrl}admin/vehicle-types`, { headers: { token } });
+          const types = typeData.data?.data || typeData.data || [];
+          setCabTypes(types);
+          // Set default dropdown value if items exist
+          if (types.length > 0) {
+            setRateForm(prev => ({ ...prev, cabType: types[0].name || types[0].type || types[0] }));
+          }
+        } catch (e) {
+          console.error("Failed to load cab types", e);
+        }
+      }
     } catch (error) {
       console.log(error);
     }
@@ -203,6 +248,24 @@ const Pricing = () => {
     { label: 'Update Date', value: 'updatedAt' },
   ];
 
+  const handleAddCabRate = async () => {
+    setSubmittingRate(true);
+    try {
+      await axios.post(`${serverApiUrl}admin/crud/hostcabratecard`, {
+        ...rateForm,
+        hostId: adminId || 'unknown' // Use hostId or fallback
+      }, { headers: { token } });
+      setShowAddRateModal(false);
+      setRateForm({ city: '', cabType: cabTypes.length > 0 ? (cabTypes[0].name || cabTypes[0].type || cabTypes[0]) : '', airportTransferPrice: '', halfDayPrice: '', fullDayPrice: '', extraHourRate: '', extraKmRate: '', outstationPerKmPrice: '', driverAllowancePerDay: '', hostId: '', surgeMultiplier: '1.0', tollCharges: '0', offers: '' });
+      fetchData(); // Refresh rate table
+    } catch (err) {
+      console.error(err);
+      alert('Error saving rate card');
+    } finally {
+      setSubmittingRate(false);
+    }
+  };
+
   return (
     <>
       <div className='container-fluid px-4 d-flex align-items-center justify-content-end'>
@@ -230,6 +293,25 @@ const Pricing = () => {
           </CInputGroup>
         </div>
       </div>
+      
+      {(role === 'SUPER_ADMIN' || role === 'cabadmin') && (
+        <div className='container-fluid h-fit-content mt-4 '>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h4 className="text-white">Chauffeur Driver Rates</h4>
+            <CButton color="primary" onClick={() => setShowAddRateModal(true)}>+ Add Rate Card</CButton>
+          </div>
+          <DataTable
+            columns={cabRateColumns}
+            data={cabRates}
+            customStyles={customStyles}
+            responsive={true}
+            highlightOnHover={true}
+            pointerOnHover={true}
+          />
+        </div>
+      )}
+
+      {role === 'SUPER_ADMIN' && (
       <div className='container-fluid h-fit-content mt-4 '>
       <DataTable
                   columns={columns}
@@ -243,6 +325,7 @@ const Pricing = () => {
                   onRowClicked={(vehicle)=>handlePricing(vehicle)}
           />
           </div>
+      )}
 
           <CModal visible={showPricingModal} onClose={() => setShowPricingModal(false)} className="custom-modal">
             <CModalHeader className="modal-header-styled">Pricing</CModalHeader>
@@ -284,7 +367,7 @@ const Pricing = () => {
                   <div className="received-data-container">
                     <p><strong>Message:</strong> {updatedAutoData.message}</p>
                     <p><strong>vehicle Id:</strong> {updatedAutoData.vehicleid}</p>
-                    <p><strong>Cost per Hour:</strong> ₹{updatedAutoData.costperhr}</p>
+                    <p><strong>Cost per Hour:</strong> Rs. {updatedAutoData.costperhr}</p>
                   </div>
                 )}
             </CModalBody>
@@ -320,6 +403,63 @@ const Pricing = () => {
           <CModalFooter className="modal-footer-styled">
             <CButton color="secondary" onClick={() => setShowManualModal(false)}>Close</CButton>
             <CButton color="primary" onClick={handleManualPricing}>Update</CButton>
+          </CModalFooter>
+        </CModal>
+
+        <CModal visible={showAddRateModal} onClose={() => setShowAddRateModal(false)} size="lg">
+          <CModalHeader>
+            <h5>Add Chauffeur Rate Card</h5>
+          </CModalHeader>
+          <CModalBody>
+            <CForm className="row g-3">
+              <div className="col-md-6">
+                <CFormInput label="City" placeholder="Mumbai/Delhi/Bangalore" value={rateForm.city} onChange={e => setRateForm({...rateForm, city: e.target.value})} />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">Cab Type</label>
+                <select className="form-select" value={rateForm.cabType} onChange={e => setRateForm({...rateForm, cabType: e.target.value})}>
+                  {cabTypes.length === 0 && <option value="">Loading types...</option>}
+                  {cabTypes.map((type, idx) => {
+                    const typeName = type.name || type.type || type.vehicleType || type;
+                    return <option key={idx} value={typeName}>{typeName}</option>;
+                  })}
+                </select>
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Airport Transfer (Rs. )" value={rateForm.airportTransferPrice} onChange={e => setRateForm({...rateForm, airportTransferPrice: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Half Day (4Hrs/40Kms)" value={rateForm.halfDayPrice} onChange={e => setRateForm({...rateForm, halfDayPrice: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Full Day (8Hrs/80Kms)" value={rateForm.fullDayPrice} onChange={e => setRateForm({...rateForm, fullDayPrice: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Extra Hours (Rs. )" value={rateForm.extraHourRate} onChange={e => setRateForm({...rateForm, extraHourRate: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Extra KMs (Rs. )" value={rateForm.extraKmRate} onChange={e => setRateForm({...rateForm, extraKmRate: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Outstation (Rs. per Km)" value={rateForm.outstationPerKmPrice} onChange={e => setRateForm({...rateForm, outstationPerKmPrice: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="D/A (Driver Allowance)" value={rateForm.driverAllowancePerDay} onChange={e => setRateForm({...rateForm, driverAllowancePerDay: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" step="0.1" label="Surge Multiplier (x)" value={rateForm.surgeMultiplier} onChange={e => setRateForm({...rateForm, surgeMultiplier: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="number" label="Toll Charges (Rs. )" value={rateForm.tollCharges} onChange={e => setRateForm({...rateForm, tollCharges: e.target.value})} />
+              </div>
+              <div className="col-md-4">
+                <CFormInput type="text" label="Offers (Promos/Deals)" value={rateForm.offers} onChange={e => setRateForm({...rateForm, offers: e.target.value})} />
+              </div>
+            </CForm>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={() => setShowAddRateModal(false)}>Cancel</CButton>
+            <CButton color="primary" onClick={handleAddCabRate} disabled={submittingRate}>{submittingRate ? 'Saving...' : 'Save Rate Card'}</CButton>
           </CModalFooter>
         </CModal>
     </>

@@ -1,10 +1,23 @@
-import React, { useEffect, useRef } from 'react'
-
+import React, { useEffect, useRef, useState } from 'react'
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
+import { getBooking } from '../../api/booking'
 
 const MainChart = () => {
   const chartRef = useRef(null)
+  const [bookingData, setBookingData] = useState([])
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const bookings = await getBooking()
+        setBookingData(bookings || [])
+      } catch (error) {
+        console.error('Error fetching bookings for chart:', error)
+      }
+    }
+    fetchBookings()
+  }, [])
 
   useEffect(() => {
     document.documentElement.addEventListener('ColorSchemeChange', () => {
@@ -26,7 +39,29 @@ const MainChart = () => {
     })
   }, [chartRef])
 
-  const random = () => Math.round(Math.random() * 100)
+  const generateChartData = () => {
+    const dates = []
+    const counts = [0, 0, 0, 0, 0, 0, 0]
+    const today = new Date()
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      dates.push(d.toLocaleString('default', { month: 'long' }))
+    }
+
+    if (bookingData && bookingData.length > 0) {
+      bookingData.forEach(booking => {
+        const d = booking.createdAt ? new Date(booking.createdAt) : new Date(0)
+        const monthDiff = (today.getFullYear() - d.getFullYear()) * 12 + today.getMonth() - d.getMonth()
+        if (monthDiff >= 0 && monthDiff <= 6) {
+          counts[6 - monthDiff] += 1
+        }
+      })
+    }
+    return { dates, counts }
+  }
+
+  const { dates, counts } = generateChartData()
 
   return (
     <>
@@ -34,49 +69,16 @@ const MainChart = () => {
         ref={chartRef}
         style={{ height: '300px', marginTop: '40px' }}
         data={{
-          labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+          labels: dates,
           datasets: [
             {
-              label: 'My First dataset',
+              label: 'Total Bookings',
               backgroundColor: `rgba(${getStyle('--cui-info-rgb')}, .1)`,
               borderColor: getStyle('--cui-info'),
               pointHoverBackgroundColor: getStyle('--cui-info'),
               borderWidth: 2,
-              data: [
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-              ],
+              data: counts,
               fill: true,
-            },
-            {
-              label: 'My Second dataset',
-              backgroundColor: 'transparent',
-              borderColor: getStyle('--cui-success'),
-              pointHoverBackgroundColor: getStyle('--cui-success'),
-              borderWidth: 2,
-              data: [
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-              ],
-            },
-            {
-              label: 'My Third dataset',
-              backgroundColor: 'transparent',
-              borderColor: getStyle('--cui-danger'),
-              pointHoverBackgroundColor: getStyle('--cui-danger'),
-              borderWidth: 1,
-              borderDash: [8, 5],
-              data: [65, 65, 65, 65, 65, 65, 65],
             },
           ],
         }}
@@ -105,11 +107,9 @@ const MainChart = () => {
               grid: {
                 color: getStyle('--cui-border-color-translucent'),
               },
-              max: 250,
               ticks: {
                 color: getStyle('--cui-body-color'),
                 maxTicksLimit: 5,
-                stepSize: Math.ceil(250 / 5),
               },
             },
           },

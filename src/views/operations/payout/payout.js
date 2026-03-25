@@ -22,11 +22,13 @@ import {
     CForm,
     CFormLabel,
     CFormSelect,
-    CImage
+    CImage,
+    CAccordion, CAccordionItem, CAccordionHeader, CAccordionBody
 }
 from '@coreui/react';
 import { getBooking, fetchBookingById, } from '../../../api/booking';
 import { sendPayout } from '../../../api/transaction';
+import { getAllWithdrawals, approveWithdrawal, rejectWithdrawal } from '../../../api/withdrawal';
 
 const customStyles = {
     header: {
@@ -148,6 +150,8 @@ const customStyles = {
 function payout() {
     const token = localStorage.getItem('adminToken');
     const [userData, setUsersData] = useState([]);
+    const [withdrawalsData, setWithdrawalsData] = useState([]);
+    const [withdrawalLoadingId, setWithdrawalLoadingId] = useState(null);
     const [hostData, setHostData] = useState([]);
     const [vehicleData, setvehicleData] = useState([]);
     const [filteredvehicleData, setFilteredvehicleData] = useState([])
@@ -211,13 +215,6 @@ function payout() {
       
       const getCurrentDateTime = () => formatDate(new Date());
 
-    const filterHosts = (userData, hostData) => {
-        const hostIds = new Set(hostData.map((host) => host.id));
-        const filteredHostData = userData.filter((user) => hostIds.has(user.id));
-        return filteredHostData;
-    };
-
-
     const fetchData = useCallback(async () => {
         if (!token) {
           console.log('No token Found');
@@ -226,14 +223,9 @@ function payout() {
         }
         try {
           const hosts = await fetchHosts();
-          const users = await fetchUsers();
-    
           setHostData(hosts);
-          setUsersData(users);
-    
-          const filteredHosts = filterHosts(users, hosts);
-          // console.log('Filtered Hosts', filteredHosts);
-          setFilteredData(filteredHosts);
+          // With the new backend logic, hosts securely contains HostAdditional metadata natively
+          setFilteredData(hosts);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -256,7 +248,54 @@ function payout() {
 
     useEffect(() => {
       fetchData();
+      fetchWithdrawals();
     }, []);
+
+    const fetchWithdrawals = async () => {
+      try {
+        const data = await getAllWithdrawals();
+        setWithdrawalsData(data?.data || data || []);
+      } catch (error) {
+         console.error('Error fetching driver withdrawals:', error);
+      }
+    };
+
+    const handleWithdrawalAction = async (id, action) => {
+      setWithdrawalLoadingId(id);
+      try {
+        if(action === 'approve') await approveWithdrawal(id);
+        if(action === 'reject') await rejectWithdrawal(id);
+        fetchWithdrawals(); 
+      } catch (error) {
+        alert("Failed to " + action + " withdrawal.");
+      }
+      setWithdrawalLoadingId(null);
+    };
+
+    const withdrawalColumns = [
+      { name: 'Withdrawal ID', selector: row => row.id, sortable: true },
+      { name: 'Driver ID', selector: row => row.driverId, sortable: true },
+      { name: 'Amount', selector: row => "Rs. " + row.amount, sortable: true },
+      { name: 'Status', selector: row => row.status, sortable: true },
+      { name: 'Requested At', selector: row => new Date(row.createdAt).toLocaleString(), sortable: true },
+      {
+        name: 'Actions',
+        cell: row => (
+          <div className="d-flex gap-2 my-2">
+            {row.status === 'pending' ? (
+              withdrawalLoadingId === row.id ? <span>Processing...</span> : (
+                <>
+                  <CButton color="success" size="sm" className="text-white" onClick={() => handleWithdrawalAction(row.id, 'approve')}>Approve</CButton>
+                  <CButton color="danger" size="sm" className="text-white" onClick={() => handleWithdrawalAction(row.id, 'reject')}>Reject</CButton>
+                </>
+              )
+            ) : (
+              <span className={`fw-bold ${row.status === 'approved' ? 'text-success' : 'text-danger'}`}>{row.status.toUpperCase()}</span>
+            )}
+          </div>
+        )
+      }
+    ];
 
 
     const fetchvehicleData = useCallback(async () => {
@@ -355,18 +394,39 @@ function payout() {
   console.log('bookings', bookingData)
   return (
     <div className='container-fluid'>
-        <h1>Payout</h1>
-        <DataTable
-                  
-                  columns={columns}
-                  data={filteredData}
+        <h1>Payout Management</h1>
+        <CAccordion alwaysOpen activeItemKey={1}>
+          <CAccordionItem itemKey={1}>
+            <CAccordionHeader>Host Booking Payouts</CAccordionHeader>
+            <CAccordionBody>
+              <DataTable
+                        columns={columns}
+                        data={filteredData}
+                        customStyles={customStyles}
+                        responsive={true}
+                        highlightOnHover={true}
+                        pointerOnHover={true}
+                        fixedHeader={true}
+                        onRowClicked={(host)=>handleHostById(host)}
+                />
+            </CAccordionBody>
+          </CAccordionItem>
+
+          <CAccordionItem itemKey={2}>
+            <CAccordionHeader>Driver Wallet Withdrawals</CAccordionHeader>
+            <CAccordionBody>
+               <DataTable
+                  columns={withdrawalColumns}
+                  data={withdrawalsData}
                   customStyles={customStyles}
                   responsive={true}
                   highlightOnHover={true}
                   pointerOnHover={true}
                   fixedHeader={true}
-                  onRowClicked={(host)=>handleHostById(host)}
-          />
+               />
+            </CAccordionBody>
+          </CAccordionItem>
+        </CAccordion>
         
         <CModal visible={modalVisible} onClose={handlePayoutClose} size="xl" scrollable alignment='center'>
             <CModalHeader>
@@ -414,13 +474,13 @@ function payout() {
                             <div key={index} className='row w-100'>
                               <div className='col'>{booking.Bookingid}</div>
                               
-                              <div className='col d-flex align-items-center justify-content-end' style={{fontWeight: '600'}}>+ ₹{String(booking.totalHostAmount)}</div>
+                              <div className='col d-flex align-items-center justify-content-end' style={{fontWeight: '600'}}>+ Rs. {String(booking.totalHostAmount)}</div>
                               <hr className='opacity-50'/>
                             </div>
                           );
                         })}
                         <div className='w-100'>
-                        <h2 className='w-100 d-flex align-items-center justify-content-end' style={{fontWeight: '700'}}>₹{totalHostAmt.toFixed(2)}</h2>
+                        <h2 className='w-100 d-flex align-items-center justify-content-end' style={{fontWeight: '700'}}>Rs. {totalHostAmt.toFixed(2)}</h2>
                         </div>
                    </>
                    :<></>

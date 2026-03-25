@@ -17,7 +17,8 @@ import {
   CAccordionItem,
   CAccordionHeader,
   CAccordionBody,
-  CFooter
+  CFooter,
+  CFormCheck
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUsers } from '../../../api/user';
@@ -117,6 +118,8 @@ const Notification = () => {
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [searchHostQuery, setSearchHostQuery] = useState('');
   const [activeAccordionKey, setActiveAccordionKey] = useState(1);
+  const [targetType, setTargetType] = useState('all_users');
+  const [receiverType, setReceiverType] = useState('user');
 
   
   const fetchUserData = useCallback(async() =>{
@@ -201,18 +204,41 @@ const handleHostProceed = () => {
         navigate('/login')
      }
      try{
-      const trimmedData = notificationFormValues;
-      const data = await sendNotification(trimmedData);
+      let trimmedData = { ...notificationFormValues };
+      let finalUserIds = [];
+      if (targetType === 'all_users') {
+          finalUserIds = ['all'];
+          trimmedData.receiverType = 'user';
+      } else if (targetType === 'all_hosts') {
+          finalUserIds = ['all'];
+          trimmedData.receiverType = 'driver';
+      } else {
+          if (typeof notificationFormValues.userIds === 'string') {
+              finalUserIds = notificationFormValues.userIds.split(',').map(id => id.trim()).filter(id => id);
+          } else if (Array.isArray(notificationFormValues.userIds)) {
+              finalUserIds = notificationFormValues.userIds;
+          }
+          trimmedData.receiverType = receiverType;
+      }
+
+      const apiPayload = {
+          receiverIds: finalUserIds,
+          receiverType: trimmedData.receiverType,
+          text: notificationFormValues.message,
+          title: notificationFormValues.subject
+      };
+
+      const data = await sendNotification(apiPayload);
       console.log(data);
       setSendConfirmModal(false);
       setSendError(null);
       setActiveAccordionKey(null);
      } catch (error) {
-      setSendError(error.message);
+      setSendError(error.message || "Failed to push notification");
      }
      setisLoading(false);
      
-  }, [token , navigate, notificationFormValues]);
+  }, [token , navigate, notificationFormValues, targetType, receiverType]);
 
 
   const addSelectedBooking = ({ selectedRows }) => {
@@ -252,26 +278,44 @@ const handleHostProceed = () => {
                     <CFormLabel className='me-3'>Message</CFormLabel>
                     <CFormInput type="text" name="message" value={notificationFormValues.message} onChange={handleNotificationInputChange} required />
                     </CInputGroup>
-                    <CInputGroup className="mb-3">
-                    <CFormLabel className='me-3'>User Ids</CFormLabel>
-                    <CFormInput type="text" name="userIds" value={notificationFormValues.userIds} onChange={handleNotificationInputChange} required />
+                    <CInputGroup className="mb-3 d-flex flex-column">
+                      <CFormLabel className="me-3 fw-bold">Target Audience</CFormLabel>
+                      <div className="d-flex gap-4 mt-2">
+                        <CFormCheck 
+                          type="radio" name="targetAudience" id="targetAllUsers" label="All Users" 
+                          checked={targetType === 'all_users'} onChange={() => { setTargetType('all_users'); setReceiverType('user'); }} 
+                        />
+                        <CFormCheck 
+                          type="radio" name="targetAudience" id="targetAllHosts" label="All Hosts/Drivers" 
+                          checked={targetType === 'all_hosts'} onChange={() => { setTargetType('all_hosts'); setReceiverType('driver'); }} 
+                        />
+                        <CFormCheck 
+                          type="radio" name="targetAudience" id="targetSpecific" label="Specific Accounts" 
+                          checked={targetType === 'specific'} onChange={() => setTargetType('specific')} 
+                        />
+                      </div>
                     </CInputGroup>
-                    <CFooter className='mt-3'>
-                        <div>
-                            {isLoading ? (
-                                    <div> Loading..</div>
-                                ) : (
-                                    <CButton color="secondary" onClick={() => handleUserModal()}>Set all Users</CButton>
+
+                    {targetType === 'specific' && (
+                      <>
+                        <CInputGroup className="mb-3">
+                          <CFormLabel className='me-3'>Account IDs (comma separated)</CFormLabel>
+                          <CFormInput type="text" name="userIds" value={notificationFormValues.userIds} onChange={handleNotificationInputChange} required />
+                        </CInputGroup>
+                        <CFooter className='mt-3 gap-3 d-flex'>
+                            <div>
+                                {isLoading ? ( <div> Loading..</div> ) : (
+                                    <CButton color="secondary" onClick={() => { setReceiverType('user'); handleUserModal(); }}>Select Users Grid</CButton>
                                 )}
                             </div>
                             <div>
-                                {isHostLoading ? (
-                                    <div> Loading..</div>
-                                ) : (
-                                    <CButton color="primary" type="submit" onClick={() => handleHostModal()}y>Set all Hosts</CButton>
+                                {isHostLoading ? ( <div> Loading..</div> ) : (
+                                    <CButton color="info" className="text-white" onClick={() => { setReceiverType('driver'); handleHostModal(); }}>Select Hosts Grid</CButton>
                                 )}
-                        </div>
-                    </CFooter>
+                            </div>
+                        </CFooter>
+                      </>
+                    )}
                     <hr/>
                     <div className='d-flex align-items-center justify-content-end'>
                         <CButton color="primary" onClick={handleSendConfirm} disabled={!notificationFormValues.subject || !notificationFormValues.message}>Send</CButton>

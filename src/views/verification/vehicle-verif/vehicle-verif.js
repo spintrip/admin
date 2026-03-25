@@ -233,6 +233,11 @@ const vehicleProfiles = () => {
                       <span className="verification-confirmed">Confirmed</span>
                       <code className="verification-code verification-confirmed">Code-2</code>
                     </>
+                  ) : profile.verification_status === 0 ? (
+                    <>
+                      <span className="verification-na" style={{color: 'red'}}>Not Verified</span>
+                      <code className="verification-code verification-na">Code-0</code>
+                    </>
                   ) : profile.verification_status === null ? (
                     <>
                       <span className="verification-na">N/A</span>
@@ -245,8 +250,8 @@ const vehicleProfiles = () => {
                     </>
                   )}
                 </CTableDataCell>
-                <CTableDataCell>{profile.latitude.toFixed(6)}</CTableDataCell>
-                <CTableDataCell>{profile.longitude.toFixed(6)}</CTableDataCell>
+                <CTableDataCell>{profile.latitude ? Number(profile.latitude).toFixed(6) : 'N/A'}</CTableDataCell>
+                <CTableDataCell>{profile.longitude ? Number(profile.longitude).toFixed(6) : 'N/A'}</CTableDataCell>
                 <CTableDataCell>{new Date(profile.createdAt).toLocaleString()}</CTableDataCell>
                 <CTableDataCell>{new Date(profile.updatedAt).toLocaleString()}</CTableDataCell>
               </CTableRow>

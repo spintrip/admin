@@ -734,6 +734,11 @@ const handleUpdateUser = async (e) => {
                             <span style={{ color: 'green' }}> Confirmed </span>
                             <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
                           </>
+                        ) : userById.additionalInfo.verification_status === 0 ? (
+                          <>
+                            <span style={{ color: 'red' }}> Not Verified </span>
+                            <code className='p-2 border rounded' style={{ color: 'red' }}> Code-0</code>
+                          </>
                         ) : userById.additionalInfo.verification_status === null ? (
                           <>
                             <span style={{ color: 'red' }}> N/A </span>

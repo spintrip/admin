@@ -84,11 +84,7 @@ const columns = [
   //   selector: (row) => row.vehiclemodel, // Assuming 'vehicleModel' is the key in your data
   //   sortable: true,
   // },
-  {
-    name: 'Type',
-    selector: (row) => row.vehicletype, // Assuming 'type' is the key in your data
-    sortable: true,
-  },
+
   {
     name: 'Verification',
     selector: row => {
@@ -120,7 +116,7 @@ const columns = [
           className = "p-1 rounded border border-light text-black bg-white w-100 text-center";
       }
   
-      return <div key={row.id+row.additionalInfo.verification_status} className={className}>{statusText}</div>;
+      return <div key={row.id + (row.additionalInfo?.verification_status || '0')} className={className}>{statusText}</div>;
     },
   },
   {

@@ -113,19 +113,19 @@ const columns = [
     name: 'Amount',
     selector: (row) => row.amount, // Replace with the actual key for Amount in your data
     sortable: true,
-    cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.amount.toFixed(2)}</div>}
+    cell: (row) => {return <div style={{fontWeight: '700'}}>Rs. {row.amount.toFixed(2)}</div>}
   },
   {
     name: 'GST Amount',
     selector: (row) => row.gstAmount? row.gstAmount : '0', // Replace with the actual key for GST Amount in your data
     sortable: true,
-    cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.gstAmount? row.gstAmount.toFixed(2) : '0.00'}</div>}
+    cell: (row) => {return <div style={{fontWeight: '700'}}>Rs. {row.gstAmount? row.gstAmount.toFixed(2) : '0.00'}</div>}
   },
   {
     name: 'Total Amount',
     selector: (row) => row.totalAmount, // Replace with the actual key for Total Amount in your data
     sortable: true,
-    cell: (row) => {return <div style={{fontWeight: '700'}}>₹ {row.totalAmount.toFixed(2)}</div>}
+    cell: (row) => {return <div style={{fontWeight: '700'}}>Rs. {row.totalAmount.toFixed(2)}</div>}
   },
   {
     name: 'Created At',

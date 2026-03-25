@@ -21,6 +21,7 @@ const Drivers = React.lazy(() => import('./views/base/drivers/drivers'))
 const Cabs = React.lazy(() => import('./views/base/cabs/cabs'))
 const Feedbacks = React.lazy(() => import('./views/base/feedbacks/feedbacks'))
 const VehicleTypes = React.lazy(() => import('./views/base/vehicle-types/vehicle-types'))
+const CabRates = React.lazy(() => import('./views/base/cab-rates/CabRates'))
 
 //Verification
 const UserVerification = React.lazy(() => import('./views/verification/user-verif/user-verif'))
@@ -56,6 +57,7 @@ const routes = [
   { path: '/base/cabs', name: 'Cabs', element: Cabs },
   { path: '/base/feedbacks', name: 'Feedbacks', element: Feedbacks },
   { path: '/base/vehicle-types', name: 'Vehicle Types', element: VehicleTypes },
+  { path: '/base/cab-rates', name: 'Cab Rates', element: CabRates },
   { path: '/device', name: 'Device', element: Device },
   { path: '/verification/vehicle-verif', name: 'vehicleVerification', element: vehicleVerification },
   { path: '/verification/cab-verif', name: 'CabVerification', element: CabVerification },

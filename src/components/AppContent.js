@@ -6,11 +6,23 @@ import { CContainer, CSpinner } from '@coreui/react'
 import routes from '../routes'
 
 const AppContent = () => {
+  const roleRaw = localStorage.getItem('adminRole') || 'SUPER_ADMIN';
+  const role = roleRaw ? roleRaw.toUpperCase() : 'SUPER_ADMIN';
+
+  const cabAdminAllowedNames = [
+    'Home', 'Login', 'Dashboard', 
+    'Cabs', 'Drivers', 'Pricings', 'Bookings', 'Cab Rates'
+  ];
+
+  const filteredRoutes = (role === 'SUPER_ADMIN' || role === 'SUPERADMIN' || role === 'ADMIN')
+    ? routes 
+    : routes.filter(route => cabAdminAllowedNames.includes(route.name));
+
   return (
     <div className="" lg>
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
-          {routes.map((route, idx) => {
+          {filteredRoutes.map((route, idx) => {
             return (
               route.element && (
                 <Route
@@ -24,6 +36,7 @@ const AppContent = () => {
             )
           })}
           <Route path="/" element={<Navigate to="dashboard" replace />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </Suspense>
     </div>

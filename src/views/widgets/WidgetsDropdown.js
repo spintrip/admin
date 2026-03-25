@@ -9,32 +9,48 @@ import {
   CDropdownItem,
   CDropdownToggle,
   CWidgetStatsA,
+  CButton,
 } from '@coreui/react'
 import { getStyle } from '@coreui/utils'
 import { CChartBar, CChartLine } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
 import { cilArrowBottom, cilArrowTop, cilOptions } from '@coreui/icons';
 import { fetchUsers } from '../../api/user';
+import { getBooking } from '../../api/booking';
+import { fetchDrivers } from '../../api/driver';
+import { getTransaction } from '../../api/transaction';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, differenceInWeeks, differenceInMonths, differenceInYears } from 'date-fns';
 
 const WidgetsDropdown = (props) => {
   const widgetChartRef1 = useRef(null);
   const widgetChartRef2 = useRef(null);
-  const [userData , setUserData] = useState([]);
-  const [userPercentage , setUserPercentage] = useState('');
-  const [currentUserPeriod, setCurrentUserPeriod] = useState('week');
   const [timePeriod, setTimePeriod] = useState('week');
-  const [userIncrease, setUserIncrease] = useState(null);
 
-  console.log(userPercentage);
-  const fetchAllUsers = async() => {
-    const data = await fetchUsers();
-    setUserData(data);
-  }
+  const [userData, setUserData] = useState([]);
+  const [bookingData, setBookingData] = useState([]);
+  const [driverData, setDriverData] = useState([]);
+  const [transactionData, setTransactionData] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const [users, bookings, drivers, transactions] = await Promise.all([
+        fetchUsers(),
+        getBooking(),
+        fetchDrivers(),
+        getTransaction()
+      ]);
+      setUserData(users || []);
+      setBookingData(bookings || []);
+      setDriverData(drivers || []);
+      setTransactionData(transactions || []);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
 
   useEffect(() => {
-    fetchAllUsers();
-  }, [])
+    fetchData();
+  }, []);
 
   useEffect(() => {
     document.documentElement.addEventListener('ColorSchemeChange', () => {
@@ -55,19 +71,21 @@ const WidgetsDropdown = (props) => {
   }, [widgetChartRef1, widgetChartRef2]);
 
   const FormatTotal = (total) => {
-    return total >= 1000 ? (total/1000).toFixed(1) + 'k' : total;
-  }
+    return total >= 1000 ? (total / 1000).toFixed(1) + 'k' : total;
+  };
 
-  useEffect(() => {
-    filterBooking();
-  },[userData , timePeriod]);
+  const calculateMetrics = (dataArray, isSum = false, valueField = 'amount') => {
+    if (!dataArray || dataArray.length === 0) {
+      return { current: 0, percentage: '0%', increase: true };
+    }
 
-  const filterBooking = () => {
-    let sortedData = [...userData];
-    sortedData = sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
-    let currentStart, currentEnd, differenceFunction, previousData;
-  
+    let sortedData = [...dataArray].sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+      const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+      return dateB - dateA;
+    });
+
+    let currentStart, currentEnd, differenceFunction;
     if (timePeriod === 'week') {
       currentStart = startOfWeek(new Date());
       currentEnd = endOfWeek(new Date());
@@ -76,68 +94,85 @@ const WidgetsDropdown = (props) => {
       currentStart = startOfMonth(new Date());
       currentEnd = endOfMonth(new Date());
       differenceFunction = differenceInMonths;
-    } else if (timePeriod === 'year') {
+    } else {
       currentStart = startOfYear(new Date());
       currentEnd = endOfYear(new Date());
       differenceFunction = differenceInYears;
     }
-  
-    const currentPeriodData = sortedData.filter(
-      (user) => new Date(user.createdAt) >= currentStart && new Date(user.createdAt) <= currentEnd
-    );
-  
-    const currentPeriodCount = currentPeriodData.length;
-    setCurrentUserPeriod(currentPeriodCount);
-  
-    previousData = sortedData.filter(
-      (user) => new Date(user.createdAt) < currentStart
-    );
-  
-    const numberOfPreviousPeriods = differenceFunction(new Date(), previousData[previousData.length - 1]?.createdAt || new Date());
-  
-    const previousPeriodCount = previousData.length;
-    const averagePreviousPeriodsCount = numberOfPreviousPeriods ? (previousPeriodCount / numberOfPreviousPeriods) : 0;
-  
-    const percentageDifference = averagePreviousPeriodsCount === 0
-      ? currentPeriodCount > 0 
-        ?  currentPeriodCount + '%'
-        : '0%'
-      : (((currentPeriodCount - averagePreviousPeriodsCount) / averagePreviousPeriodsCount) * 100).toFixed(1) + '%';
-  
-    setUserPercentage(percentageDifference);
-    setUserIncrease(currentPeriodCount > averagePreviousPeriodsCount);
+
+    const currentPeriodData = sortedData.filter((item) => {
+      const itemDate = item.createdAt ? new Date(item.createdAt) : new Date(0);
+      return itemDate >= currentStart && itemDate <= currentEnd;
+    });
+
+    let currentVal = 0;
+    if (isSum) {
+      currentVal = currentPeriodData.reduce((acc, curr) => acc + (Number(curr[valueField]) || 0), 0);
+    } else {
+      currentVal = currentPeriodData.length;
+    }
+
+    const previousData = sortedData.filter((item) => {
+      const itemDate = item.createdAt ? new Date(item.createdAt) : new Date(0);
+      return itemDate < currentStart;
+    });
+
+    let previousValTotal = 0;
+    if (isSum) {
+      previousValTotal = previousData.reduce((acc, curr) => acc + (Number(curr[valueField]) || 0), 0);
+    } else {
+      previousValTotal = previousData.length;
+    }
+
+    const numberOfPreviousPeriods = previousData.length > 0 
+      ? differenceFunction(new Date(), previousData[previousData.length - 1]?.createdAt ? new Date(previousData[previousData.length - 1].createdAt) : new Date())
+      : 0;
+      
+    const avgPrev = numberOfPreviousPeriods > 0 ? (previousValTotal / numberOfPreviousPeriods) : 0;
+
+    let percentageDifference = '0.0%';
+    if (avgPrev === 0) {
+      percentageDifference = currentVal > 0 ? '100.0%' : '0.0%';
+    } else {
+      percentageDifference = (((currentVal - avgPrev) / avgPrev) * 100).toFixed(1) + '%';
+    }
+
+    return {
+      current: currentVal,
+      percentage: percentageDifference,
+      increase: currentVal >= avgPrev
+    };
   };
+
+  const roleRaw = localStorage.getItem('adminRole') || 'SUPER_ADMIN';
+  const role = roleRaw.toUpperCase();
+
+  const userMetrics = calculateMetrics(userData);
+  const bookingMetrics = calculateMetrics(bookingData);
+  const driverMetrics = calculateMetrics(driverData);
+  const transactionMetrics = calculateMetrics(transactionData, true, 'amount'); // Assuming 'amount' is the field
 
   return (
     <CRow className={props.className} xs={{ gutter: 4 }}>
+      {(role === 'SUPER_ADMIN' || role === 'SUPERADMIN' || role === 'ADMIN') && (
       <CCol sm={6} xl={4} xxl={3}>
-      <button onClick={() => setTimePeriod('week')}>This Week</button>
-    <button onClick={() => setTimePeriod('month')}>This Month</button>
-    <button onClick={() => setTimePeriod('year')}>This Year</button>
+        <div className="d-flex justify-content-end mb-2 gap-2">
+          <CButton color={timePeriod === 'week' ? 'primary' : 'secondary'} variant={timePeriod === 'week' ? '' : 'outline'} size="sm" onClick={() => setTimePeriod('week')}>Week</CButton>
+          <CButton color={timePeriod === 'month' ? 'primary' : 'secondary'} variant={timePeriod === 'month' ? '' : 'outline'} size="sm" onClick={() => setTimePeriod('month')}>Month</CButton>
+          <CButton color={timePeriod === 'year' ? 'primary' : 'secondary'} variant={timePeriod === 'year' ? '' : 'outline'} size="sm" onClick={() => setTimePeriod('year')}>Year</CButton>
+        </div>
         <CWidgetStatsA
+          className="mb-4 pb-0 widgets-dropdown"
           color="primary"
           value={
             <>
-              {FormatTotal(currentUserPeriod)}{' '}
+              {FormatTotal(userMetrics.current)}{' '}
               <span className="fs-6 fw-normal">
-                {userIncrease ? '+' : ''}{userPercentage} <CIcon icon={userIncrease ? cilArrowTop : cilArrowBottom} />
+                {userMetrics.increase ? '+' : ''}{userMetrics.percentage} <CIcon icon={userMetrics.increase ? cilArrowTop : cilArrowBottom} />
               </span>
             </>
           }
           title="Users"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" vehicleet={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
           chart={
             <CChartLine
               ref={widgetChartRef1}
@@ -203,31 +238,19 @@ const WidgetsDropdown = (props) => {
           }
         />
       </CCol>
+      )}
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="info"
           value={
             <>
-              $6.200{' '}
+              {FormatTotal(bookingMetrics.current)}{' '}
               <span className="fs-6 fw-normal">
-                (40.9% <CIcon icon={cilArrowTop} />)
+                ({bookingMetrics.increase ? '+' : ''}{bookingMetrics.percentage} <CIcon icon={bookingMetrics.increase ? cilArrowTop : cilArrowBottom} />)
               </span>
             </>
           }
-          title="Income"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" vehicleet={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
+          title="Active Bookings"
           chart={
             <CChartLine
               ref={widgetChartRef2}
@@ -297,26 +320,13 @@ const WidgetsDropdown = (props) => {
           color="warning"
           value={
             <>
-              2.49%{' '}
+              {FormatTotal(driverMetrics.current)}{' '}
               <span className="fs-6 fw-normal">
-                (84.7% <CIcon icon={cilArrowTop} />)
+                ({driverMetrics.increase ? '+' : ''}{driverMetrics.percentage} <CIcon icon={driverMetrics.increase ? cilArrowTop : cilArrowBottom} />)
               </span>
             </>
           }
-          title="Conversion Rate"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" vehicleet={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
+          title="Available Drivers"
           chart={
             <CChartLine
               className="mt-3"
@@ -369,26 +379,13 @@ const WidgetsDropdown = (props) => {
           color="danger"
           value={
             <>
-              44K{' '}
+              Rs. {FormatTotal(transactionMetrics.current)}{' '}
               <span className="fs-6 fw-normal">
-                (-23.6% <CIcon icon={cilArrowBottom} />)
+                ({transactionMetrics.increase ? '+' : ''}{transactionMetrics.percentage} <CIcon icon={transactionMetrics.increase ? cilArrowTop : cilArrowBottom} />)
               </span>
             </>
           }
-          title="Sessions"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" vehicleet={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
+          title="Total Income"
           chart={
             <CChartBar
               className="mt-3 mx-3"

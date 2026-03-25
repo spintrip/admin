@@ -1,1 +1,38 @@
 // Here you can add other styles
+
+.card {
+  border: none;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+.bg-primary {
+  background: linear-gradient(135deg, var(--cui-primary) 0%, #4a90e2 100%) !important;
+}
+
+.bg-info {
+  background: linear-gradient(135deg, var(--cui-info) 0%, #36d1dc 100%) !important;
+}
+
+.bg-warning {
+  background: linear-gradient(135deg, var(--cui-warning) 0%, #f6d365 100%) !important;
+}
+
+.bg-danger {
+  background: linear-gradient(135deg, var(--cui-danger) 0%, #ff6a00 100%) !important;
+}
+
+.progress-group-header {
+  font-weight: 600;
+  color: #495057;
+}
+
+.widgets-dropdown .card-body {
+  padding: 1.5rem;
+}

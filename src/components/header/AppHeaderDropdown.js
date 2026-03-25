@@ -55,15 +55,6 @@ const AppHeaderDropdown = () => {
             Login
           </CDropdownItem>
         )}
-        <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem href="#">
-          <CIcon icon={cilUser} className="me-2" />
-          Profile
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilSettings} className="me-2" />
-          Settings
-        </CDropdownItem>
         <CDropdownDivider />
       </CDropdownMenu>
     </CDropdown>

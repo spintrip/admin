@@ -21,161 +21,86 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
-  cibCcAmex,
-  cibCcApplePay,
-  cibCcMastercard,
-  cibCcPaypal,
-  cibCcStripe,
-  cibCcVisa,
-  cibGoogle,
-  cibFacebook,
-  cibLinkedin,
-  cifBr,
-  cifEs,
-  cifFr,
-  cifIn,
-  cifPl,
-  cifUs,
-  cibTwitter,
   cilCloudDownload,
   cilPeople,
   cilUser,
-  cilUserFemale,
 } from '@coreui/icons'
 
-import avatar1 from 'src/assets/images/avatars/1.jpg'
-import avatar2 from 'src/assets/images/avatars/2.jpg'
-import avatar3 from 'src/assets/images/avatars/3.jpg'
-import avatar4 from 'src/assets/images/avatars/4.jpg'
-import avatar5 from 'src/assets/images/avatars/5.jpg'
-import avatar6 from 'src/assets/images/avatars/6.jpg'
+import { getBooking, updateBooking } from '../../api/booking'
+import { fetchDrivers } from '../../api/driver'
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
+import { Google_Maps_Api_key } from '../../env'
+import { CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
 
-import WidgetsBrand from '../widgets/WidgetsBrand'
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return (R * c).toFixed(1);
+};
+
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
+import { fetchUsers } from '../../api/user'
 
 const Dashboard = () => {
-  const progressExample = [
-    { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
-    { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
-    { title: 'Pageviews', value: '78.706 Views', percent: 60, color: 'warning' },
-    { title: 'New Users', value: '22.123 Users', percent: 80, color: 'danger' },
-    { title: 'Bounce Rate', value: 'Average Rate', percent: 40.15, color: 'primary' },
-  ]
+  const [recentUsers, setRecentUsers] = React.useState([])
+  const role = localStorage.getItem('adminRole') || 'SUPER_ADMIN'
 
-  const progressGroupExample1 = [
-    { title: 'Monday', value1: 34, value2: 78 },
-    { title: 'Tuesday', value1: 56, value2: 94 },
-    { title: 'Wednesday', value1: 12, value2: 67 },
-    { title: 'Thursday', value1: 43, value2: 91 },
-    { title: 'Friday', value1: 22, value2: 73 },
-    { title: 'Saturday', value1: 53, value2: 82 },
-    { title: 'Sunday', value1: 9, value2: 69 },
-  ]
+  const [requestedBookings, setRequestedBookings] = React.useState([])
+  const [drivers, setDrivers] = React.useState([])
+  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: Google_Maps_Api_key })
+  const [mapModalVisible, setMapModalVisible] = React.useState(false)
+  const [activeDriverWindow, setActiveDriverWindow] = React.useState(null)
+  const [bookingById, setBookingById] = React.useState(null)
+  const defaultCenter = { lat: 20.5937, lng: 78.9629 }
 
-  const progressGroupExample2 = [
-    { title: 'Male', icon: cilUser, value: 53 },
-    { title: 'Female', icon: cilUserFemale, value: 43 },
-  ]
+  const fetchDashboardData = async () => {
+    try {
+      const [data, driversData] = await Promise.all([getBooking(), fetchDrivers()]);
+      setDrivers(driversData || []);
+      const pending = (data || []).filter(b => b.status === 5 && b.isCab);
+      pending.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setRequestedBookings(pending);
+    } catch (err) {
+      console.error('Dashboard Fetch Error', err);
+    }
+  }
 
-  const progressGroupExample3 = [
-    { title: 'Organic Search', icon: cibGoogle, percent: 56, value: '191,235' },
-    { title: 'Facebook', icon: cibFacebook, percent: 15, value: '51,223' },
-    { title: 'Twitter', icon: cibTwitter, percent: 11, value: '37,564' },
-    { title: 'LinkedIn', icon: cibLinkedin, percent: 8, value: '27,319' },
-  ]
+  React.useEffect(() => {
+    fetchDashboardData();
+  }, [])
 
-  const tableExample = [
-    {
-      avatar: { src: avatar1, status: 'success' },
-      user: {
-        name: 'Yiorgos Avraamu',
-        new: true,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'USA', flag: cifUs },
-      usage: {
-        value: 50,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'success',
-      },
-      payment: { name: 'Mastercard', icon: cibCcMastercard },
-      activity: '10 sec ago',
-    },
-    {
-      avatar: { src: avatar2, status: 'danger' },
-      user: {
-        name: 'Avram Tarasios',
-        new: false,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'Brazil', flag: cifBr },
-      usage: {
-        value: 22,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'info',
-      },
-      payment: { name: 'Visa', icon: cibCcVisa },
-      activity: '5 minutes ago',
-    },
-    {
-      avatar: { src: avatar3, status: 'warning' },
-      user: { name: 'Quintin Ed', new: true, registered: 'Jan 1, 2023' },
-      country: { name: 'India', flag: cifIn },
-      usage: {
-        value: 74,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'warning',
-      },
-      payment: { name: 'Stripe', icon: cibCcStripe },
-      activity: '1 hour ago',
-    },
-    {
-      avatar: { src: avatar4, status: 'secondary' },
-      user: { name: 'Enéas Kwadwo', new: true, registered: 'Jan 1, 2023' },
-      country: { name: 'France', flag: cifFr },
-      usage: {
-        value: 98,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'danger',
-      },
-      payment: { name: 'PayPal', icon: cibCcPaypal },
-      activity: 'Last month',
-    },
-    {
-      avatar: { src: avatar5, status: 'success' },
-      user: {
-        name: 'Agapetus Tadeáš',
-        new: true,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'Spain', flag: cifEs },
-      usage: {
-        value: 22,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'primary',
-      },
-      payment: { name: 'Google Wallet', icon: cibCcApplePay },
-      activity: 'Last week',
-    },
-    {
-      avatar: { src: avatar6, status: 'danger' },
-      user: {
-        name: 'Friderik Dávid',
-        new: true,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'Poland', flag: cifPl },
-      usage: {
-        value: 43,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'success',
-      },
-      payment: { name: 'Amex', icon: cibCcAmex },
-      activity: 'Last week',
-    },
-  ]
+  const handleAssignDriver = async (driverId) => {
+    try {
+      await updateBooking(bookingById.Bookingid, { driverid: driverId, status: 1 });
+      setMapModalVisible(false);
+      setActiveDriverWindow(null);
+      setBookingById(null);
+      await fetchDashboardData();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
+  React.useEffect(() => {
+    if (role === 'SUPER_ADMIN') {
+      const getRecentUsers = async () => {
+        try {
+          const users = await fetchUsers()
+          // Sort by newest and take top 5
+          const sortedUsers = (users || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          setRecentUsers(sortedUsers.slice(0, 5))
+        } catch (error) {
+          console.error('Failed to fetch recent users for dashboard:', error)
+        }
+      }
+      getRecentUsers()
+    }
+  }, [role])
   return (
     <div className='container-fluid'>
       <WidgetsDropdown className="mb-4" />
@@ -208,178 +133,173 @@ const Dashboard = () => {
           </CRow>
           <MainChart />
         </CCardBody>
-        <CCardFooter>
-          <CRow
-            xs={{ cols: 1, gutter: 4 }}
-            sm={{ cols: 2 }}
-            lg={{ cols: 4 }}
-            xl={{ cols: 5 }}
-            className="mb-2 text-center"
-          >
-            {progressExample.map((item, index, items) => (
-              <CCol
-                className={classNames({
-                  'd-none d-xl-block': index + 1 === items.length,
-                })}
-                key={index}
-              >
-                <div className="text-body-secondary">{item.title}</div>
-                <div className="fw-semibold text-truncate">
-                  {item.value} ({item.percent}%)
-                </div>
-                <CProgress thin className="mt-2" color={item.color} value={item.percent} />
-              </CCol>
-            ))}
-          </CRow>
-        </CCardFooter>
       </CCard>
-      <WidgetsBrand className="mb-4" withCharts />
+
       <CRow>
         <CCol xs>
           <CCard className="mb-4">
-            <CCardHeader>Traffic {' & '} Sales</CCardHeader>
+            <CCardHeader>
+              <strong>Active Requested Bookings</strong>
+            </CCardHeader>
             <CCardBody>
-              <CRow>
-                <CCol xs={12} md={6} xl={6}>
-                  <CRow>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-info py-1 px-3">
-                        <div className="text-body-secondary text-truncate small">New Clients</div>
-                        <div className="fs-5 fw-semibold">9,123</div>
-                      </div>
-                    </CCol>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-danger py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">
-                          Recurring Clients
-                        </div>
-                        <div className="fs-5 fw-semibold">22,643</div>
-                      </div>
-                    </CCol>
-                  </CRow>
-                  <hr className="mt-0" />
-                  {progressGroupExample1.map((item, index) => (
-                    <div className="progress-group mb-4" key={index}>
-                      <div className="progress-group-prepend">
-                        <span className="text-body-secondary small">{item.title}</span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="info" value={item.value1} />
-                        <CProgress thin color="danger" value={item.value2} />
-                      </div>
-                    </div>
-                  ))}
-                </CCol>
-                <CCol xs={12} md={6} xl={6}>
-                  <CRow>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">Pageviews</div>
-                        <div className="fs-5 fw-semibold">78,623</div>
-                      </div>
-                    </CCol>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">Organic</div>
-                        <div className="fs-5 fw-semibold">49,123</div>
-                      </div>
-                    </CCol>
-                  </CRow>
-
-                  <hr className="mt-0" />
-
-                  {progressGroupExample2.map((item, index) => (
-                    <div className="progress-group mb-4" key={index}>
-                      <div className="progress-group-header">
-                        <CIcon className="me-2" icon={item.icon} size="lg" />
-                        <span>{item.title}</span>
-                        <span className="ms-auto fw-semibold">{item.value}%</span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="warning" value={item.value} />
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="mb-5"></div>
-
-                  {progressGroupExample3.map((item, index) => (
-                    <div className="progress-group" key={index}>
-                      <div className="progress-group-header">
-                        <CIcon className="me-2" icon={item.icon} size="lg" />
-                        <span>{item.title}</span>
-                        <span className="ms-auto fw-semibold">
-                          {item.value}{' '}
-                          <span className="text-body-secondary small">({item.percent}%)</span>
-                        </span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="success" value={item.percent} />
-                      </div>
-                    </div>
-                  ))}
-                </CCol>
-              </CRow>
-
-              <br />
-
               <CTable align="middle" className="mb-0 border" hover responsive>
-                <CTableHead className="text-nowrap">
+                <CTableHead className="text-nowrap text-body-secondary bg-body-tertiary">
                   <CTableRow>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      <CIcon icon={cilPeople} />
-                    </CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">User</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      Country
-                    </CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Usage</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      Payment Method
-                    </CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Activity</CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary">Booking ID</CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary">Customer</CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary">Pick-Up</CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary">Drop-Off</CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary">Date & Time</CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary text-center">Action</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {tableExample.map((item, index) => (
-                    <CTableRow v-for="item in tableItems" key={index}>
-                      <CTableDataCell className="text-center">
-                        <CAvatar size="md" src={item.avatar.src} status={item.avatar.status} />
+                  {requestedBookings.map((item, index) => (
+                    <CTableRow key={index}>
+                      <CTableDataCell>
+                        <div className="text-truncate" style={{ maxWidth: '150px' }}>{item.Bookingid || 'N/A'}</div>
                       </CTableDataCell>
                       <CTableDataCell>
-                        <div>{item.user.name}</div>
-                        <div className="small text-body-secondary text-nowrap">
-                          <span>{item.user.new ? 'New' : 'Recurring'}</span> | Registered:{' '}
-                          {item.user.registered}
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">
-                        <CIcon size="xl" icon={item.country.flag} title={item.country.name} />
+                        <div>{item.id || 'N/A'}</div>
                       </CTableDataCell>
                       <CTableDataCell>
-                        <div className="d-flex justify-content-between text-nowrap">
-                          <div className="fw-semibold">{item.usage.value}%</div>
-                          <div className="ms-3">
-                            <small className="text-body-secondary">{item.usage.period}</small>
-                          </div>
-                        </div>
-                        <CProgress thin color={item.usage.color} value={item.usage.value} />
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">
-                        <CIcon size="xl" icon={item.payment.icon} />
+                        <div className="text-truncate" style={{ maxWidth: '200px' }}>{item.pickUpLocation || 'N/A'}</div>
                       </CTableDataCell>
                       <CTableDataCell>
-                        <div className="small text-body-secondary text-nowrap">Last login</div>
-                        <div className="fw-semibold text-nowrap">{item.activity}</div>
+                        <div className="text-truncate" style={{ maxWidth: '200px' }}>{item.dropOffLocation || 'N/A'}</div>
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <div>{item.pointAToBDate || 'N/A'}</div>
+                        <div className="small text-body-secondary">{item.pointAToBTime || 'N/A'}</div>
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {item.pickUpLat ? (
+                          <CButton color="info" size="sm" className="text-white" onClick={() => { setBookingById(item); setMapModalVisible(true); }}>
+                            Assign via Map
+                          </CButton>
+                        ) : (
+                          <span className="text-muted small">No GPS</span>
+                        )}
                       </CTableDataCell>
                     </CTableRow>
                   ))}
+                  {requestedBookings.length === 0 && (
+                    <CTableRow>
+                      <CTableDataCell colSpan="6" className="text-center">
+                        No requested cab bookings pending assignment.
+                      </CTableDataCell>
+                    </CTableRow>
+                  )}
                 </CTableBody>
               </CTable>
             </CCardBody>
           </CCard>
         </CCol>
       </CRow>
+
+      {role === 'SUPER_ADMIN' && (
+        <CRow>
+          <CCol xs>
+            <CCard className="mb-4">
+              <CCardHeader>
+                <strong>Recent Users</strong>
+              </CCardHeader>
+              <CCardBody>
+                <CTable align="middle" className="mb-0 border" hover responsive>
+                  <CTableHead className="text-nowrap text-body-secondary bg-body-tertiary">
+                    <CTableRow>
+                      <CTableHeaderCell className="bg-body-tertiary text-center">
+                        <CIcon icon={cilPeople} />
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="bg-body-tertiary">User</CTableHeaderCell>
+                      <CTableHeaderCell className="bg-body-tertiary text-center">Role</CTableHeaderCell>
+                      <CTableHeaderCell className="bg-body-tertiary">Email</CTableHeaderCell>
+                      <CTableHeaderCell className="bg-body-tertiary">Joined</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {recentUsers.map((item, index) => (
+                      <CTableRow v-for="item in tableItems" key={index}>
+                        <CTableDataCell className="text-center">
+                          <CAvatar
+                            size="md"
+                            color={item.profilePic ? '' : 'primary'}
+                            src={item.profilePic ? item.profilePic : undefined}
+                            textColor="white"
+                          >
+                            {!item.profilePic && <CIcon icon={cilUser} />}
+                          </CAvatar>
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <div>{item.name || 'N/A'}</div>
+                          <div className="small text-body-secondary text-nowrap">
+                            <span>{item.phoneNumber || 'N/A'}</span>
+                          </div>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          {item.role || 'User'}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <div className="text-truncate" style={{ maxWidth: '200px' }}>
+                            {item.email || '-'}
+                          </div>
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <div>
+                            {new Date(item.createdAt).toLocaleDateString()}
+                          </div>
+                          <div className="small text-body-secondary text-nowrap">
+                            {new Date(item.createdAt).toLocaleTimeString()}
+                          </div>
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
+                    {recentUsers.length === 0 && (
+                      <CTableRow>
+                        <CTableDataCell colSpan="5" className="text-center">
+                          No recent users found.
+                        </CTableDataCell>
+                      </CTableRow>
+                    )}
+                  </CTableBody>
+                </CTable>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      )}
+
+      {/* Map Assignment Modal */}
+      {mapModalVisible && isLoaded && (
+        <CModal backdrop="static" visible={mapModalVisible} onClose={() => { setMapModalVisible(false); setActiveDriverWindow(null); }} size="xl">
+          <CModalHeader closeButton><CModalTitle>Assign Online Driver via Map</CModalTitle></CModalHeader>
+          <CModalBody style={{ height: '600px', padding: 0 }}>
+            <GoogleMap mapContainerStyle={{ width: '100%', height: '100%' }} zoom={12} center={bookingById?.pickUpLat ? { lat: parseFloat(bookingById.pickUpLat), lng: parseFloat(bookingById.pickUpLng) } : defaultCenter}>
+              {bookingById?.pickUpLat && (
+                <Marker position={{ lat: parseFloat(bookingById.pickUpLat), lng: parseFloat(bookingById.pickUpLng) }} icon={{ url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png" }} title="Pickup Location" />
+              )}
+              {drivers.filter(d => Boolean(d.isActive) && d.latitude !== null).map((driver) => {
+                const dist = calculateDistance(bookingById?.pickUpLat, bookingById?.pickUpLng, driver.latitude, driver.longitude);
+                return (
+                  <Marker key={driver.id} position={{ lat: parseFloat(driver.latitude), lng: parseFloat(driver.longitude) }} icon={{ url: "http://maps.google.com/mapfiles/kml/shapes/cabs.png", scaledSize: new window.google.maps.Size(32, 32) }} onClick={() => setActiveDriverWindow(driver.id)}>
+                    {activeDriverWindow === driver.id && (
+                      <InfoWindow onCloseClick={() => setActiveDriverWindow(null)}>
+                        <div style={{ color: 'black', padding: '5px' }}>
+                          <h6 className='m-0 p-0 mb-1 fw-bold'>{driver.name || 'Unknown Driver'}</h6>
+                          <p className='m-0 p-0 text-muted'>Distance: {dist ? dist + ' km' : 'Unknown'}</p>
+                          <CButton size="sm" color="info" className="text-white mt-2 w-100" onClick={() => handleAssignDriver(driver.id)}>
+                            Assign
+                          </CButton>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </Marker>
+                );
+              })}
+            </GoogleMap>
+          </CModalBody>
+        </CModal>
+      )}
     </div>
   )
 }

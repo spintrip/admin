@@ -190,6 +190,11 @@ const UserVerification = () => {
                       <span className="verification-confirmed">Confirmed</span>
                       <code className="verification-code verification-confirmed">Code-2</code>
                     </>
+                  ) : profile.verification_status === 0 ? (
+                    <>
+                      <span className="verification-na" style={{color: 'red'}}>Not Verified</span>
+                      <code className="verification-code verification-na">Code-0</code>
+                    </>
                   ) : profile.verification_status === null ? (
                     <>
                       <span className="verification-na">N/A</span>
@@ -258,6 +263,11 @@ const UserVerification = () => {
                     <>
                       <span style={{ color: 'green' }}> Confirmed </span>
                       <code className='p-2 border rounded' style={{ color: 'green' }}>Code-2</code>
+                    </>
+                  ) : selectedProfile.verification_status === 0 ? (
+                    <>
+                      <span style={{ color: 'red' }}> Not Verified </span>
+                      <code className='p-2 border rounded' style={{ color: 'red' }}>Code-0</code>
                     </>
                   ) : selectedProfile.verification_status === null ? (
                     <>

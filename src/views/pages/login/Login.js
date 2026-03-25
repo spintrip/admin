@@ -17,6 +17,7 @@ import {
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
 import { loginWithOTP } from '../../../api/auth';
+import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
   const [phone, setPhone] = useState('');
@@ -29,9 +30,20 @@ const Login = () => {
     try {
       const token = await loginWithOTP(phone, password);
       localStorage.setItem('adminToken', token);
+      
+      try {
+        const decoded = jwtDecode(token);
+        const role = decoded.adminRole || 'SUPER_ADMIN';
+        localStorage.setItem('adminRole', role);
+      } catch (err) {
+        console.warn('Could not decode token, defaulting role to SUPER_ADMIN', err);
+        localStorage.setItem('adminRole', 'SUPER_ADMIN');
+      }
+
       setError(null);
       console.log('Login successful:', token);
-      navigate('/dashboard'); 
+      window.location.href = '#/dashboard'; 
+      window.location.reload();
     } catch (err) {
       setError('Wrong credentials. Please check your phone number and password.');
     }
