@@ -17,6 +17,8 @@ const VehicleTypes = () => {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [typeName, setTypeName] = useState('');
+  const [typeDescription, setTypeDescription] = useState('');
+  const [typeBasePrice, setTypeBasePrice] = useState('');
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
 
@@ -38,11 +40,11 @@ const VehicleTypes = () => {
   }, [token, navigate]);
 
   const handleDelete = async (id) => {
-    if(window.confirm('Delete this vehicle type?')){
-      try{
+    if (window.confirm('Delete this vehicle type?')) {
+      try {
         await deleteVehicleType(id);
         getData();
-      }catch(err){
+      } catch (err) {
         console.error('Delete error', err);
       }
     }
@@ -50,21 +52,29 @@ const VehicleTypes = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    try{
-      await createVehicleType({ name: typeName });
+    try {
+      await createVehicleType({
+        name: typeName,
+        description: typeDescription,
+        basePrice: parseFloat(typeBasePrice)
+      });
       setModalVisible(false);
       setTypeName('');
+      setTypeDescription('');
+      setTypeBasePrice('');
       getData();
-    }catch(err){
+    } catch (err) {
       console.error('Create error', err);
     }
   };
 
   const columns = [
     { name: 'ID', selector: row => row.id, sortable: true },
-    { name: 'Type Name', selector: row => row.name || '--', sortable: true },
+    { name: 'Type Name', selector: row => row.vehicletype || '--', sortable: true },
+    { name: 'Description', selector: row => row.description || '--', sortable: true },
+    { name: 'Base Price', selector: row => row.basePrice || '--', sortable: true },
     { name: 'Created At', selector: row => new Date(row.createdAt).toLocaleDateString(), sortable: true },
-    { 
+    {
       name: 'Actions',
       cell: row => (
         <CButton color="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</CButton>
@@ -99,10 +109,24 @@ const VehicleTypes = () => {
               <CFormLabel>Type Name</CFormLabel>
               <CFormInput type="text" value={typeName} onChange={(e) => setTypeName(e.target.value)} required />
             </div>
+            <div className="mb-3">
+              <CFormLabel>Description</CFormLabel>
+              <CFormInput type="text" value={typeDescription} onChange={(e) => setTypeDescription(e.target.value)} />
+            </div>
+            <div className="mb-3 px-2 py-1 bg-light rounded shadow-sm border">
+              <CFormLabel className="text-muted small d-block">Resulting Cab Type (used in Rates/App)</CFormLabel>
+              <strong className="text-primary">
+                {typeName} {typeDescription ? `- ${typeDescription}` : ''}
+              </strong>
+            </div>
+            <div className="mb-3">
+              <CFormLabel>Base Price</CFormLabel>
+              <CFormInput type="number" value={typeBasePrice} onChange={(e) => setTypeBasePrice(e.target.value)} />
+            </div>
           </CModalBody>
           <CModalFooter>
-             <CButton color="secondary" onClick={() => setModalVisible(false)}>Cancel</CButton>
-             <CButton color="primary" type="submit">Create</CButton>
+            <CButton color="secondary" onClick={() => setModalVisible(false)}>Cancel</CButton>
+            <CButton color="primary" type="submit">Create</CButton>
           </CModalFooter>
         </CForm>
       </CModal>

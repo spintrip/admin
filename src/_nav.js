@@ -90,11 +90,11 @@ const _nav = [
       // Removed redundant single-view tabs (now subsumed by Data Explorer)
     ],
   },
-  
+
   {
     component: CNavGroup,
     name: 'Operations',
-    icon: <CIcon icon={cibElectron} customClassName="nav-icon"/>,
+    icon: <CIcon icon={cibElectron} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -112,25 +112,31 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Vehicle Verification',
-    icon: <CIcon icon={cilCarAlt} customClassName="nav-icon"/>,
+    icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
     to: '/verification/vehicle-verif'
   },
   {
     component: CNavItem,
     name: 'Cab Verification',
-    icon: <CIcon icon={cilCarAlt} customClassName="nav-icon"/>,
+    icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
     to: '/verification/cab-verif'
   },
   {
     component: CNavItem,
     name: 'User Verification',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon"/>,
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
     to: '/verification/user-verif'
   },
   {
     component: CNavItem,
+    name: 'Operational Cities',
+    to: '/admin/crud/City', // Uses the Universal Data Explorer automatically!
+    icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: 'Driver Verification',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon"/>,
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
     to: '/verification/driver-verif'
   },
 ]

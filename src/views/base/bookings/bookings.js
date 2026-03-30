@@ -154,6 +154,10 @@ const columns = [
           statusText = "Requested";
           className = "p-1 rounded border border-primary text-primary bg-white w-100 text-center";
           break;
+        case 6:
+          statusText = "Completed";
+          className = "p-1 rounded border border-primary text-primary bg-white w-100 text-center";
+          break;  
         default:
           statusText = "Unknown";
           className = "";

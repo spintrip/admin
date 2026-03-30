@@ -18,6 +18,8 @@ const Brands = React.lazy(() => import('./views/base/brands/brands'))
 const Messages = React.lazy(() => import('./views/base/messages/messages'))
 const Transactions = React.lazy(() => import('./views/base/Transactions/transactions'))
 const Drivers = React.lazy(() => import('./views/base/drivers/drivers'))
+// At the top with other imports:
+const DataExplorer = React.lazy(() => import('./views/base/crud/DataExplorer'))
 const Cabs = React.lazy(() => import('./views/base/cabs/cabs'))
 const Feedbacks = React.lazy(() => import('./views/base/feedbacks/feedbacks'))
 const VehicleTypes = React.lazy(() => import('./views/base/vehicle-types/vehicle-types'))
@@ -72,6 +74,7 @@ const routes = [
   { path: '/base/transactions', name: 'Transactions', element: Transactions },
   { path: '/operations/notifications' , name: 'Notifications' , element: Notifications},
   { path: '/operations/payout' , name: 'Payout' , element: Payout},
+  { path: '/admin/crud/:model', name: 'Data Explorer', element: DataExplorer },
 ]
 
 export default routes;
