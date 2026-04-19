@@ -42,3 +42,16 @@ export const updateTax = async(id , data) => {
     throw error;
   }
 }
+
+export const deleteTax = async(id) => {
+  try{
+    const response = await axios.delete(`${apiUrl}admin/tax/${id}`, {
+      headers: {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

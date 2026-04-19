@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getvehicleVerififcation , approvevehicleVerification, rejectvehicleVerification } from '../../../api/vehicle';
+import { getvehicleVerififcation , approvevehicleVerification, rejectvehicleVerification, activateVehicle } from '../../../api/vehicle';
 import DocsExample from '../../../components/DocsExample';
 import { fetchUserById } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
@@ -144,6 +144,16 @@ const vehicleProfiles = () => {
       console.log(error);
   }
    
+  };
+
+  const handleActivate = async (vehicleid) => {
+    try {
+      await activateVehicle(vehicleid, true);
+      setModalVisible(false);
+      fetchData();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const renderBooleanIcon = (value) => {
@@ -405,6 +415,11 @@ const vehicleProfiles = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 </CButton>
+                {selectedProfile.vehicle?.activated === false && selectedProfile.verification_status === 2 && (
+                  <CButton color="warning" onClick={() => handleActivate(selectedProfile.vehicleid)} className='ms-2 text-white'>
+                    Activate Now
+                  </CButton>
+                )}
               </CModalFooter>
             </CModal>
           )}

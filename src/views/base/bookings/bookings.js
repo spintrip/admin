@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getBooking, fetchBookingById, updateBooking } from '../../../api/booking';
+import { useLocation } from 'react-router-dom';
+import { getBooking, fetchBookingById, updateBooking, createBooking, getSelfDriveBookings, getCabBookings } from '../../../api/booking';
 import { fetchCabs } from '../../../api/cab';
 import { fetchDrivers } from '../../../api/driver';
 import UserData from '../controller/userData';
@@ -30,8 +31,10 @@ import {
 } from '@coreui/react';
 import '../../../scss/booking.css';
 import DataTable from 'react-data-table-component';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Autocomplete } from '@react-google-maps/api';
 import { Google_Maps_Api_key } from '../../../env';
+
+const LIBRARIES = ['places'];
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -79,8 +82,9 @@ const customStyles = {
 };
 const tableHeaders = [
   { label: 'Booking ID', value: 'Bookingid' },
-  { label: 'vehicle Id', value: 'vehicleid' },
-  { label: 'User Id', value: 'id' },
+  { label: 'Vehicle Name', value: 'carname' }, // Added
+  { label: 'Customer', value: 'customerName' },
+
   { label: 'Status', value: 'status' },
   { label: 'Amount', value: 'amount' },
   { label: 'GST Amount', value: 'GSTAmount' },
@@ -96,6 +100,7 @@ const tableHeaders = [
   { label: 'Created At', value: 'createdAt' },
   { label: 'Updated At', value: 'updatedAt' },
 ];
+
 const columns = [
   {
     name: 'Booking ID',
@@ -103,15 +108,23 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'vehicle Id',
-    selector: row => row.vehicleid,
+    name: 'Vehicle',
+    selector: row => row.carname || 'N/A',
     sortable: true,
+    cell: row => <div className="fw-bold text-info">{row.carname || 'N/A'}</div>
   },
   {
-    name: 'User Id',
-    selector: row => row.id,
+    name: 'Customer',
+    selector: row => row.customerName || 'N/A',
     sortable: true,
+    cell: row => (
+      <div>
+        <div className="fw-bold">{row.customerName || 'N/A'}</div>
+        <div className="small text-muted">{row.customerPhone || ''}</div>
+      </div>
+    )
   },
+
   {
     name: 'Status',
     selector: row => {
@@ -255,7 +268,12 @@ const columns = [
 
 
 const Bookings = () => {
+  const location = useLocation();
+  const isSelfDriveMode = location.pathname.includes('self-drive');
+  const isCabMode = location.pathname.includes('cab-bookings');
+  
   const [bookingData, setBookingData] = useState([]);
+
   const [cabs, setCabs] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -293,8 +311,26 @@ const Bookings = () => {
     paymentMethod: '',
     isCab: false
   });
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [newBookingData, setNewBookingData] = useState({
+    customerPhone: '',
+    customerName: '',
+    cabType: 'mini eco',
+    bookingType: 'Local',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    amount: '',
+    startLocation: { address: '', latitude: null, longitude: null },
+    endLocation: { address: '', latitude: null, longitude: null }
+  });
+  const [pickupAutocomplete, setPickupAutocomplete] = useState(null);
+  const [dropAutocomplete, setDropAutocomplete] = useState(null);
   const [accordionStatusOpen, setStatusAccordionOpen] = useState(false);
-  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: Google_Maps_Api_key });
+  const { isLoaded } = useJsApiLoader({ 
+    id: 'google-map-script', 
+    googleMapsApiKey: Google_Maps_Api_key,
+    libraries: LIBRARIES
+  });
   const [mapModalVisible, setMapModalVisible] = useState(false);
   const [activeDriverWindow, setActiveDriverWindow] = useState(null);
   const defaultCenter = { lat: 20.5937, lng: 78.9629 };
@@ -304,7 +340,15 @@ const Bookings = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [data, cabsData, driversData] = await Promise.all([getBooking(), fetchCabs(), fetchDrivers()]);
+        let dataFetchMethod = getBooking;
+        if (isSelfDriveMode) dataFetchMethod = getSelfDriveBookings;
+        if (isCabMode) dataFetchMethod = getCabBookings;
+
+        const [data, cabsData, driversData] = await Promise.all([
+          dataFetchMethod(),
+          fetchCabs(),
+          fetchDrivers()
+        ]);
         setBookingData(data);
         setFilteredData(data);
         setCabs(cabsData || []);
@@ -315,7 +359,8 @@ const Bookings = () => {
     };
 
     fetchData();
-  }, []);
+  }, [isSelfDriveMode, isCabMode]);
+
 
   useEffect(() => {
     const filterBookings = () => {
@@ -502,6 +547,63 @@ setSelectedvehicleid(null);
     }
   };
 
+  const handleCreateBookingSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createBooking(newBookingData);
+      setCreateModalVisible(false);
+      setNewBookingData({
+        customerPhone: '',
+        customerName: '',
+        cabType: 'mini eco',
+        bookingType: 'Local',
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toTimeString().slice(0, 5),
+        amount: '',
+        startLocation: { address: '', latitude: null, longitude: null },
+        endLocation: { address: '', latitude: null, longitude: null }
+      });
+      const updatedData = await getBooking();
+      setBookingData(updatedData);
+      setFilteredData(updatedData);
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      alert('Failed to create booking: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const onPickupPlaceChanged = () => {
+    if (pickupAutocomplete !== null) {
+      const place = pickupAutocomplete.getPlace();
+      if (place.geometry) {
+        setNewBookingData(prev => ({
+          ...prev,
+          startLocation: {
+            address: place.formatted_address || place.name || prev.startLocation.address,
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng()
+          }
+        }));
+      }
+    }
+  };
+
+  const onDropPlaceChanged = () => {
+    if (dropAutocomplete !== null) {
+      const place = dropAutocomplete.getPlace();
+      if (place.geometry) {
+        setNewBookingData(prev => ({
+          ...prev,
+          endLocation: {
+            address: place.formatted_address || place.name || prev.endLocation.address,
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng()
+          }
+        }));
+      }
+    }
+  };
+
   const displayedBookings = filteredData
 
   console.log(displayedBookings)
@@ -560,8 +662,10 @@ setSelectedvehicleid(null);
           
         
         </div>
-        <div className='w-100 px-2'>
-          
+        <div className='w-100 px-2 d-flex align-items-center'>
+          <CButton color="success" className="text-white me-2" style={{minWidth: '150px'}} onClick={() => setCreateModalVisible(true)}>
+             + New Booking
+          </CButton>
           <CInputGroup className="mx-2 my-2 w-100">
             <CFormInput
               aria-label="Text input with dropdown button"
@@ -607,24 +711,24 @@ setSelectedvehicleid(null);
                 </CModalHeader>
                 <CModalBody>
                     <CRow>
-                        <CCol className='booking-modal d-flex align-items-center justify-content-between'>
+                        <CCol className='booking-modal d-flex justify-content-between flex-wrap'>
                             <p><strong>Booking ID:</strong> {bookingById.Bookingid || 'N/A'}</p>
-                            <p onClick={() => handleUserIdClick(bookingById.id)} className="clickable-info">
-                                <span className='text-decoration-underline cursor-pointer'>
-                                    <strong className='mx-2'>User ID:</strong> {bookingById.id || 'N/A'}
+                            <p><strong>Status:</strong> <span className='badge bg-info'>{bookingById.status}</span></p>
+                            <p className="clickable-info" onClick={() => handleUserIdClick(bookingById.id)}>
+                                <strong>Customer: </strong> 
+                                <span className='text-decoration-underline cursor-pointer text-primary'>
+                                    {bookingById.customerName || 'N/A'} ({bookingById.customerPhone || 'N/A'})
                                 </span>
                             </p>
                             {isAccordionOpen && selectedUserId === bookingById.id && (
                                 <UserData id={selectedUserId} onClose={handlevehicleAccordionClose} />
                             )}
-                            <p onClick={() => handlevehicleByIdClick(bookingById.vehicleid)} className="clickable-info">
-                                <span className='text-decoration-underline cursor-pointer'>
-                                    <strong>vehicle Id: </strong> {bookingById.vehicleid || 'N/A'}
+                            <p className="clickable-info">
+                                <strong>Vehicle: </strong> 
+                                <span className='text-primary fw-bold'>
+                                    {bookingById.carname || 'N/A'}
                                 </span>
                             </p>
-                            {isvehicleAccordionOpen && selectedvehicleid === bookingById.vehicleid && (
-                                <vehicleData id={selectedvehicleid} onClose={handlevehicleAccordionClose} />
-                            )}
                         </CCol>
                     </CRow>
                     <CRow>
@@ -951,6 +1055,154 @@ setSelectedvehicleid(null);
         </CModal>
       )}
 
+      {/* Create Booking Modal */}
+      {isLoaded && (
+        <CModal visible={createModalVisible} onClose={() => setCreateModalVisible(false)} size="lg" backdrop="static">
+          <CModalHeader closeButton>
+            <CModalTitle>Create New Manual Booking</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <CForm onSubmit={handleCreateBookingSubmit}>
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormLabel>Customer Phone</CFormLabel>
+                  <CFormInput
+                    required
+                    type="text"
+                    placeholder="Enter phone number"
+                    value={newBookingData.customerPhone}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, customerPhone: e.target.value })}
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel>Customer Name (Optional)</CFormLabel>
+                  <CFormInput
+                    type="text"
+                    placeholder="Enter full name"
+                    value={newBookingData.customerName}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, customerName: e.target.value })}
+                  />
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormLabel>Trip Type</CFormLabel>
+                  <CFormSelect
+                    value={newBookingData.bookingType}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, bookingType: e.target.value })}
+                  >
+                    <option value="Local">Local (Point-to-Point)</option>
+                    <option value="Airport">Airport Transfer</option>
+                    <option value="Outstation">Outstation (Intercity)</option>
+                    <option value="Rentals">Rentals (Hourly)</option>
+                  </CFormSelect>
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel>Cab Category</CFormLabel>
+                  <CFormSelect
+                    value={newBookingData.cabType}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, cabType: e.target.value })}
+                  >
+                    <option value="mini eco">Mini ECO</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="suv">SUV</option>
+                    <option value="luxury">Luxury</option>
+                  </CFormSelect>
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={12}>
+                  <CFormLabel>Pickup Location (Search)</CFormLabel>
+                  <Autocomplete
+                    onLoad={(autocomplete) => setPickupAutocomplete(autocomplete)}
+                    onPlaceChanged={onPickupPlaceChanged}
+                    options={{ types: ['geocode', 'establishment'] }}
+                  >
+                    <CFormInput 
+                      required 
+                      type="text" 
+                      placeholder="Search pickup address..." 
+                      value={newBookingData.startLocation.address}
+                      onChange={(e) => setNewBookingData({ 
+                        ...newBookingData, 
+                        startLocation: { ...newBookingData.startLocation, address: e.target.value, latitude: null, longitude: null } 
+                      })}
+                    />
+                  </Autocomplete>
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={12}>
+                  <CFormLabel>Drop-off Location (Search)</CFormLabel>
+                  <Autocomplete
+                    onLoad={(autocomplete) => setDropAutocomplete(autocomplete)}
+                    onPlaceChanged={onDropPlaceChanged}
+                    options={{ types: ['geocode', 'establishment'] }}
+                  >
+                    <CFormInput 
+                      required={newBookingData.bookingType !== 'Rentals'} 
+                      type="text" 
+                      placeholder="Search drop-off address..." 
+                      value={newBookingData.endLocation.address}
+                      onChange={(e) => setNewBookingData({ 
+                        ...newBookingData, 
+                        endLocation: { ...newBookingData.endLocation, address: e.target.value, latitude: null, longitude: null } 
+                      })}
+                    />
+                  </Autocomplete>
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormLabel>Date</CFormLabel>
+                  <CFormInput
+                    required
+                    type="date"
+                    value={newBookingData.date}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, date: e.target.value })}
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel>Time</CFormLabel>
+                  <CFormInput
+                    required
+                    type="time"
+                    value={newBookingData.time}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, time: e.target.value })}
+                  />
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormLabel>Total Fare (Amt to show customer)</CFormLabel>
+                  <CFormInput
+                    required
+                    type="number"
+                    placeholder="Enter total amount"
+                    value={newBookingData.amount}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, amount: e.target.value })}
+                  />
+                  <small className="text-muted">GST, Commission, and Driver pay will be auto-calculated.</small>
+                </CCol>
+              </CRow>
+
+              <CModalFooter>
+                <CButton color="secondary" onClick={() => setCreateModalVisible(false)}>
+                  Cancel
+                </CButton>
+                <CButton color="success" type="submit" className="text-white">
+                  Confirm Booking
+                </CButton>
+              </CModalFooter>
+            </CForm>
+          </CModalBody>
+        </CModal>
+      )}
     </>
   );
 };

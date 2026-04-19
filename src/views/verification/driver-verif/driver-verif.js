@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchDrivers, approveDriverProfile, rejectDriverProfile } from '../../../api/driver';
+import { fetchDrivers, approveDriverProfile, rejectDriverProfile, deleteDriver } from '../../../api/driver';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CRow, CCol, CImage } from '@coreui/react';
@@ -19,6 +19,8 @@ const DriverVerification = () => {
   const [selectedDriver, setSelectedDriver] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -61,6 +63,23 @@ const DriverVerification = () => {
       console.error(err);
     }
   }
+
+  const handleDelete = async () => {
+    if (!selectedDriver) return;
+    setIsDeleting(true);
+    try {
+      await deleteDriver(selectedDriver.id);
+      setDeleteModalVisible(false);
+      setModalVisible(false);
+      getData();
+      alert("Driver deleted successfully. They can now register again from scratch.");
+    } catch (error) {
+      console.error("Error deleting driver:", error);
+      alert("Failed to delete driver. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const columns = [
     { name: 'ID', selector: row => row.id, sortable: true },
@@ -147,14 +166,36 @@ const DriverVerification = () => {
             </div>
           )}
         </CModalBody>
+        <CModalFooter className="d-flex justify-content-between w-100">
+          <CButton color="danger" onClick={() => setDeleteModalVisible(true)}>
+             Delete Completely
+          </CButton>
+          <div className="d-flex gap-2">
+            {selectedDriver && selectedDriver.verification_status !== 2 && (
+               <CButton color="success" onClick={() => { handleApprove(selectedDriver.id); setModalVisible(false); }}>Approve Profile</CButton>
+            )}
+            {selectedDriver && selectedDriver.verification_status !== null && (
+               <CButton color="warning" style={{color: 'white'}} onClick={() => { handleReject(selectedDriver.id); setModalVisible(false); }}>Reject Profile</CButton>
+            )}
+            <CButton color="secondary" onClick={() => setModalVisible(false)}>Close</CButton>
+          </div>
+        </CModalFooter>
+      </CModal>
+
+      {/* Delete Confirmation Modal */}
+      <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)} alignment="center">
+        <CModalHeader>
+          <CModalTitle>Confirm Complete Deletion</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p className="text-danger"><strong>WARNING:</strong> This will permanently delete the driver <b>{selectedDriver?.name}</b> and all their associated records.</p>
+          <p>This action cannot be undone. The driver will be able to register again as a new user/driver.</p>
+        </CModalBody>
         <CModalFooter>
-          {selectedDriver && selectedDriver.verification_status !== 2 && (
-             <CButton color="success" onClick={() => { handleApprove(selectedDriver.id); setModalVisible(false); }}>Approve Profile</CButton>
-          )}
-          {selectedDriver && selectedDriver.verification_status !== null && (
-             <CButton color="danger" onClick={() => { handleReject(selectedDriver.id); setModalVisible(false); }}>Reject Profile</CButton>
-          )}
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>Close</CButton>
+          <CButton color="secondary" onClick={() => setDeleteModalVisible(false)} disabled={isDeleting}>Cancel</CButton>
+          <CButton color="danger" onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Yes, Delete Completely"}
+          </CButton>
         </CModalFooter>
       </CModal>
     </div>

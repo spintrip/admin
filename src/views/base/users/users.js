@@ -1108,19 +1108,14 @@ const handleUpdateUser = async (e) => {
                 )}
               </CModalHeader>
               <CModalBody>
-
-                <>
-                  <div>
-                    {selectedDeleteId.role && selectedDeleteId.role === 'Host' ? (
-                      <span>Selected Host will be deleted Permanently , continue?</span>
-                    ) : (
-                      <span>Selected User will be deleted Permanently , continue?</span>
-                    )}
-                  </div>
-
-                </>
-
-
+                <div className='text-white'>
+                  {selectedDeleteId.role && selectedDeleteId.role === 'Host' ? (
+                    <p><strong>WARNING:</strong> This will permanently delete the host <b>{selectedDeleteId.additionalInfo?.FullName || selectedDeleteId.phone}</b> and all their associated records (Vehicles, Wallet, etc.).</p>
+                  ) : (
+                    <p><strong>WARNING:</strong> This will permanently delete the user <b>{selectedDeleteId.additionalInfo?.FullName || selectedDeleteId.phone}</b> and all their associated records (Profile, Wallet, Bookings, etc.).</p>
+                  )}
+                  <p>This action cannot be undone. The user will be able to register again from scratch.</p>
+                </div>
               </CModalBody >
               <CModalFooter className='d-flex align-items-center justify-content-between'>
                 <CButton color='dark' onClick={handleCloseConfirmModal}>Reject</CButton>

@@ -38,7 +38,7 @@ const Cabs = () => {
   const role = localStorage.getItem('adminRole') || 'SUPER_ADMIN';
 
   const columns = [
-    { name: 'ID', selector: row => row.vehicleid, sortable: true },
+
     { name: 'Cab Model', selector: row => (row.brand && row.variant) ? `${row.brand} ${row.variant}` : row.model || '--', sortable: true },
     { name: 'Registration', selector: row => row.Vehicle?.Rcnumber || '--', sortable: true },
     { name: 'Assigned Driver', selector: row => row.Driver?.DriverAdditional?.FullName || row.Driver?.name || 'Unassigned', sortable: true },

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { fetchCrudRecords, updateCrudRecord, deleteCrudRecord, createCrudRecord } from '../../../api/crud';
 import {
-  CFormSelect, CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CFormInput, CFormLabel
+  CFormSelect, CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CFormInput, CFormLabel, CFormSwitch
 } from '@coreui/react';
 import { toast, Toaster } from 'react-hot-toast';
 import { jwtDecode } from 'jwt-decode';
@@ -32,6 +32,7 @@ const CabRates = () => {
   const [cities, setCities] = useState([]);
   const [copyModalVisible, setCopyModalVisible] = useState(false);
   const [selectedTargetCities, setSelectedTargetCities] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadData(selectedModel);
@@ -88,30 +89,50 @@ const CabRates = () => {
       setData(records);
 
       if (records.length > 0) {
-        // Dynamically build columns based on the keys of the first record
-        const sampleRecord = records[0];
-        const dynamicColumns = Object.keys(sampleRecord).map(key => ({
-          name: key,
-          selector: row => row[key] !== null ? String(row[key]).substring(0, 50) : '--',
-          sortable: true,
-          wrap: true
-        }));
+        let dynamicColumns = [];
 
-        if (modelName === 'HostCabRateCard') {
-          if (!dynamicColumns.find(c => c.name === 'offers')) {
-            dynamicColumns.unshift({ name: 'offers', selector: row => row.offers !== null ? String(row.offers) : '--', sortable: true, wrap: true });
-          }
-          if (!dynamicColumns.find(c => c.name === 'surgeMultiplier')) {
-            dynamicColumns.unshift({ name: 'surgeMultiplier', selector: row => row.surgeMultiplier !== null ? String(row.surgeMultiplier) : '1.0', sortable: true, wrap: true });
-          }
-          if (!dynamicColumns.find(c => c.name === 'tollCharges')) {
-            dynamicColumns.unshift({ name: 'tollCharges', selector: row => row.tollCharges !== null ? String(row.tollCharges) : '0', sortable: true, wrap: true });
-          }
+        if (selectedModel === 'HostCabRateCard') {
+          dynamicColumns = [
+            {
+              name: 'Status',
+              width: '80px',
+              selector: row => row.isActive,
+              cell: (row) => (
+                <CFormSwitch 
+                  id={`switch-${row.id}`}
+                  checked={row.isActive !== false} 
+                  onChange={async () => {
+                    try {
+                      await updateCrudRecord('HostCabRateCard', row.id, { isActive: !row.isActive });
+                      toast.success(`Rate Card ${!row.isActive ? 'Enabled' : 'Disabled'}`);
+                      loadData('HostCabRateCard');
+                    } catch (e) { toast.error("Failed to toggle status"); }
+                  }}
+                />
+              )
+            },
+            { name: 'City', selector: row => row.city, sortable: true, width: '120px' },
+            { name: 'Cab Type', selector: row => row.cabType, sortable: true, width: '150px' },
+            { name: 'Local Extra', selector: row => `₹${row.localExtraKmRate || 0}/km`, sortable: true },
+            { name: 'Airport Base', selector: row => `₹${row.airportTransferPrice || 0}`, sortable: true },
+            { name: 'Airport Extra', selector: row => `₹${row.airportExtraKmRate || 0}/km`, sortable: true },
+            { name: 'Outstation', selector: row => `₹${row.outstationPerKmPrice || 0}/km`, sortable: true },
+            { name: 'Surge', selector: row => row.surgeMultiplier || '1.0', width: '80px' },
+          ];
+        } else {
+          // Fallback for other models
+          dynamicColumns = Object.keys(records[0])
+            .filter(key => !['id', 'createdAt', 'updatedAt', 'hostId'].includes(key))
+            .map(key => ({
+              name: key,
+              selector: row => row[key] !== null ? String(row[key]).substring(0, 50) : '--',
+              sortable: true
+            }));
         }
 
         dynamicColumns.push({
           name: 'Actions',
-          minWidth: '220px', // <-- Add this to give buttons room
+          minWidth: '220px', 
           cell: (row) => (
             <div className="d-flex align-items-center justify-content-start gap-2 py-2">
               <CButton color="primary" size="sm" onClick={() => handleEditClick(row)}>Edit</CButton>
@@ -146,7 +167,7 @@ const CabRates = () => {
     let shell = data.length > 0 ? Object.keys(data[0]).reduce((acc, key) => { acc[key] = ''; return acc; }, {}) : {};
 
     if (selectedModel === 'HostCabRateCard') {
-      shell = { ...shell, city: '', cabType: 'Sedan', airportTransferPrice: '', halfDayPrice: '', fullDayPrice: '', extraHourRate: '', extraKmRate: '', outstationPerKmPrice: '', driverAllowancePerDay: '', surgeMultiplier: '1.0', tollCharges: '0', offers: '' };
+      shell = { ...shell, city: '', cabType: 'Sedan', isActive: true, airportTransferPrice: '', halfDayPrice: '', fullDayPrice: '', extraHourRate: '', extraKmRate: '', outstationPerKmPrice: '', driverAllowancePerDay: '', surgeMultiplier: '1.0', tollCharges: '0', offers: '' };
     }
     setNewRecord(shell);
     setAddModalVisible(true);
@@ -230,6 +251,13 @@ const CabRates = () => {
       <div className='d-flex align-items-center justify-content-between mb-4'>
         <h3 className="text-white">Cab Rate Cards</h3>
         <div className="d-flex align-items-center gap-3">
+          <CFormInput
+            type="text"
+            placeholder="Search by City..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '250px' }}
+          />
           <CButton color="success" onClick={handleAddClick}>+ Add New Record</CButton>
         </div>
       </div>
@@ -238,7 +266,10 @@ const CabRates = () => {
         <DataTable
           title={`${selectedModel} Records`}
           columns={columns}
-          data={data}
+          data={data.filter(item => 
+            !searchTerm || 
+            (item.city && item.city.toLowerCase().includes(searchTerm.toLowerCase()))
+          )}
           customStyles={customStyles}
           pagination
           progressPending={isLoading}
@@ -254,45 +285,120 @@ const CabRates = () => {
           </CModalHeader>
           <CModalBody>
             <CForm>
-              <div className="row">
-                {Object.keys(editingRecord).map(key => {
-                  if (typeof editingRecord[key] === 'object' && editingRecord[key] !== null) return null; // Skip deeply nested objects
-                  if (['id', 'createdAt', 'updatedAt', 'hostId'].includes(key)) return null; // Skip DB generated/hidden fields
-                  return (
-                    <div className="col-md-6 mb-3" key={key}>
-                      <CFormLabel>{key}</CFormLabel>
-                      {key === 'cabType' && selectedModel === 'HostCabRateCard' ? (
-                        <CFormSelect name={key} value={editingRecord[key] || ''} onChange={handleInputChange}>
-                          <option value="">Select Cab Type</option>
-                          {vehicleTypes.map(opt => {
-                            const combinedType = `${opt.vehicletype} ${opt.description || ''}`.trim();
-                            return (
-                              <option key={opt.id} value={combinedType}>
-                                {combinedType}
-                              </option>
-                            );
-                          })}
-                        </CFormSelect>
-                      ) : key === 'city' && selectedModel === 'HostCabRateCard' ? (
-                        <CFormSelect name={key} value={editingRecord[key] || ''} onChange={handleInputChange}>
-                          <option value="">Select City</option>
-                          {cities.map(city => (
-                            <option key={city.id} value={city.name}>{city.name}</option>
-                          ))}
-                        </CFormSelect>
-                      )
-                        : (
-                          <CFormInput
-                            name={key}
-                            value={editingRecord[key] || ''}
-                            onChange={handleInputChange}
-                            disabled={['id', 'createdAt', 'updatedAt'].includes(key)}
-                          />
-                        )}
+              {selectedModel === 'HostCabRateCard' ? (
+                <>
+                  <h6 className="text-primary border-bottom pb-2 mb-3">Core Information</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>City</CFormLabel>
+                      <CFormSelect name="city" value={editingRecord.city || ''} onChange={handleInputChange}>
+                        <option value="">Select City</option>
+                        {cities.map(city => (
+                          <option key={city.id} value={city.name}>{city.name}</option>
+                        ))}
+                      </CFormSelect>
                     </div>
-                  )
-                })}
-              </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Cab Type</CFormLabel>
+                      <CFormSelect name="cabType" value={editingRecord.cabType || ''} onChange={handleInputChange}>
+                        <option value="">Select Cab Type</option>
+                        {vehicleTypes.map(opt => {
+                          const combinedType = `${opt.vehicletype} ${opt.description || ''}`.trim();
+                          return <option key={opt.id} value={combinedType}>{combinedType}</option>;
+                        })}
+                      </CFormSelect>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Status</CFormLabel>
+                      <CFormSelect name="isActive" value={editingRecord.isActive !== false ? 'true' : 'false'} onChange={(e) => setEditingRecord(prev => ({ ...prev, isActive: e.target.value === 'true' }))}>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                      </CFormSelect>
+                    </div>
+                  </div>
+
+                  <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Local (Daily) <small className="text-muted">(Fixed Base ₹150 for 2km)</small></h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Local Extra KM Rate (₹)</CFormLabel>
+                      <CFormInput name="localExtraKmRate" type="number" value={editingRecord.localExtraKmRate || ''} onChange={handleInputChange} placeholder="e.g. 22" />
+                    </div>
+                  </div>
+
+                  <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Airport Transfer</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Airport Base Price {"(< 35km)"}</CFormLabel>
+                      <CFormInput name="airportTransferPrice" type="number" value={editingRecord.airportTransferPrice || ''} onChange={handleInputChange} placeholder="e.g. 800" />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Airport Extra KM Rate {"(> 35km)"}</CFormLabel>
+                      <CFormInput name="airportExtraKmRate" type="number" value={editingRecord.airportExtraKmRate || ''} onChange={handleInputChange} placeholder="e.g. 25" />
+                    </div>
+                  </div>
+
+                  <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Rentals (Packages)</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Half Day Price (4Hrs/40Kms)</CFormLabel>
+                      <CFormInput name="halfDayPrice" type="number" value={editingRecord.halfDayPrice || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Full Day Price (8Hrs/80Kms)</CFormLabel>
+                      <CFormInput name="fullDayPrice" type="number" value={editingRecord.fullDayPrice || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Rental Extra Hour Rate</CFormLabel>
+                      <CFormInput name="extraHourRate" type="number" value={editingRecord.extraHourRate || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Rental Extra KM Rate</CFormLabel>
+                      <CFormInput name="extraKmRate" type="number" value={editingRecord.extraKmRate || ''} onChange={handleInputChange} />
+                    </div>
+                  </div>
+
+                  <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Outstation</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Per KM Price (Min 50km)</CFormLabel>
+                      <CFormInput name="outstationPerKmPrice" type="number" value={editingRecord.outstationPerKmPrice || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <CFormLabel>Driver Allowance (Per Day)</CFormLabel>
+                      <CFormInput name="driverAllowancePerDay" type="number" value={editingRecord.driverAllowancePerDay || ''} onChange={handleInputChange} />
+                    </div>
+                  </div>
+
+                  <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Global Adjustments</h6>
+                  <div className="row">
+                    <div className="col-md-4 mb-3">
+                      <CFormLabel>Surge Multiplier</CFormLabel>
+                      <CFormInput name="surgeMultiplier" type="number" step="0.1" value={editingRecord.surgeMultiplier || '1.0'} onChange={handleInputChange} />
+                    </div>
+                    <div className="col-md-4 mb-3">
+                      <CFormLabel>Toll Charges (Fixed)</CFormLabel>
+                      <CFormInput name="tollCharges" type="number" value={editingRecord.tollCharges || '0'} onChange={handleInputChange} />
+                    </div>
+                    <div className="col-md-4 mb-3">
+                      <CFormLabel>Active Offers (Text)</CFormLabel>
+                      <CFormInput name="offers" value={editingRecord.offers || ''} onChange={handleInputChange} />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="row">
+                  {Object.keys(editingRecord).map(key => {
+                    if (typeof editingRecord[key] === 'object' && editingRecord[key] !== null) return null;
+                    if (['id', 'createdAt', 'updatedAt', 'hostId'].includes(key)) return null;
+                    return (
+                      <div className="col-md-6 mb-3" key={key}>
+                        <CFormLabel>{key}</CFormLabel>
+                        <CFormInput name={key} value={editingRecord[key] || ''} onChange={handleInputChange} />
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </CForm>
           </CModalBody>
           <CModalFooter>
@@ -309,44 +415,120 @@ const CabRates = () => {
         </CModalHeader>
         <CModalBody>
           <CForm>
-            <div className="row">
-              {Object.keys(newRecord).map(key => {
-                if (typeof newRecord[key] === 'object' && newRecord[key] !== null) return null;
-                if (['id', 'createdAt', 'updatedAt', 'hostId'].includes(key)) return null; // Skip DB generated/hidden fields
-                return (
-                  <div className="col-md-6 mb-3" key={key}>
-                    <CFormLabel>{key}</CFormLabel>
-                    {key === 'cabType' && selectedModel === 'HostCabRateCard' ? (
-                      <CFormSelect name={key} value={newRecord[key] || ''} onChange={handleInputChange}>
-                        <option value="">Select Cab Type</option>
-                        {vehicleTypes.map(opt => {
-                          const combinedType = `${opt.vehicletype} ${opt.description || ''}`.trim();
-                          return (
-                            <option key={opt.id} value={combinedType}>
-                              {combinedType}
-                            </option>
-                          );
-                        })}
-                      </CFormSelect>
-                    ) : key === 'city' && selectedModel === 'HostCabRateCard' ? (
-                      <CFormSelect name={key} value={newRecord[key] || ''} onChange={handleInputChange}>
-                        <option value="">Select City</option>
-                        {cities.map(city => (
-                          <option key={city.id} value={city.name}>{city.name}</option>
-                        ))}
-                      </CFormSelect>
-                    )
-                      : (
-                        <CFormInput
-                          name={key}
-                          value={newRecord[key] || ''}
-                          onChange={handleInputChange}
-                        />
-                      )}
+            {selectedModel === 'HostCabRateCard' ? (
+              <>
+                <h6 className="text-primary border-bottom pb-2 mb-3">Core Information</h6>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>City</CFormLabel>
+                    <CFormSelect name="city" value={newRecord.city || ''} onChange={handleInputChange}>
+                      <option value="">Select City</option>
+                      {cities.map(city => (
+                        <option key={city.id} value={city.name}>{city.name}</option>
+                      ))}
+                    </CFormSelect>
                   </div>
-                )
-              })}
-            </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Cab Type</CFormLabel>
+                    <CFormSelect name="cabType" value={newRecord.cabType || ''} onChange={handleInputChange}>
+                      <option value="">Select Cab Type</option>
+                      {vehicleTypes.map(opt => {
+                        const combinedType = `${opt.vehicletype} ${opt.description || ''}`.trim();
+                        return <option key={opt.id} value={combinedType}>{combinedType}</option>;
+                      })}
+                    </CFormSelect>
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Status</CFormLabel>
+                    <CFormSelect name="isActive" value={newRecord.isActive !== false ? 'true' : 'false'} onChange={(e) => setNewRecord(prev => ({ ...prev, isActive: e.target.value === 'true' }))}>
+                      <option value="true">Active</option>
+                      <option value="false">Inactive</option>
+                    </CFormSelect>
+                  </div>
+                </div>
+
+                <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Local (Daily) <small className="text-muted">(Fixed Base ₹150 for 2km)</small></h6>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Local Extra KM Rate (₹)</CFormLabel>
+                    <CFormInput name="localExtraKmRate" type="number" value={newRecord.localExtraKmRate || ''} onChange={handleInputChange} placeholder="e.g. 22" />
+                  </div>
+                </div>
+
+                <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Airport Transfer</h6>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Airport Base Price {"(< 35km)"}</CFormLabel>
+                    <CFormInput name="airportTransferPrice" type="number" value={newRecord.airportTransferPrice || ''} onChange={handleInputChange} placeholder="e.g. 800" />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Airport Extra KM Rate {"(> 35km)"}</CFormLabel>
+                    <CFormInput name="airportExtraKmRate" type="number" value={newRecord.airportExtraKmRate || ''} onChange={handleInputChange} placeholder="e.g. 25" />
+                  </div>
+                </div>
+
+                <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Rentals (Packages)</h6>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Half Day Price (4Hrs/40Kms)</CFormLabel>
+                    <CFormInput name="halfDayPrice" type="number" value={newRecord.halfDayPrice || ''} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Full Day Price (8Hrs/80Kms)</CFormLabel>
+                    <CFormInput name="fullDayPrice" type="number" value={newRecord.fullDayPrice || ''} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Rental Extra Hour Rate</CFormLabel>
+                    <CFormInput name="extraHourRate" type="number" value={newRecord.extraHourRate || ''} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Rental Extra KM Rate</CFormLabel>
+                    <CFormInput name="extraKmRate" type="number" value={newRecord.extraKmRate || ''} onChange={handleInputChange} />
+                  </div>
+                </div>
+
+                <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Outstation</h6>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Per KM Price (Min 50km)</CFormLabel>
+                    <CFormInput name="outstationPerKmPrice" type="number" value={newRecord.outstationPerKmPrice || ''} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <CFormLabel>Driver Allowance (Per Day)</CFormLabel>
+                    <CFormInput name="driverAllowancePerDay" type="number" value={newRecord.driverAllowancePerDay || ''} onChange={handleInputChange} />
+                  </div>
+                </div>
+
+                <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Global Adjustments</h6>
+                <div className="row">
+                  <div className="col-md-4 mb-3">
+                    <CFormLabel>Surge Multiplier</CFormLabel>
+                    <CFormInput name="surgeMultiplier" type="number" step="0.1" value={newRecord.surgeMultiplier || '1.0'} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-4 mb-3">
+                    <CFormLabel>Toll Charges (Fixed)</CFormLabel>
+                    <CFormInput name="tollCharges" type="number" value={newRecord.tollCharges || '0'} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-4 mb-3">
+                    <CFormLabel>Active Offers (Text)</CFormLabel>
+                    <CFormInput name="offers" value={newRecord.offers || ''} onChange={handleInputChange} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="row">
+                {Object.keys(newRecord).map(key => {
+                  if (typeof newRecord[key] === 'object' && newRecord[key] !== null) return null;
+                  if (['id', 'createdAt', 'updatedAt', 'hostId'].includes(key)) return null;
+                  return (
+                    <div className="col-md-6 mb-3" key={key}>
+                      <CFormLabel>{key}</CFormLabel>
+                      <CFormInput name={key} value={newRecord[key] || ''} onChange={handleInputChange} />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </CForm>
         </CModalBody>
         <CModalFooter>

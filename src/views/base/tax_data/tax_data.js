@@ -1,6 +1,6 @@
 // UpdateTaxModal.js
 import React, { useEffect, useState, useCallback } from 'react';
-import { createTax, getTax, updateTax } from '../../../api/tax';
+import { createTax, getTax, updateTax, deleteTax } from '../../../api/tax';
 import DocsExample from '../../../components/DocsExample';
 import {
   CInputGroup,
@@ -110,9 +110,25 @@ const UpdateTaxModal = () => {
       fetchTaxData(); 
       setError('');
     } catch (error) {
-      setModalError(error.response.data.message || 'An error occurred'); 
+      setModalError(error.response?.data?.message || 'An error occurred'); 
     }
-  } ,[updatedTaxValue]);
+  } ,[updatedTaxValue, fetchTaxData]);
+
+  const handleDeleteTax = useCallback(async (id) => {
+    if (id === 0) {
+      alert("Cannot delete the system default template.");
+      return;
+    }
+    if (window.confirm("Are you sure you want to delete this tax record?")) {
+      try {
+        await deleteTax(id);
+        fetchTaxData();
+        setError('');
+      } catch (error) {
+        setError(error.response?.data?.message || 'Error deleting tax');
+      }
+    }
+  }, [fetchTaxData]);
   
 
   const handleUpdateid = (tax) =>{
@@ -231,6 +247,7 @@ const UpdateTaxModal = () => {
                   <CTableHeaderCell scope="col">Insurance</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Created At</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Updated At</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -238,7 +255,7 @@ const UpdateTaxModal = () => {
                   <div className='error-message'> {error} </div>
                 ) : (
                   displayedHosts.map((tax, index) => (
-                    <CTableRow key={tax.id} onClick={() => (handleUpdateid(tax))}>
+                    <CTableRow key={tax.id} >
                       <CTableHeaderCell scope="row">{(currentPage - 1) * limit + index + 1}</CTableHeaderCell>
                       <CTableDataCell  >{tax.id}</CTableDataCell>
                       <CTableDataCell >{tax.Commission ? tax.Commission : 'N/A'}</CTableDataCell>
@@ -248,6 +265,10 @@ const UpdateTaxModal = () => {
                       <CTableDataCell >{tax.insurance ? tax.insurance : 'N/A'}</CTableDataCell>
                       <CTableDataCell>{new Date(tax.createdAt).toLocaleString()}</CTableDataCell>
                       <CTableDataCell>{new Date(tax.updatedAt).toLocaleString()}</CTableDataCell>
+                      <CTableDataCell>
+                        <CButton size="sm" color="info" className="me-2 text-white" onClick={() => handleUpdateid(tax)}>Edit</CButton>
+                        <CButton size="sm" color="danger" onClick={(e) => { e.stopPropagation(); handleDeleteTax(tax.id); }}>Delete</CButton>
+                      </CTableDataCell>
                     </CTableRow>
                   ))
                 )}
@@ -282,7 +303,7 @@ const UpdateTaxModal = () => {
 
           <CModal visible={taxModalVisible} onClose={() => setTaxModalVisible(false)} alignment="center" size="lg">
             <CModalHeader>
-              <CModalTitle>Update Tax Information</CModalTitle>
+              <CModalTitle>Create New Tax Record</CModalTitle>
             </CModalHeader>
             <CModalBody>
               <CForm onSubmit={handleTaxSubmit}>

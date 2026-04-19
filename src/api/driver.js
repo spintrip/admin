@@ -55,3 +55,15 @@ export const rejectDriverProfile = async(id) => {
     throw error;
   }
 }
+export const deleteDriver = async (id) => {
+  try {
+    const response = await axios.delete(`${apiUrl}admin/drivers/${id}`, {
+      headers: {
+        token: token,
+      },
+    })
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}

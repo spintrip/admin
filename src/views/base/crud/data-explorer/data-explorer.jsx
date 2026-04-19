@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { fetchCrudRecords, updateCrudRecord, deleteCrudRecord, createCrudRecord } from '../../../api/crud';
+import { fetchCrudRecords, updateCrudRecord, deleteCrudRecord, createCrudRecord } from '../../../../api/crud';
 import {
   CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CFormInput, CFormLabel, CCard, CCardHeader, CCardBody
 } from '@coreui/react';
@@ -11,6 +11,12 @@ const customStyles = {
   headRow: { style: { backgroundColor: '#212631', color: '#ffffff' } },
   headCells: { style: { color: '#ffffff' } },
   rows: { style: { backgroundColor: '#282D37', color: '#ffffff', '&:hover': { backgroundColor: 'black' } } },
+};
+
+// Fallback schemas for when tables are completely empty
+const modelSchemas = {
+  Offer: { code: '', percentage: '', maxDiscount: '', minAmount: '', expiryDate: '', isActive: 'true', usageLimit: '-1', usedCount: '0', description: '' },
+  City: { name: '', isActive: 'true' }
 };
 
 const DataExplorer = () => {
@@ -31,10 +37,13 @@ const DataExplorer = () => {
 
   useEffect(() => { loadData(); }, [model]);
 
+  // Determine schema keys based on data OR fallback schema
+  const schemaTemplate = data.length > 0 ? data[0] : (modelSchemas[model] || { name: '' });
+  const schemaKeys = Object.keys(schemaTemplate).filter(k => !['id', 'createdAt', 'updatedAt'].includes(k));
+
   const columns = useMemo(() => {
     if (data.length === 0) return [];
-    const keys = Object.keys(data[0]).filter(k => !['createdAt', 'updatedAt'].includes(k));
-    const cols = keys.map(key => ({
+    const cols = schemaKeys.map(key => ({
       name: key.toUpperCase(),
       selector: row => String(row[key] ?? '--'),
       sortable: true,
@@ -55,7 +64,7 @@ const DataExplorer = () => {
       ),
     });
     return cols;
-  }, [data, model]);
+  }, [data, model, schemaKeys]);
 
   const handleSave = async () => {
     try {
@@ -72,7 +81,7 @@ const DataExplorer = () => {
       <Toaster />
       <CCardHeader className="d-flex justify-content-between align-items-center bg-dark text-white py-3">
         <h5 className="mb-0">{model} Explorer</h5>
-        <CButton color="success" onClick={() => { setRecord({}); setModal('add'); }}>+ Add New {model}</CButton>
+        <CButton color="success" onClick={() => { setRecord(modelSchemas[model] || {}); setModal('add'); }}>+ Add New {model}</CButton>
       </CCardHeader>
       <CCardBody className="p-0">
         <DataTable columns={columns} data={data} progressPending={loading} customStyles={customStyles} pagination theme="dark" />
@@ -82,10 +91,14 @@ const DataExplorer = () => {
         <CModalHeader><CModalTitle>{modal === 'edit' ? 'Edit' : 'Add'} {model}</CModalTitle></CModalHeader>
         <CModalBody>
           <CForm>
-            {Object.keys(data[0] || {name: ''}).filter(k => !['id', 'createdAt', 'updatedAt'].includes(k)).map(key => (
+            {schemaKeys.map(key => (
               <div key={key} className="mb-3">
                 <CFormLabel>{key}</CFormLabel>
-                <CFormInput value={record[key] || ''} onChange={(e) => setRecord({...record, [key]: e.target.value})} />
+                <CFormInput 
+                  type={key === 'expiryDate' ? 'datetime-local' : 'text'}
+                  value={record[key] || ''} 
+                  onChange={(e) => setRecord({...record, [key]: e.target.value})} 
+                />
               </div>
             ))}
           </CForm>

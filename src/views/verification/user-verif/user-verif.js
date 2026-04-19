@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchUserVerification, approveUserVerification , rejectUserVerification } from '../../../api/user';
+import { fetchUserVerification, approveUserVerification , rejectUserVerification, deleteUser, convertHostToDriver } from '../../../api/user';
 import { useNavigate } from 'react-router-dom';
 import FileDisplay from '../../base/controller/FileDisplay';
 import {
@@ -38,6 +38,10 @@ const UserVerification = () => {
   const [filteredData , setFilteredData] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState('id');
   const [searchInput, setSearchInput] = useState('');
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [convertModalVisible, setConvertModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const limit = 20;
   const visiblePages = 3;
   const token = localStorage.getItem('adminToken');
@@ -122,6 +126,40 @@ const UserVerification = () => {
       fetchData();
     } catch(error){
       console.log(error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedProfile) return;
+    setIsDeleting(true);
+    try {
+      await deleteUser(selectedProfile.id);
+      setDeleteModalVisible(false);
+      setModalVisible(false);
+      fetchData();
+      alert("User deleted successfully. They can now register again from scratch.");
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("Failed to delete user. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleConvertToDriver = async () => {
+    if (!selectedProfile) return;
+    setIsConverting(true);
+    try {
+      await convertHostToDriver(selectedProfile.id);
+      setConvertModalVisible(false);
+      setModalVisible(false);
+      fetchData();
+      alert(`Role transition complete! ${selectedProfile.FullName} is now a Driver. Their KYC data has been migrated and vehicles have been mirrored to the Cab system.`);
+    } catch (error) {
+      console.error("Conversion Error:", error);
+      alert("Failed to convert role. Please check if the user has a valid Host profile.");
+    } finally {
+      setIsConverting(false);
     }
   };
 
@@ -326,21 +364,76 @@ const UserVerification = () => {
             </CRow>
           </CModalBody>
           <CModalFooter className='d-flex align-items-center justify-content-between'>
-            <CButton color="danger" onClick={() => handleDecline(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
-              <span>Decline</span>
+            <CButton color="danger" onClick={() => setDeleteModalVisible(true)} className='d-flex align-items-center justify-content-center'>
+              <span>Delete Completely</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
               </svg>
             </CButton>
-            <CButton color="success" onClick={() => handleApprove(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
-              <span>Approve</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-            </CButton>
+            <div className="d-flex">
+              <CButton color="warning" onClick={() => handleDecline(selectedProfile.id)} className='d-flex align-items-center justify-content-center me-2' style={{color: 'white'}}>
+                <span>Reject</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </CButton>
+              <CButton color="success" onClick={() => handleApprove(selectedProfile.id)} className='d-flex align-items-center justify-content-center'>
+                <span>Approve</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </CButton>
+            </div>
+            <div className='d-flex'>
+              <CButton color="info" onClick={() => setConvertModalVisible(true)} className='d-flex align-items-center justify-content-center text-white'>
+                <span>Convert to Driver</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="svg-size" style={{marginLeft: '5px'}}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7.5L19.5 11M19.5 11L16 14.5M19.5 11H4.5M8 16.5L4.5 13M4.5 13L8 9.5M4.5 13H19.5" />
+                </svg>
+              </CButton>
+            </div>
           </CModalFooter>
         </CModal>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)} alignment="center">
+        <CModalHeader>
+          <CModalTitle>Confirm Complete Deletion</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p className="text-danger"><strong>WARNING:</strong> This will permanently delete the user <b>{selectedProfile?.FullName}</b> and all their records (Profile, Wallet, Bookings, etc.).</p>
+          <p>This action cannot be undone. The user will be able to register again as a new user.</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setDeleteModalVisible(false)} disabled={isDeleting}>Cancel</CButton>
+          <CButton color="danger" onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Yes, Delete Completely"}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* Convert to Driver Confirmation Modal */}
+      <CModal visible={convertModalVisible} onClose={() => setConvertModalVisible(false)} alignment="center">
+        <CModalHeader>
+          <CModalTitle>Confirm Role Transition</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p>You are about to convert <b>{selectedProfile?.FullName}</b> from a Host to a <b>Driver</b>.</p>
+          <ul>
+            <li>KYC data (Aadhar, Email, etc.) will be migrated automatically.</li>
+            <li>All associated vehicles (Cabs, Cars, Bikes) will be assigned to this user as the Driver.</li>
+            <li>User role will be updated to "Driver" immediately in the mobile app.</li>
+          </ul>
+          <p className="text-info">The user will NOT have to re-register or re-fill their details.</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setConvertModalVisible(false)} disabled={isConverting}>Cancel</CButton>
+          <CButton color="info" onClick={handleConvertToDriver} disabled={isConverting} className="text-white">
+            {isConverting ? "Converting..." : "Yes, Convert to Driver"}
+          </CButton>
+        </CModalFooter>
+      </CModal>
       
       {enlargedImage && (
         <CModal visible={!!enlargedImage} onClose={() => setEnlargedImage(null)} size="lg">

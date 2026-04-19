@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getvehicles, fetchvehicleById, updatevehicle } from '../../../api/vehicle';
+import { getvehicles, fetchvehicleById, updatevehicle, activateVehicle } from '../../../api/vehicle';
 import { fetchUserById } from '../../../api/user';
 import DocsExample from '../../../components/DocsExample';
 import {
@@ -70,20 +70,22 @@ const customStyles = {
 };
 const columns = [
   {
-    name: 'vehicle Id',
-    selector: (row) => row.vehicleid, // Assuming 'vehicleid' is the key in your data
+    name: 'Host Details',
+    selector: (row) => row.hostName || 'N/A',
     sortable: true,
+    cell: row => (
+      <div>
+        <div className="fw-bold">{row.hostName || 'N/A'}</div>
+        <div className="small text-muted">{row.hostPhone || ''}</div>
+      </div>
+    )
   },
   {
-    name: 'Host ID',
-    selector: (row) => row.hostId, // Assuming 'hostId' is the key in your data
+    name: 'Vehicle',
+    selector: (row) => row.vehicleName || `${row.brand || ''} ${row.vehiclemodel || ''}`.trim() || 'N/A',
     sortable: true,
+    cell: row => <div className="fw-bold text-info">{row.vehicleName || `${row.brand || ''} ${row.vehiclemodel || ''}`.trim() || 'N/A'}</div>
   },
-  // {
-  //   name: 'Vehicle Model',
-  //   selector: (row) => row.vehiclemodel, // Assuming 'vehicleModel' is the key in your data
-  //   sortable: true,
-  // },
 
   {
     name: 'Verification',
@@ -118,11 +120,6 @@ const columns = [
   
       return <div key={row.id + (row.additionalInfo?.verification_status || '0')} className={className}>{statusText}</div>;
     },
-  },
-  {
-    name: 'Brand',
-    selector: (row) => row.brand, // Assuming 'brand' is the key in your data
-    sortable: true,
   },
   {
     name: 'Chassis No',
@@ -162,6 +159,16 @@ const columns = [
     selector: row => new Date(row.updatedAt), // Return the Date object for sorting
     sortable: true,
     cell: row => new Date(row.updatedAt).toLocaleString(), // Display as a formatted string
+  },
+  {
+    name: 'Activated',
+    selector: row => row.activated,
+    sortable: true,
+    cell: row => (
+      <div className={`p-1 rounded border ${row.activated ? 'border-success text-success' : 'border-danger text-danger'} text-center w-100`}>
+        {row.activated ? 'YES' : 'NO'}
+      </div>
+    )
   },
 ];
 
@@ -360,6 +367,18 @@ const vehicles = () => {
     }
   } , [updateAdditionalInfo ,vehicleById, fetchData]);
 
+  const handleToggleActivation = async () => {
+    try {
+      const newStatus = !vehicleById.activated;
+      await activateVehicle(vehicleById.vehicleid, newStatus);
+      setModalVisible(false);
+      fetchData();
+      setError('');
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   useEffect(() => {
     const filtervehicles = () => {
       let sortedData = [...vehicleData];
@@ -407,9 +426,7 @@ const vehicles = () => {
     { label: 'Engine Number', value: 'Enginenumber' },
     { label: 'Registration Year', value: 'Registrationyear' },
     { label: 'Body Type', value: 'bodytype' },
-    { label: 'Vehicle ID', value: 'vehicleid' },
-    { label: 'Rating', value: 'rating' },
-    { label: 'Host ID', value: 'hostId' },
+    { label: 'Host', value: 'hostName' },
     { label: 'Created At', value: 'createdAt' },
     { label: 'Updated At', value: 'updatedAt' },
   ];
@@ -468,8 +485,9 @@ const vehicles = () => {
               <CModalBody>
                 <CRow>
                   <CCol xs={5} className="vehicle-modal">
-                    <p><strong>Vehicle Id:</strong> {vehicleById.vehicleid || 'N/A'}</p>
-                    <p><strong>Host Id:</strong> {vehicleById.hostId || 'N/A'}</p>
+                    <p className='fs-5 text-primary'><strong>{vehicleById.vehicleName || 'N/A'}</strong></p>
+                    <p className='text-muted small'>({vehicleById.vehicleid})</p>
+                    <p><strong>Host:</strong> {vehicleById.hostName || 'N/A'} ({vehicleById.hostPhone || 'N/A'})</p>
                     <p><strong>vehicle Model:</strong> {vehicleById.vehiclemodel || 'N/A'}</p>
                     <p><strong>Type:</strong> {vehicleById.type || 'N/A'}</p>
                     <p><strong>Brand:</strong> {vehicleById.brand || 'N/A'}</p>
@@ -652,6 +670,13 @@ const vehicles = () => {
                 </CRow>
               </CModalBody>
               <CModalFooter className="d-flex align-items-center justify-content-end">
+                <CButton 
+                  color={vehicleById.activated ? "danger" : "success"}
+                  className="btn-interactive me-auto" 
+                  onClick={handleToggleActivation}
+                >
+                  {vehicleById.activated ? "Deactivate Vehicle" : "Activate Vehicle"}
+                </CButton>
                 <CButton className="btn-interactive basicInfo" onClick={handleOpenUpdateForm}>
                   Update Info
                 </CButton>

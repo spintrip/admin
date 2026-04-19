@@ -17,6 +17,29 @@ export const getBooking = async () => {
   }
 };
 
+export const getSelfDriveBookings = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}admin/bookings/self-drive`, {
+      headers: { token: token },
+    });
+    return response.data.bookings;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCabBookings = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}admin/bookings/cab`, {
+      headers: { token: token },
+    });
+    return response.data.bookings;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 export const fetchBookingById = async(id) => {
   try{
     const response = await axios.get(`${apiUrl}admin/bookings/${id}`, {
@@ -42,4 +65,15 @@ export const updateBooking = async(id , data) => {
     throw error;
   }
 }
-
+export const createBooking = async (data) => {
+  try {
+    const response = await axios.post(`${apiUrl}admin/bookings/create`, data, {
+      headers: {
+        'token': token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

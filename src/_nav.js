@@ -69,14 +69,20 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'vehicles',
+        name: 'Cars & Bikes',
         to: '/base/vehicles'
       },
       {
         component: CNavItem,
-        name: 'Bookings',
-        to: '/base/bookings'
+        name: 'Self-Drive Bookings',
+        to: '/base/self-drive-bookings'
       },
+      {
+        component: CNavItem,
+        name: 'Cab Bookings',
+        to: '/base/cab-bookings'
+      },
+
       {
         component: CNavItem,
         name: 'Pricing',
@@ -86,6 +92,16 @@ const _nav = [
         component: CNavItem,
         name: 'Blogs',
         to: '/base/blogs'
+      },
+      {
+        component: CNavItem,
+        name: 'Tax',
+        to: '/base/tax_data'
+      },
+      {
+        component: CNavItem,
+        name: 'Offers',
+        to: '/admin/crud/Offer'
       },
       // Removed redundant single-view tabs (now subsumed by Data Explorer)
     ],

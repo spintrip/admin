@@ -26,11 +26,25 @@ import {
   cilUser,
 } from '@coreui/icons'
 
-import { getBooking, updateBooking } from '../../api/booking'
+import { getBooking, updateBooking, createBooking } from '../../api/booking'
 import { fetchDrivers } from '../../api/driver'
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Autocomplete } from '@react-google-maps/api'
 import { Google_Maps_Api_key } from '../../env'
-import { CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
+import { 
+  CModal, 
+  CModalHeader, 
+  CModalTitle, 
+  CModalBody, 
+  CForm, 
+  CFormInput, 
+  CFormLabel, 
+  CFormSelect, 
+  CButton as CBtn,
+  CModalFooter
+} from '@coreui/react'
+import toast from 'react-hot-toast'
+
+const LIBRARIES = ['places'];
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -44,6 +58,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
+import '../../scss/booking.css'
 import { fetchUsers } from '../../api/user'
 
 const Dashboard = () => {
@@ -53,7 +68,26 @@ const Dashboard = () => {
   const [requestedBookings, setRequestedBookings] = React.useState([])
   const [allBookings, setAllBookings] = React.useState([])
   const [drivers, setDrivers] = React.useState([])
-  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: Google_Maps_Api_key })
+  const { isLoaded } = useJsApiLoader({ 
+    id: 'google-map-script', 
+    googleMapsApiKey: Google_Maps_Api_key,
+    libraries: LIBRARIES
+  });
+  const [createModalVisible, setCreateModalVisible] = React.useState(false)
+  const [newBookingData, setNewBookingData] = React.useState({
+    customerPhone: '',
+    customerName: '',
+    cabType: 'mini eco',
+    bookingType: 'Local',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    amount: '',
+    startLocation: { address: '', latitude: null, longitude: null },
+    endLocation: { address: '', latitude: null, longitude: null }
+  });
+  const [pickupAutocomplete, setPickupAutocomplete] = React.useState(null);
+  const [dropAutocomplete, setDropAutocomplete] = React.useState(null);
+
   const [mapModalVisible, setMapModalVisible] = React.useState(false)
   const [activeDriverWindow, setActiveDriverWindow] = React.useState(null)
   const [bookingById, setBookingById] = React.useState(null)
@@ -82,7 +116,15 @@ const Dashboard = () => {
 
   const handleAssignDriver = async (driverId) => {
     try {
-      await updateBooking(bookingById.Bookingid, { driverid: driverId, status: 1 });
+      const selectedDriver = drivers.find(d => d.id === driverId);
+      // Backend includes Cab model which has vehicleid
+      const vehicleId = selectedDriver?.Cab?.vehicleid || selectedDriver?.vehicleId;
+
+      await updateBooking(bookingById.Bookingid, { 
+        driverid: driverId, 
+        vehicleid: vehicleId,
+        status: 1 
+      });
       setMapModalVisible(false);
       setActiveDriverWindow(null);
       setBookingById(null);
@@ -122,6 +164,62 @@ const Dashboard = () => {
     });
   }
 
+  const handleCreateBookingSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createBooking(newBookingData);
+      toast.success("Booking created successfully!");
+      setCreateModalVisible(false);
+      setNewBookingData({
+        customerPhone: '',
+        customerName: '',
+        cabType: 'mini eco',
+        bookingType: 'Local',
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toTimeString().slice(0, 5),
+        amount: '',
+        startLocation: { address: '', latitude: null, longitude: null },
+        endLocation: { address: '', latitude: null, longitude: null }
+      });
+      fetchDashboardData();
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      toast.error("Failed to create booking.");
+    }
+  };
+
+  const onPickupPlaceChanged = () => {
+    if (pickupAutocomplete !== null) {
+      const place = pickupAutocomplete.getPlace();
+      if (place.geometry) {
+        setNewBookingData(prev => ({
+          ...prev,
+          startLocation: {
+            address: place.formatted_address || place.name || prev.startLocation.address,
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng()
+          }
+        }));
+      }
+    }
+  };
+
+  const onDropPlaceChanged = () => {
+    if (dropAutocomplete !== null) {
+      const place = dropAutocomplete.getPlace();
+      if (place.geometry) {
+        setNewBookingData(prev => ({
+          ...prev,
+          endLocation: {
+            address: place.formatted_address || place.name || prev.endLocation.address,
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng()
+          }
+        }));
+      }
+    }
+  };
+
   const getDriverMarkerIcon = (driver) => {
     // Base64 SVGs for reliability
     const carIcons = {
@@ -151,8 +249,11 @@ const Dashboard = () => {
       <CRow>
         <CCol xs>
           <CCard className="mb-4">
-            <CCardHeader>
+            <CCardHeader className="d-flex justify-content-between align-items-center">
               <strong>Active Requested Bookings</strong>
+              <CButton color="success" size="sm" className="text-white" onClick={() => setCreateModalVisible(true)}>
+                + New Booking
+              </CButton>
             </CCardHeader>
             <CCardBody>
               <CTable align="middle" className="mb-0 border" hover responsive>
@@ -173,7 +274,8 @@ const Dashboard = () => {
                         <div className="text-truncate" style={{ maxWidth: '150px' }}>{item.Bookingid || 'N/A'}</div>
                       </CTableDataCell>
                       <CTableDataCell>
-                        <div>{item.id || 'N/A'}</div>
+                        <div>{item.customerName || item.id || 'N/A'}</div>
+                        <div className="small text-body-secondary">{item.customerPhone || 'N/A'}</div>
                       </CTableDataCell>
                       <CTableDataCell>
                         <div className="text-truncate" style={{ maxWidth: '200px' }}>{item.pickUpLocation || 'N/A'}</div>
@@ -240,10 +342,19 @@ const Dashboard = () => {
                   zoom={mapZoom}
                   center={mapCenter}
                 >
-                  {drivers.filter(d => parseFloat(d.latitude) && parseFloat(d.longitude)).map((driver) => (
-                    <Marker
-                      key={driver.id}
-                      position={{ lat: parseFloat(driver.latitude), lng: parseFloat(driver.longitude) }}
+                  {(() => {
+                    const seenIds = new Set();
+                    return drivers
+                      .filter(d => d.latitude !== null && d.longitude !== null)
+                      .filter(d => {
+                        if (seenIds.has(d.id)) return false;
+                        seenIds.add(d.id);
+                        return true;
+                      })
+                      .map((driver) => (
+                        <Marker
+                          key={driver.id}
+                          position={{ lat: parseFloat(driver.latitude), lng: parseFloat(driver.longitude) }}
                       icon={{
                         url: getDriverMarkerIcon(driver),
                         scaledSize: new window.google.maps.Size(40, 40)
@@ -269,7 +380,8 @@ const Dashboard = () => {
                         </InfoWindow>
                       )}
                     </Marker>
-                  ))}
+                    ));
+                  })()}
                 </GoogleMap>
               ) : (
                 <div className="d-flex justify-content-center align-items-center h-100">
@@ -399,11 +511,14 @@ const Dashboard = () => {
                   <Marker key={driver.id} position={{ lat: parseFloat(driver.latitude), lng: parseFloat(driver.longitude) }} icon={{ url: "http://maps.google.com/mapfiles/kml/shapes/cabs.png", scaledSize: new window.google.maps.Size(32, 32) }} onClick={() => setActiveDriverWindow(driver.id)}>
                     {activeDriverWindow === driver.id && (
                       <InfoWindow onCloseClick={() => setActiveDriverWindow(null)}>
-                        <div style={{ color: 'black', padding: '5px' }}>
-                          <h6 className='m-0 p-0 mb-1 fw-bold'>{driver.name || 'Unknown Driver'}</h6>
-                          <p className='m-0 p-0 text-muted'>Distance: {dist ? dist + ' km' : 'Unknown'}</p>
+                        <div style={{ color: '#000', padding: '10px', minWidth: '150px', backgroundColor: '#fff' }}>
+                          <h6 className='m-0 p-0 mb-1 fw-bold' style={{ color: '#000' }}>{driver.name || 'Unknown Driver'}</h6>
+                          <p className='m-0 p-0 mb-1 fw-bold' style={{ color: '#d32f2f' }}>
+                                Phone: {driver.phone || driver.phoneNumber || driver.User?.phone || driver.User?.phoneNumber || 'N/A'}
+                          </p>
+                          <p className='m-0 p-0 small' style={{ color: '#333' }}>Distance: <span className="fw-bold">{dist ? dist + ' km' : 'Unknown'}</span></p>
                           <CButton size="sm" color="info" className="text-white mt-2 w-100" onClick={() => handleAssignDriver(driver.id)}>
-                            Assign
+                            Assign Driver
                           </CButton>
                         </div>
                       </InfoWindow>
@@ -413,6 +528,147 @@ const Dashboard = () => {
               })}
             </GoogleMap>
           </CModalBody>
+        </CModal>
+      )}
+      {/* Create Booking Modal */}
+      {isLoaded && (
+        <CModal visible={createModalVisible} onClose={() => setCreateModalVisible(false)} size="lg" backdrop="static">
+          <CModalHeader closeButton>
+            <CModalTitle>Create New Manual Booking</CModalTitle>
+          </CModalHeader>
+          <CForm onSubmit={handleCreateBookingSubmit}>
+            <CModalBody>
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormLabel>Customer Phone</CFormLabel>
+                  <CFormInput 
+                    required 
+                    type="tel" 
+                    placeholder="e.g. 9988776655" 
+                    value={newBookingData.customerPhone}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, customerPhone: e.target.value })}
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel>Customer Name (Optional)</CFormLabel>
+                  <CFormInput 
+                    type="text" 
+                    placeholder="Guest Name" 
+                    value={newBookingData.customerName}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, customerName: e.target.value })}
+                  />
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormLabel>Cab Type</CFormLabel>
+                  <CFormSelect 
+                    value={newBookingData.cabType}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, cabType: e.target.value })}
+                  >
+                    <option value="mini eco">Mini Eco</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="suv">SUV</option>
+                    <option value="12 seater">12 Seater</option>
+                    <option value="luxury">Luxury</option>
+                  </CFormSelect>
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel>Type of Trip</CFormLabel>
+                  <CFormSelect 
+                    value={newBookingData.bookingType}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, bookingType: e.target.value })}
+                  >
+                    <option value="Local">Local</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Rentals">Rentals</option>
+                    <option value="Outstation">Outstation</option>
+                    <option value="Airport">Airport</option>
+                  </CFormSelect>
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={12}>
+                  <CFormLabel>Pickup Location (Search)</CFormLabel>
+                  <Autocomplete
+                    onLoad={(autocomplete) => setPickupAutocomplete(autocomplete)}
+                    onPlaceChanged={onPickupPlaceChanged}
+                    options={{ types: ['geocode', 'establishment'] }}
+                  >
+                    <CFormInput 
+                      required 
+                      type="text" 
+                      placeholder="Search pickup address..." 
+                      value={newBookingData.startLocation.address}
+                      onChange={(e) => setNewBookingData({ 
+                        ...newBookingData, 
+                        startLocation: { ...newBookingData.startLocation, address: e.target.value, latitude: null, longitude: null } 
+                      })}
+                    />
+                  </Autocomplete>
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={12}>
+                  <CFormLabel>Drop-off Location (Search)</CFormLabel>
+                  <Autocomplete
+                    onLoad={(autocomplete) => setDropAutocomplete(autocomplete)}
+                    onPlaceChanged={onDropPlaceChanged}
+                    options={{ types: ['geocode', 'establishment'] }}
+                  >
+                    <CFormInput 
+                      required={newBookingData.bookingType !== 'Rentals'} 
+                      type="text" 
+                      placeholder="Search drop-off address..." 
+                      value={newBookingData.endLocation.address}
+                      onChange={(e) => setNewBookingData({ 
+                        ...newBookingData, 
+                        endLocation: { ...newBookingData.endLocation, address: e.target.value, latitude: null, longitude: null } 
+                      })}
+                    />
+                  </Autocomplete>
+                </CCol>
+              </CRow>
+
+              <CRow className="mb-3">
+                <CCol md={4}>
+                  <CFormLabel>Date</CFormLabel>
+                  <CFormInput 
+                    required 
+                    type="date" 
+                    value={newBookingData.date}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, date: e.target.value })}
+                  />
+                </CCol>
+                <CCol md={4}>
+                  <CFormLabel>Time</CFormLabel>
+                  <CFormInput 
+                    required 
+                    type="time" 
+                    value={newBookingData.time}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, time: e.target.value })}
+                  />
+                </CCol>
+                <CCol md={4}>
+                  <CFormLabel>Total Fare (₹)</CFormLabel>
+                  <CFormInput 
+                    required 
+                    type="number" 
+                    placeholder="Fixed Price"
+                    value={newBookingData.amount}
+                    onChange={(e) => setNewBookingData({ ...newBookingData, amount: e.target.value })}
+                  />
+                </CCol>
+              </CRow>
+            </CModalBody>
+            <CModalFooter>
+              <CBtn color="secondary" onClick={() => setCreateModalVisible(false)}>Cancel</CBtn>
+              <CBtn color="success" type="submit" className="text-white">Confirm Booking</CBtn>
+            </CModalFooter>
+          </CForm>
         </CModal>
       )}
     </div>

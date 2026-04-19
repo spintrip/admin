@@ -41,3 +41,12 @@
 .clickable-info strong {
     color: #495057; /* Darker gray for the labels */
 }
+
+/* Ensure Google Maps Autocomplete dropdown appears above the modal */
+.pac-container {
+    z-index: 10000 !important;
+    background-color: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    margin-top: 2px;
+}

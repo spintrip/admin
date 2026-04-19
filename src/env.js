@@ -1,5 +1,5 @@
 // const serverBaseUrl = "https://spintrip.in/api/";
-//const serverBaseUrl = "https://spintripbackend.site/"
+// const serverBaseUrl = "https://spintripbackend.site/"
 const serverBaseUrl = "https://spintrip.in/api/api/"
 // const serverBaseUrl = "http://localhost:2000/api/"
 const  serverApiUrl = serverBaseUrl;

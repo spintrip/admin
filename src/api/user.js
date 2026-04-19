@@ -106,3 +106,16 @@ export const deleteHost = async(id) => {
     throw error;
   }
 }
+
+export const convertHostToDriver = async (userId) => {
+  try {
+    const response = await axios.post(`${apiUrl}admin/users/${userId}/convert-to-driver`, {}, {
+      headers: {
+        'token': token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

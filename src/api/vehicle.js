@@ -84,3 +84,16 @@ export const rejectvehicleVerification = async(vehicleid) => {
     throw error;
   }
 }
+
+export const activateVehicle = async (id, status = true) => {
+  try {
+    const response = await axios.put(`${apiUrl}admin/activate-vehicle/${id}`, { activated: status }, {
+      headers: {
+        'token': token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

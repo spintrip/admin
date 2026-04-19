@@ -47,14 +47,15 @@ const Feedbacks = () => {
   };
 
   const columns = [
-    { name: 'ID', selector: row => row.id, sortable: true },
-    { name: 'Message', selector: row => row.message || '--', wrap: true },
-    { name: 'User ID', selector: row => row.userId || '--', sortable: true },
-    { name: 'Created At', selector: row => new Date(row.createdAt).toLocaleDateString(), sortable: true },
+    { name: 'ID', selector: row => row.feedbackId, sortable: true, width: '150px' },
+    { name: 'User', selector: row => row.userName || row.userId || '--', sortable: true },
+    { name: 'Rating', selector: row => `${row.rating} ⭐` || '--', sortable: true, width: '100px' },
+    { name: 'Message', selector: row => row.comment || '--', wrap: true, grow: 2 },
+    { name: 'Date', selector: row => row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '--', sortable: true },
     { 
       name: 'Actions',
       cell: row => (
-        <CButton color="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</CButton>
+        <CButton color="danger" size="sm" onClick={() => handleDelete(row.feedbackId)}>Delete</CButton>
       )
     }
   ];

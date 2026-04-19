@@ -19,7 +19,7 @@ const Messages = React.lazy(() => import('./views/base/messages/messages'))
 const Transactions = React.lazy(() => import('./views/base/Transactions/transactions'))
 const Drivers = React.lazy(() => import('./views/base/drivers/drivers'))
 // At the top with other imports:
-const DataExplorer = React.lazy(() => import('./views/base/crud/DataExplorer'))
+const DataExplorer = React.lazy(() => import('./views/base/crud/data-explorer/data-explorer'))
 const Cabs = React.lazy(() => import('./views/base/cabs/cabs'))
 const Feedbacks = React.lazy(() => import('./views/base/feedbacks/feedbacks'))
 const VehicleTypes = React.lazy(() => import('./views/base/vehicle-types/vehicle-types'))
@@ -55,6 +55,9 @@ const routes = [
   { path: '/base/vehicles', name: 'vehicles', element: vehicles },
   { path: '/base/pricings', name: 'Pricings', element: Pricings },
   { path: '/base/bookings', name: 'Bookings', element: Bookings },
+  { path: '/base/self-drive-bookings', name: 'Self-Drive Bookings', element: Bookings },
+  { path: '/base/cab-bookings', name: 'Cab Bookings', element: Bookings },
+
   { path: '/base/drivers', name: 'Drivers', element: Drivers },
   { path: '/base/cabs', name: 'Cabs', element: Cabs },
   { path: '/base/feedbacks', name: 'Feedbacks', element: Feedbacks },
