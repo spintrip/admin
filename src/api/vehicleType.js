@@ -42,3 +42,16 @@ export const deleteVehicleType = async(id) => {
     throw error;
   }
 }
+
+export const updateVehicleType = async(id, data) => {
+  try{
+    const response = await axios.put(`${apiUrl}admin/vehicle-types/${id}`, data, {
+      headers : {
+        'token' : token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

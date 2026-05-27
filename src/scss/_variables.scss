@@ -3,3 +3,5 @@
 // If you want to customize your project please add your variables below.
 
 $enable-deprecation-messages: false !default;
+$font-family-sans-serif: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+$font-family-base: var(--cui-font-family-sans-serif);

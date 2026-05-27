@@ -24,6 +24,8 @@ const Cabs = React.lazy(() => import('./views/base/cabs/cabs'))
 const Feedbacks = React.lazy(() => import('./views/base/feedbacks/feedbacks'))
 const VehicleTypes = React.lazy(() => import('./views/base/vehicle-types/vehicle-types'))
 const CabRates = React.lazy(() => import('./views/base/cab-rates/CabRates'))
+const SurgePricing = React.lazy(() => import('./views/base/surge-pricing/SurgePricing'))
+const Subscriptions = React.lazy(() => import('./views/base/subscriptions/Subscriptions'))
 
 //Verification
 const UserVerification = React.lazy(() => import('./views/verification/user-verif/user-verif'))
@@ -63,6 +65,8 @@ const routes = [
   { path: '/base/feedbacks', name: 'Feedbacks', element: Feedbacks },
   { path: '/base/vehicle-types', name: 'Vehicle Types', element: VehicleTypes },
   { path: '/base/cab-rates', name: 'Cab Rates', element: CabRates },
+  { path: '/base/surge-pricing', name: 'Surge Pricing', element: SurgePricing },
+  { path: '/base/subscriptions', name: 'Subscriptions', element: Subscriptions },
   { path: '/device', name: 'Device', element: Device },
   { path: '/verification/vehicle-verif', name: 'vehicleVerification', element: vehicleVerification },
   { path: '/verification/cab-verif', name: 'CabVerification', element: CabVerification },

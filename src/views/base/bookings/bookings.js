@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getBooking, fetchBookingById, updateBooking, createBooking, getSelfDriveBookings, getCabBookings } from '../../../api/booking';
+import { getBooking, fetchBookingById, updateBooking, createBooking, getSelfDriveBookings, getCabBookings, cancelCabBooking, sendCabInvoice } from '../../../api/booking';
 import { fetchCabs } from '../../../api/cab';
 import { fetchDrivers } from '../../../api/driver';
 import UserData from '../controller/userData';
@@ -27,7 +27,16 @@ import {
   CAccordion,
   CAccordionItem,
   CAccordionBody,
-  CAccordionHeader
+  CAccordionHeader,
+  CNav,
+  CNavItem,
+  CNavLink,
+  CTabContent,
+  CTabPane,
+  CBadge,
+  useColorModes,
+  CCard,
+  CCardBody
 } from '@coreui/react';
 import '../../../scss/booking.css';
 import DataTable from 'react-data-table-component';
@@ -46,40 +55,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return (R * c).toFixed(1);
 };
 
-const customStyles = {
-  header: {
-    style: {
-      backgroundColor: 'transparent',
-      color: '#ffffff',
-    },
-  },
-  headRow: {
-    style: {
-      backgroundColor: '#212631',
-      color: '#ffffff',
-    },
-  },
-  headCells: {
-    style: {
-      color: '#ffffff',
-    },
-  },
-  rows: {
-    style: {
-      backgroundColor: '#282D37',
-      color: '#ffffff',
-      '&:hover': {
-        backgroundColor: 'black',
-      },
-    },
-  },
-  pagination: {
-    style: {
-      backgroundColor: '#343a40',
-      color: '#ffffff',
-    },
-  },
-};
+// removed customStyles
 const tableHeaders = [
   { label: 'Booking ID', value: 'Bookingid' },
   { label: 'Vehicle Name', value: 'carname' }, // Added
@@ -108,6 +84,21 @@ const columns = [
     sortable: true,
   },
   {
+    name: 'Type',
+    selector: row => row.bookingType || row.type || (row.isCab ? 'Cab' : 'Rental'),
+    sortable: true,
+    cell: row => (
+      <div className="text-muted fw-bold text-capitalize">
+        {row.bookingType || row.type || (row.isCab ? 'Cab' : 'Rental')}
+        {row.bookingType === 'Outstation' && (
+          <div className="small text-info">
+            ({row.days || 1} Days, {row.isRoundTrip ? 'Round Trip' : 'One Way'})
+          </div>
+        )}
+      </div>
+    )
+  },
+  {
     name: 'Vehicle',
     selector: row => row.carname || 'N/A',
     sortable: true,
@@ -129,16 +120,13 @@ const columns = [
     name: 'Status',
     selector: row => {
       switch (row.status) {
-        case 1:
-          return "Upcoming";
-        case 2:
-          return "Start Ride";
-        case 3:
-          return "Requested";
-        case 4:
-          return "Cancelled";
-        default:
-          return "Unknown";
+        case 1: return "Upcoming";
+        case 2: return "Ongoing";
+        case 3: return "Complete";
+        case 4: return "Cancelled";
+        case 5: return "Requested";
+        case 6: return "Completed with review";
+        default: return "Unknown";
       }
     },
     sortable: true,
@@ -152,12 +140,12 @@ const columns = [
           className = "p-1 rounded border border-primary text-white bg-primary w-100 text-center";
           break;
         case 2:
-          statusText = "In Progress";
+          statusText = "Ongoing";
           className = "p-1 rounded border border-warning text-white bg-warning w-100 text-center";
           break;
         case 3:
-          statusText = "Completed";
-          className = "p-1 rounded border border-success text-black bg-success w-100 text-center";
+          statusText = "Complete";
+          className = "p-1 rounded border border-success text-white bg-success w-100 text-center";
           break;
         case 4:
           statusText = "Cancelled";
@@ -165,11 +153,11 @@ const columns = [
           break;
         case 5:
           statusText = "Requested";
-          className = "p-1 rounded border border-primary text-primary bg-white w-100 text-center";
+          className = "p-1 rounded border border-info text-white bg-info w-100 text-center";
           break;
         case 6:
-          statusText = "Completed";
-          className = "p-1 rounded border border-primary text-primary bg-white w-100 text-center";
+          statusText = "Completed with review";
+          className = "p-1 rounded border border-success text-white bg-success w-100 text-center";
           break;  
         default:
           statusText = "Unknown";
@@ -268,6 +256,9 @@ const columns = [
 
 
 const Bookings = () => {
+  const { colorMode } = useColorModes('coreui-free-react-admin-template-theme');
+  const isDark = colorMode === 'dark' || (colorMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   const location = useLocation();
   const isSelfDriveMode = location.pathname.includes('self-drive');
   const isCabMode = location.pathname.includes('cab-bookings');
@@ -281,6 +272,9 @@ const Bookings = () => {
   const [searchInput, setSearchInput] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [activeTab, setActiveTab] = useState('general');
   const [bookingById, setBookingById] = useState(null);
   const [originalBookingData, setOriginalBookingData] = useState(null);
   const [isAccordionOpen, setAccordionOpen] = useState(false);
@@ -547,6 +541,37 @@ setSelectedvehicleid(null);
     }
   };
 
+  const handleCancelBooking = async () => {
+    if (!cancelReason) {
+      alert("Please enter a reason for cancellation.");
+      return;
+    }
+    try {
+      await cancelCabBooking(bookingById.Bookingid, cancelReason);
+      setCancelModalVisible(false);
+      setModalVisible(false);
+      setCancelReason('');
+      const updatedData = await getBooking();
+      setBookingData(updatedData);
+      setFilteredData(updatedData);
+      alert('Booking cancelled successfully.');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to cancel booking: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleSendInvoice = async () => {
+    if (!window.confirm("Send invoice email/SMS to customer?")) return;
+    try {
+      await sendCabInvoice(bookingById.Bookingid);
+      alert('Invoice sent successfully.');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to send invoice: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   const handleCreateBookingSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -689,140 +714,213 @@ setSelectedvehicleid(null);
         </div>
       </div>
       <div className='container-fluid h-fit-content mt-2 mb-5'>
-            <DataTable
-              columns={columns}
-              data={displayedBookings.map((row, index) => ({ ...row, uniqueId: `${row.Bookingid}-${index}` }))}
-              customStyles={customStyles}
-              responsive={true}
-              title={'Bookings Table'}
-              keyField="Bookingid"
-              highlightOnHover={true}
-              pointerOnHover={true}
-              fixedHeader={true}
-              onRowClicked={(booking)=>handleBookingByIdClick(booking.Bookingid)}
-            />
+          <CCard className="mb-4">
+            <CCardBody>
+              <DataTable
+                columns={columns}
+                data={displayedBookings.map((row, index) => ({ ...row, uniqueId: `${row.Bookingid}-${index}` }))}
+                theme={isDark ? 'dark' : 'default'}
+                responsive={true}
+                title={'Bookings Table'}
+                keyField="Bookingid"
+                highlightOnHover={true}
+                pointerOnHover={true}
+                fixedHeader={true}
+                onRowClicked={(booking)=>handleBookingByIdClick(booking.Bookingid)}
+              />
+            </CCardBody>
+          </CCard>
         </div>
       
       {/* Booking Details Modal */}
       {bookingById && (
           <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl" scrollable>
                 <CModalHeader>
-                    <CModalTitle>Booking Details</CModalTitle>
+                    <CModalTitle>Booking Details: {bookingById.Bookingid}</CModalTitle>
                 </CModalHeader>
-                <CModalBody>
-                    <CRow>
-                        <CCol className='booking-modal d-flex justify-content-between flex-wrap'>
-                            <p><strong>Booking ID:</strong> {bookingById.Bookingid || 'N/A'}</p>
-                            <p><strong>Status:</strong> <span className='badge bg-info'>{bookingById.status}</span></p>
-                            <p className="clickable-info" onClick={() => handleUserIdClick(bookingById.id)}>
+                <CModalBody className="p-0">
+                  <CNav variant="tabs" role="tablist" className="px-3 pt-2 border-bottom">
+                    <CNavItem>
+                      <CNavLink active={activeTab === 'general'} onClick={() => setActiveTab('general')} style={{ cursor: 'pointer' }}>
+                        General Info
+                      </CNavLink>
+                    </CNavItem>
+                    <CNavItem>
+                      <CNavLink active={activeTab === 'financials'} onClick={() => setActiveTab('financials')} style={{ cursor: 'pointer' }}>
+                        Financials
+                      </CNavLink>
+                    </CNavItem>
+                  </CNav>
+                  <CTabContent className="p-4">
+                    <CTabPane visible={activeTab === 'general'}>
+                      <CRow className="mb-4">
+                        <CCol md={6}>
+                          <div className="p-3 border rounded h-100">
+                            <h6 className="fw-bold mb-3 border-bottom pb-2">Customer & Trip</h6>
+                            <p><strong>Status:</strong> <CBadge color={bookingById.status === 3 || bookingById.status === 6 ? 'success' : bookingById.status === 4 ? 'danger' : bookingById.status === 2 ? 'warning' : bookingById.status === 5 ? 'info' : 'primary'}>{bookingById.status === 1 ? 'Upcoming' : bookingById.status === 2 ? 'Ongoing' : bookingById.status === 3 ? 'Complete' : bookingById.status === 4 ? 'Cancelled' : bookingById.status === 5 ? 'Requested' : bookingById.status === 6 ? 'Completed with review' : 'Unknown'}</CBadge></p>
+                            <p className="clickable-info m-0" onClick={() => handleUserIdClick(bookingById.id)}>
                                 <strong>Customer: </strong> 
                                 <span className='text-decoration-underline cursor-pointer text-primary'>
                                     {bookingById.customerName || 'N/A'} ({bookingById.customerPhone || 'N/A'})
                                 </span>
                             </p>
                             {isAccordionOpen && selectedUserId === bookingById.id && (
-                                <UserData id={selectedUserId} onClose={handlevehicleAccordionClose} />
+                                <div className="mt-2"><UserData id={selectedUserId} onClose={handleAccordionClose} /></div>
                             )}
-                            <p className="clickable-info">
-                                <strong>Vehicle: </strong> 
-                                <span className='text-primary fw-bold'>
-                                    {bookingById.carname || 'N/A'}
-                                </span>
-                            </p>
-                        </CCol>
-                    </CRow>
-                    <CRow>
-                        <CCol  className='border rounded col-5'>
-                          <p><strong>Start Trip Date:</strong> {formatDate(bookingById.startTripDate) || formatDate(bookingById.pointAToBDate) || 'N/A'}</p>
-                          <p><strong>Start Trip Time:</strong> {formatTime(bookingById.startTripTime) || formatTime(bookingById.pointAToBTime) || 'N/A'}</p>
-                        </CCol>
-                        <CCol className='col-2 d-flex align-items-center justify-content-center'>
-                          <div style={{width: '5vw'}}>
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style={{maxWidth: '5vw'}}>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                          </svg>
-
+                            <p className="mt-2"><strong>Trip Type:</strong> <span className="text-capitalize fw-bold">{bookingById.bookingType || 'Cab'}</span></p>
+                            {bookingById.bookingType === 'Outstation' && (
+                              <>
+                                <p><strong>Duration:</strong> {bookingById.days || 1} Days</p>
+                                <p><strong>Round Trip:</strong> {bookingById.isRoundTrip ? 'Yes' : 'No (One Way)'}</p>
+                              </>
+                            )}
                           </div>
                         </CCol>
-                        <CCol className='border rounded col-5'>
-                        <p><strong>End Trip Date:</strong> {formatDate(bookingById.endTripDate) || 'N/A'}</p>
-
-                          <p><strong>End Trip Time:</strong> {formatTime(bookingById.endTripTime) || 'N/A'}</p>
+                        <CCol md={6}>
+                          <div className="p-3 border rounded h-100">
+                            <h6 className="fw-bold mb-3 border-bottom pb-2">Vehicle & Route</h6>
+                            <p><strong>Requested Vehicle:</strong> <span className='text-primary fw-bold'>{bookingById.carname || 'N/A'}</span></p>
+                            {bookingById.isCab && (
+                              <>
+                                <p><strong>Pick-Up:</strong> {bookingById.pickUpLocation || 'N/A'}</p>
+                                <p><strong>Drop-Off:</strong> {bookingById.dropOffLocation || 'N/A'}</p>
+                                <p><strong>Est. Distance:</strong> {bookingById.distance || 'N/A'}</p>
+                              </>
+                            )}
+                          </div>
                         </CCol>
                       </CRow>
+                      <CRow>
+                        <CCol className='border rounded p-3 text-center'>
+                          <p className="text-muted mb-1">Start Trip Date & Time</p>
+                          <h6 className="fw-bold m-0">{formatDate(bookingById.startTripDate) || formatDate(bookingById.pointAToBDate) || 'N/A'} at {formatTime(bookingById.startTripTime) || formatTime(bookingById.pointAToBTime) || 'N/A'}</h6>
+                        </CCol>
+                        <CCol className='col-2 d-flex align-items-center justify-content-center'>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="text-muted" style={{maxWidth: '3vw'}}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                          </svg>
+                        </CCol>
+                        <CCol className='border rounded p-3 text-center'>
+                          <p className="text-muted mb-1">End Trip Date & Time</p>
+                          <h6 className="fw-bold m-0">{formatDate(bookingById.endTripDate) || 'N/A'} at {formatTime(bookingById.endTripTime) || 'N/A'}</h6>
+                        </CCol>
+                      </CRow>
+                    </CTabPane>
 
-                    <hr/>
-                    <CRow>
+                    <CTabPane visible={activeTab === 'financials'}>
+                      <CRow className="g-4">
                         <CCol md={6}>
-                            <div className='modalstatus'>
-                                <p><strong>Status:</strong> {bookingById.status || 'N/A'}</p>
-                                <p>
-                                  <strong>Status: </strong>
-                                  {bookingById.status === 1 && (
-                                    <span className="p-1 status-view rounded border border-primary text-white bg-primary w-100 text-center">
-                                      Upcoming
-                                    </span>
-                                  )}
-                                  {bookingById.status === 2 && (
-                                    <span className="p-1 status-view rounded border border-success text-white bg-warning w-100 text-center">
-                                      In Progress
-                                    </span>
-                                  )}
-                                  {(bookingById.status === 3) && (
-                                    <span className="p-1 status-view rounded border border-light text-black bg-success w-100 text-center">
-                                      Completed
-                                    </span>
-                                  )}
-                                  {(bookingById.status === 4) && (
-                                    <span className="p-1 status-view rounded border border-light text-black bg-danger w-100 text-center">
-                                      Cancelled
-                                    </span>
-                                  )}
-                                  {(bookingById.status === 5) && (
-                                    <span className="p-1 status-view rounded border border-light text-black bg-white w-100 text-center">
-                                      Requested
-                                    </span>
-                                  )}
-                                </p>
-                                <p><strong>Amount:</strong> {bookingById.amount || 'N/A'}</p>
-                                <p><strong>GST Amount:</strong> {bookingById.GSTAmount || 'N/A'}</p>
-                                <p><strong>Total User Amount:</strong> {bookingById.totalUserAmount || 'N/A'}</p>
-                                <p><strong>TDS Amount:</strong> {bookingById.TDSAmount || 'N/A'}</p>
-                                <p><strong>Total Host Amount:</strong> {bookingById.totalHostAmount || 'N/A'}</p>
+                          <div className="p-4 border rounded-3 h-100 bg-light-subtle shadow-sm">
+                            <h6 className="fw-bold mb-4 border-bottom pb-2 d-flex align-items-center">
+                              <span className="bg-primary p-1 rounded me-2"></span>
+                              Platform Revenue
+                            </h6>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-muted">Total Collected:</span> 
+                              <span className="fw-bold text-dark">Rs. {bookingById.totalUserAmount || '0.00'}</span>
                             </div>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-muted">Platform Commission:</span> 
+                              <span className="fw-bold text-primary">Rs. {bookingById.commissionAmount || '0.00'}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-muted">GST Collected (5%):</span> 
+                              <span className="fw-bold">Rs. {bookingById.GSTAmount || '0.00'}</span>
+                            </div>
+                            {bookingById.discountAmount > 0 && (
+                              <div className="d-flex justify-content-between mb-3 text-danger">
+                                <span className="small">Platform Discount:</span> 
+                                <span className="fw-bold small">- Rs. {bookingById.discountAmount}</span>
+                              </div>
+                            )}
+                            <div className="d-flex justify-content-between mb-0 pt-3 border-top mt-2">
+                              <span className="text-dark fw-bold">Net Platform Gain:</span> 
+                              <span className="text-primary fw-bold fs-4">Rs. {(parseFloat(bookingById.commissionAmount) - parseFloat(bookingById.discountAmount || 0)).toFixed(2)}</span>
+                            </div>
+                            {bookingById.offerCode && (
+                              <div className="small text-muted mt-2 text-end italic">Promo: {bookingById.offerCode}</div>
+                            )}
+                          </div>
                         </CCol>
+
                         <CCol md={6}>
-                            <div className='modalstatus'>
-                                {bookingById.isCab && (
-                                  <>
-                                    <p><strong>Pick-Up Location:</strong> {bookingById.pickUpLocation || 'N/A'}</p>
-                                    <p><strong>Drop-Off Location:</strong> {bookingById.dropOffLocation || 'N/A'}</p>
-                                    <p><strong>Requested Car Model:</strong> {bookingById.carname || 'N/A'}</p>
-                                    <p><strong>Est. Distance:</strong> {bookingById.distance || 'N/A'}</p>
-                                    <hr className='my-2'/>
-                                  </>
-                                )}
-                                {/* <p><strong>Start Trip Date:</strong> {bookingById.startTripDate || 'N/A'}</p>
-                                <p><strong>End Trip Date:</strong> {bookingById.endTripDate || 'N/A'}</p>
-                                <p><strong>Start Trip Time:</strong> {bookingById.startTripTime || 'N/A'}</p>
-                                <p><strong>End Trip Time:</strong> {bookingById.endTripTime || 'N/A'}</p> */}
-                                <p><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
-                                <p><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
-                                <p className='clickable-info'><strong >Transaction Id:</strong><span className='text-black text-xs'> {bookingById.Transactionid || 'N/A'}</span></p>
+                          <div className="p-4 border rounded-3 h-100 bg-light-subtle shadow-sm">
+                            <h6 className="fw-bold mb-4 border-bottom pb-2 d-flex align-items-center">
+                              <span className="bg-success p-1 rounded me-2"></span>
+                              Partner Payout
+                            </h6>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-muted">Gross Driver Pay:</span> 
+                              <span className="fw-bold">Rs. {(parseFloat(bookingById.totalHostAmount) + parseFloat(bookingById.TDSAmount || 0)).toFixed(2)}</span>
                             </div>
+                            <div className="d-flex justify-content-between mb-3 text-warning">
+                              <span className="text-muted">TDS Deduction (1%):</span> 
+                              <span className="fw-bold">- Rs. {bookingById.TDSAmount || '0.00'}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-0 pt-3 border-top mt-auto">
+                              <span className="text-dark fw-bold">Net Payout to Driver:</span> 
+                              <span className="text-success fw-bold fs-4">Rs. {bookingById.totalHostAmount || '0.00'}</span>
+                            </div>
+                            <div className="small text-muted mt-3 p-2 bg-white rounded border border-dashed">
+                              Payment Mode: <span className="text-capitalize fw-bold">{bookingById.paymentMethod || 'Wallet/Cash'}</span>
+                            </div>
+                          </div>
                         </CCol>
-                    </CRow>
+                      </CRow>
+                      <CRow className="mt-4">
+                        <CCol>
+                          <div className="p-3 border rounded text-muted small">
+                            <p className="mb-1"><strong>Created At:</strong> {new Date(bookingById.createdAt).toLocaleString()}</p>
+                            <p className="mb-1"><strong>Updated At:</strong> {new Date(bookingById.updatedAt).toLocaleString()}</p>
+                            <p className="mb-0"><strong>Transaction ID:</strong> {bookingById.Transactionid || 'N/A'}</p>
+                          </div>
+                        </CCol>
+                      </CRow>
+                    </CTabPane>
+                  </CTabContent>
                 </CModalBody>
 
-                <CModalFooter>
-                    {bookingById?.status === 5 && bookingById?.isCab && bookingById?.pickUpLat && (
-                      <CButton color="info" className="text-white" onClick={() => setMapModalVisible(true)}> Assign via Map </CButton>
-                    )}
-                    <CButton color="secondary" onClick={() => setModalVisible(false)}>Close</CButton>
-                    <CButton color="success" onClick={handleOpenUpdateForm}>Update</CButton>
+                <CModalFooter className="justify-content-between border-top">
+                    <div>
+                      {bookingById?.status !== 4 && (
+                        <CButton color="danger" variant="outline" className="me-2" onClick={() => setCancelModalVisible(true)}>
+                          Cancel Booking
+                        </CButton>
+                      )}
+                      <CButton color="info" variant="outline" onClick={handleSendInvoice}>
+                        Send Invoice
+                      </CButton>
+                    </div>
+                    <div>
+                      <CButton color="secondary" className="me-2" onClick={() => setModalVisible(false)}>Close</CButton>
+                      {bookingById?.status === 5 && bookingById?.isCab && bookingById?.pickUpLat && (
+                        <CButton color="info" className="text-white me-2" onClick={() => setMapModalVisible(true)}> Assign via Map </CButton>
+                      )}
+                      <CButton color="success" className="text-white" onClick={handleOpenUpdateForm}>Edit details</CButton>
+                    </div>
                 </CModalFooter>
           </CModal>
         )}
+              
+        {/* Cancel Reason Modal */}
+        <CModal visible={cancelModalVisible} onClose={() => setCancelModalVisible(false)}>
+          <CModalHeader>
+            <CModalTitle>Cancel Booking {bookingById?.Bookingid}</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <CFormLabel>Reason for cancellation</CFormLabel>
+            <CFormInput 
+              type="text" 
+              placeholder="e.g. Customer requested, No driver available..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+            />
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={() => setCancelModalVisible(false)}>Go Back</CButton>
+            <CButton color="danger" className="text-white" onClick={handleCancelBooking}>Confirm Cancellation</CButton>
+          </CModalFooter>
+        </CModal>
               
               
 
@@ -837,11 +935,17 @@ setSelectedvehicleid(null);
                 <CRow className="mb-3">
                   <CCol>
                     <CFormLabel>Status</CFormLabel>
-                    <CFormInput
-                      type="number"
+                    <CFormSelect
                       value={updateBookingData.status}
                       onChange={(e) => setUpdateBookingData({ ...updateBookingData, status: parseInt(e.target.value) })}
-                    />
+                    >
+                      <option value={5}>Requested</option>
+                      <option value={1}>Upcoming</option>
+                      <option value={2}>Ongoing</option>
+                      <option value={3}>Complete</option>
+                      <option value={4}>Cancelled</option>
+                      <option value={6}>Completed with review</option>
+                    </CFormSelect>
                   </CCol>
                 </CRow>
                 <CRow className="mb-3">

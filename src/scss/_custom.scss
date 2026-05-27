@@ -1,38 +1,159 @@
-// Here you can add other styles
+// Spintrip New Vision 2026 - Premium Styling Overhaul
 
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --premium-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+[data-coreui-theme='dark'] {
+  --glass-bg: rgba(28, 33, 44, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --premium-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+body {
+  font-family: 'Outfit', sans-serif !important;
+  letter-spacing: -0.01em;
+  background-color: var(--cui-body-bg);
+  transition: background-color 0.4s ease;
+}
+
+// Glassmorphism Cards
 .card {
-  border: none;
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
-  border-radius: 12px;
-  transition: all 0.3s ease-in-out;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--premium-shadow);
+  border-radius: 20px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  overflow: hidden;
+
+  .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1.25rem 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
 
   &:hover {
-    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.15);
   }
 }
 
-.bg-primary {
-  background: linear-gradient(135deg, var(--cui-primary) 0%, #4a90e2 100%) !important;
+// Sidebar Glass Effect
+.sidebar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  
+  .sidebar-nav .nav-link {
+    border-radius: 12px;
+    margin: 4px 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+
+    &.active {
+      background: rgba(var(--cui-primary-rgb), 0.15) !important;
+      color: var(--cui-primary) !important;
+      font-weight: 700;
+    }
+
+    &:hover {
+      background: rgba(var(--cui-primary-rgb), 0.08);
+    }
+  }
 }
 
-.bg-info {
-  background: linear-gradient(135deg, var(--cui-info) 0%, #36d1dc 100%) !important;
-}
-
-.bg-warning {
-  background: linear-gradient(135deg, var(--cui-warning) 0%, #f6d365 100%) !important;
-}
-
-.bg-danger {
-  background: linear-gradient(135deg, var(--cui-danger) 0%, #ff6a00 100%) !important;
-}
-
-.progress-group-header {
+// Premium Buttons
+.btn {
+  border-radius: 12px;
+  padding: 0.6rem 1.25rem;
   font-weight: 600;
-  color: #495057;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border: none;
+    &:hover {
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+    }
+  }
+
+  &.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+  }
 }
 
-.widgets-dropdown .card-body {
-  padding: 1.5rem;
+// Table Refinement
+.table {
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  
+  thead th {
+    background: transparent !important;
+    border: none;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+    color: var(--cui-secondary-color);
+  }
+
+  tbody tr {
+    background: var(--glass-bg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+
+    td {
+      border: none;
+      padding: 1rem;
+      &:first-child { border-radius: 12px 0 0 12px; }
+      &:last-child { border-radius: 0 12px 12px 0; }
+    }
+
+    &:hover {
+      transform: scale(1.01);
+      background: rgba(var(--cui-primary-rgb), 0.02) !important;
+    }
+  }
+}
+
+// Global Smooth Entry
+.container-fluid {
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Progress Bar Smoothness
+.progress {
+  border-radius: 10px;
+  height: 8px;
+  background-color: var(--glass-border);
+  overflow: hidden;
+
+  .progress-bar {
+    transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+}
+
+// Google Maps UI Fixes for Dark Mode
+.gm-style {
+  border-radius: 20px !important;
+  overflow: hidden !important;
 }

@@ -18,6 +18,7 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CBadge,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
@@ -255,16 +256,17 @@ const Dashboard = () => {
                 + New Booking
               </CButton>
             </CCardHeader>
-            <CCardBody>
-              <CTable align="middle" className="mb-0 border" hover responsive>
-                <CTableHead className="text-nowrap text-body-secondary bg-body-tertiary">
+            <CCardBody className="p-0">
+              <CTable align="middle" className="mb-0" hover responsive>
+                <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell className="bg-body-tertiary">Booking ID</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Customer</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Pick-Up</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Drop-Off</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Date & Time</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">Action</CTableHeaderCell>
+                    <CTableHeaderCell>Booking ID</CTableHeaderCell>
+                    <CTableHeaderCell>Customer</CTableHeaderCell>
+                    <CTableHeaderCell>Pick-Up</CTableHeaderCell>
+                    <CTableHeaderCell>Drop-Off</CTableHeaderCell>
+                    <CTableHeaderCell>Type</CTableHeaderCell>
+                    <CTableHeaderCell>Date & Time</CTableHeaderCell>
+                    <CTableHeaderCell className="text-center">Action</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
@@ -282,6 +284,12 @@ const Dashboard = () => {
                       </CTableDataCell>
                       <CTableDataCell>
                         <div className="text-truncate" style={{ maxWidth: '200px' }}>{item.dropOffLocation || 'N/A'}</div>
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CBadge color="info" className="text-capitalize">
+                          {item.bookingType || 'Local'}
+                          {item.bookingType === 'Outstation' && ` (${item.days || 1}d, ${item.isRoundTrip ? 'RT' : 'OW'})`}
+                        </CBadge>
                       </CTableDataCell>
                       <CTableDataCell>
                         <div>{item.pointAToBDate || 'N/A'}</div>
@@ -431,17 +439,17 @@ const Dashboard = () => {
               <CCardHeader>
                 <strong>Recent Users</strong>
               </CCardHeader>
-              <CCardBody>
-                <CTable align="middle" className="mb-0 border" hover responsive>
-                  <CTableHead className="text-nowrap text-body-secondary bg-body-tertiary">
+              <CCardBody className="p-0">
+                <CTable align="middle" className="mb-0" hover responsive>
+                  <CTableHead>
                     <CTableRow>
-                      <CTableHeaderCell className="bg-body-tertiary text-center">
+                      <CTableHeaderCell className="text-center">
                         <CIcon icon={cilPeople} />
                       </CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary">User</CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary text-center">Role</CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary">Email</CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary">Joined</CTableHeaderCell>
+                      <CTableHeaderCell>User</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Role</CTableHeaderCell>
+                      <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell>Joined</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>

@@ -55,3 +55,16 @@ export const rejectCabProfile = async(id) => {
     throw error;
   }
 }
+
+export const unassignDriver = async(vehicleId) => {
+  try {
+    const response = await axios.post(`${apiUrl}admin/cab/unassign-driver-vehicle`, { vehicleId }, {
+      headers: {
+        'token': token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

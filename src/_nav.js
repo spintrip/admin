@@ -39,6 +39,16 @@ const _nav = [
       },
       {
         component: CNavItem,
+        name: 'Surge Multiplier',
+        to: '/base/surge-pricing',
+      },
+      {
+        component: CNavItem,
+        name: 'Subscriptions',
+        to: '/base/subscriptions',
+      },
+      {
+        component: CNavItem,
         name: 'Users',
         to: '/base/users',
       },

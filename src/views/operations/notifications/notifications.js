@@ -101,7 +101,8 @@ const Notification = () => {
   const [notificationFormValues, setNotificationFormValues] = useState({
     userIds : [],
     subject : "",
-    message : ""
+    message : "",
+    imageUrl: ""
   });
   const navigate = useNavigate();
   const [sendConfirmModal , setSendConfirmModal] = useState(false);
@@ -225,7 +226,8 @@ const handleHostProceed = () => {
           receiverIds: finalUserIds,
           receiverType: trimmedData.receiverType,
           text: notificationFormValues.message,
-          title: notificationFormValues.subject
+          title: notificationFormValues.subject,
+          imageUrl: notificationFormValues.imageUrl
       };
 
       const data = await sendNotification(apiPayload);
@@ -277,6 +279,10 @@ const handleHostProceed = () => {
                     <CInputGroup className="mb-3">
                     <CFormLabel className='me-3'>Message</CFormLabel>
                     <CFormInput type="text" name="message" value={notificationFormValues.message} onChange={handleNotificationInputChange} required />
+                    </CInputGroup>
+                    <CInputGroup className="mb-3">
+                    <CFormLabel className='me-3'>Image URL (Optional)</CFormLabel>
+                    <CFormInput type="url" name="imageUrl" value={notificationFormValues.imageUrl} onChange={handleNotificationInputChange} placeholder="https://example.com/promo.png" />
                     </CInputGroup>
                     <CInputGroup className="mb-3 d-flex flex-column">
                       <CFormLabel className="me-3 fw-bold">Target Audience</CFormLabel>

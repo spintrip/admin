@@ -328,11 +328,11 @@ const CabRates = () => {
                   <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Airport Transfer</h6>
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <CFormLabel>Airport Base Price {"(< 35km)"}</CFormLabel>
+                      <CFormLabel>Airport Base Price {"(< 25km)"}</CFormLabel>
                       <CFormInput name="airportTransferPrice" type="number" value={editingRecord.airportTransferPrice || ''} onChange={handleInputChange} placeholder="e.g. 800" />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <CFormLabel>Airport Extra KM Rate {"(> 35km)"}</CFormLabel>
+                      <CFormLabel>Airport Extra KM Rate {"(> 25km)"}</CFormLabel>
                       <CFormInput name="airportExtraKmRate" type="number" value={editingRecord.airportExtraKmRate || ''} onChange={handleInputChange} placeholder="e.g. 25" />
                     </div>
                   </div>
@@ -360,7 +360,7 @@ const CabRates = () => {
                   <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Outstation</h6>
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <CFormLabel>Per KM Price (Min 50km)</CFormLabel>
+                      <CFormLabel>Per KM Price (Min 300km)</CFormLabel>
                       <CFormInput name="outstationPerKmPrice" type="number" value={editingRecord.outstationPerKmPrice || ''} onChange={handleInputChange} />
                     </div>
                     <div className="col-md-6 mb-3">
@@ -458,11 +458,11 @@ const CabRates = () => {
                 <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Airport Transfer</h6>
                 <div className="row">
                   <div className="col-md-6 mb-3">
-                    <CFormLabel>Airport Base Price {"(< 35km)"}</CFormLabel>
+                    <CFormLabel>Airport Base Price {"(< 25km)"}</CFormLabel>
                     <CFormInput name="airportTransferPrice" type="number" value={newRecord.airportTransferPrice || ''} onChange={handleInputChange} placeholder="e.g. 800" />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <CFormLabel>Airport Extra KM Rate {"(> 35km)"}</CFormLabel>
+                    <CFormLabel>Airport Extra KM Rate {"(> 25km)"}</CFormLabel>
                     <CFormInput name="airportExtraKmRate" type="number" value={newRecord.airportExtraKmRate || ''} onChange={handleInputChange} placeholder="e.g. 25" />
                   </div>
                 </div>
@@ -490,7 +490,7 @@ const CabRates = () => {
                 <h6 className="text-primary border-bottom pb-2 mb-3 mt-4">Outstation</h6>
                 <div className="row">
                   <div className="col-md-6 mb-3">
-                    <CFormLabel>Per KM Price (Min 50km)</CFormLabel>
+                    <CFormLabel>Per KM Price (Min 300km)</CFormLabel>
                     <CFormInput name="outstationPerKmPrice" type="number" value={newRecord.outstationPerKmPrice || ''} onChange={handleInputChange} />
                   </div>
                   <div className="col-md-6 mb-3">

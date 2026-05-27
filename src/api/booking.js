@@ -77,3 +77,29 @@ export const createBooking = async (data) => {
     throw error;
   }
 };
+
+export const cancelCabBooking = async (id, reason) => {
+  try {
+    const response = await axios.put(`${apiUrl}admin/bookings/${id}/cancel`, { reason }, {
+      headers: {
+        'token': token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendCabInvoice = async (id) => {
+  try {
+    const response = await axios.post(`${apiUrl}admin/bookings/${id}/send-invoice`, {}, {
+      headers: {
+        'token': token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

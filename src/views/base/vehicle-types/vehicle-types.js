@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchVehicleTypes, createVehicleType, deleteVehicleType } from '../../../api/vehicleType';
+import { fetchVehicleTypes, createVehicleType, deleteVehicleType, updateVehicleType } from '../../../api/vehicleType';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CFormInput, CFormLabel } from '@coreui/react';
@@ -16,6 +16,8 @@ const VehicleTypes = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const [typeName, setTypeName] = useState('');
   const [typeDescription, setTypeDescription] = useState('');
   const [typeBasePrice, setTypeBasePrice] = useState('');
@@ -39,6 +41,24 @@ const VehicleTypes = () => {
     getData();
   }, [token, navigate]);
 
+  const handleEdit = (row) => {
+    setIsEditMode(true);
+    setSelectedId(row.id);
+    setTypeName(row.vehicletype || '');
+    setTypeDescription(row.description || '');
+    setTypeBasePrice(row.basePrice || '');
+    setModalVisible(true);
+  };
+
+  const handleOpenCreate = () => {
+    setIsEditMode(false);
+    setSelectedId(null);
+    setTypeName('');
+    setTypeDescription('');
+    setTypeBasePrice('');
+    setModalVisible(true);
+  };
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this vehicle type?')) {
       try {
@@ -50,21 +70,25 @@ const VehicleTypes = () => {
     }
   };
 
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createVehicleType({
+      const payload = {
         name: typeName,
         description: typeDescription,
         basePrice: parseFloat(typeBasePrice)
-      });
+      };
+
+      if (isEditMode) {
+        await updateVehicleType(selectedId, payload);
+      } else {
+        await createVehicleType(payload);
+      }
+
       setModalVisible(false);
-      setTypeName('');
-      setTypeDescription('');
-      setTypeBasePrice('');
       getData();
     } catch (err) {
-      console.error('Create error', err);
+      console.error('Submit error', err);
     }
   };
 
@@ -77,7 +101,10 @@ const VehicleTypes = () => {
     {
       name: 'Actions',
       cell: row => (
-        <CButton color="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</CButton>
+        <div className="d-flex gap-2">
+          <CButton color="info" size="sm" onClick={() => handleEdit(row)}>Edit</CButton>
+          <CButton color="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</CButton>
+        </div>
       )
     }
   ];
@@ -85,7 +112,7 @@ const VehicleTypes = () => {
   return (
     <div className='container-fluid'>
       <div className="d-flex justify-content-end mb-3">
-        <CButton color="primary" onClick={() => setModalVisible(true)}>Add Vehicle Type</CButton>
+        <CButton color="primary" onClick={handleOpenCreate}>Add Vehicle Type</CButton>
       </div>
 
       <DataTable
@@ -101,9 +128,9 @@ const VehicleTypes = () => {
 
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>
-          <CModalTitle>Create Vehicle Type</CModalTitle>
+          <CModalTitle>{isEditMode ? 'Edit' : 'Create'} Vehicle Type</CModalTitle>
         </CModalHeader>
-        <CForm onSubmit={handleCreate}>
+        <CForm onSubmit={handleSubmit}>
           <CModalBody>
             <div className="mb-3">
               <CFormLabel>Type Name</CFormLabel>
@@ -126,7 +153,7 @@ const VehicleTypes = () => {
           </CModalBody>
           <CModalFooter>
             <CButton color="secondary" onClick={() => setModalVisible(false)}>Cancel</CButton>
-            <CButton color="primary" type="submit">Create</CButton>
+            <CButton color="primary" type="submit">{isEditMode ? 'Update' : 'Create'}</CButton>
           </CModalFooter>
         </CForm>
       </CModal>
